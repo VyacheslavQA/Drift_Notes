@@ -24,6 +24,8 @@ android {
         viewBinding = true
         // Включаем поддержку Compose
         compose = true
+        // Включаем BuildConfig для хранения API ключей
+        buildConfig = true
     }
 
     // Настраиваем Compose для работы с Kotlin 1.9.0
@@ -35,6 +37,13 @@ android {
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            // Добавляем API ключ Яндекс.Погоды для релизной сборки
+            buildConfigField("String", "YANDEX_WEATHER_API_KEY", "\"fb7df948-f5c4-463c-b76d-d69dec8105dc\"")
+        }
+
+        debug {
+            // Добавляем API ключ Яндекс.Погоды для отладочной сборки
+            buildConfigField("String", "YANDEX_WEATHER_API_KEY", "\"fb7df948-f5c4-463c-b76d-d69dec8105dc\"")
         }
     }
 
@@ -79,4 +88,14 @@ dependencies {
     // Google Maps
     implementation("com.google.android.gms:play-services-maps:18.2.0")
     implementation("com.google.android.gms:play-services-location:21.1.0")
+
+    // Retrofit для сетевых запросов
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
+
+    // Kotlin Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
 }

@@ -82,6 +82,31 @@
             app:layout_constraintTop_toBottomOf="@+id/textViewDateLabel"
             tools:text="15.06.2023" />
 
+        <!-- Секция погоды -->
+        <TextView
+            android:id="@+id/textViewWeatherLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:text="@string/weather"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textViewDate" />
+
+        <TextView
+            android:id="@+id/textViewWeather"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="16dp"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textViewWeatherLabel"
+            tools:text="Ясно, +25°C, ветер: Ю 2 м/с" />
+
         <TextView
             android:id="@+id/textViewTackleLabel"
             android:layout_width="wrap_content"
@@ -91,7 +116,7 @@
             android:text="@string/tackle"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textViewDate" />
+            app:layout_constraintTop_toBottomOf="@+id/textViewWeather" />
 
         <TextView
             android:id="@+id/textViewTackle"

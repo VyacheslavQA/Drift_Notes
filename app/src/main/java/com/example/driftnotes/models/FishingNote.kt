@@ -6,10 +6,13 @@ data class FishingNote(
     val id: String = "",
     val userId: String = "",
     val location: String = "",
-    val latitude: Double = 0.0,  // Добавляем широту
-    val longitude: Double = 0.0,  // Добавляем долготу
+    val latitude: Double = 0.0,
+    val longitude: Double = 0.0,
     val date: Date = Date(),
     val tackle: String = "",
     val notes: String = "",
-    val photoUrls: List<String> = listOf()
+    val photoUrls: List<String> = listOf(),
+
+    // Добавляем информацию о погоде
+    val weather: FishingWeather? = null
 )

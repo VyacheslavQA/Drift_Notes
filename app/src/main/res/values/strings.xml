@@ -54,4 +54,18 @@
     <string name="welcome_subtitle1">Твой личный журнал рыбалки</string>
     <string name="welcome_subtitle2">Запоминай клёвые выезды</string>
     <string name="background_image">Фоновое изображение</string>
+
+    <!-- Weather strings -->
+    <string name="weather">Погода</string>
+    <string name="temperature">Температура</string>
+    <string name="wind">Ветер</string>
+    <string name="humidity">Влажность</string>
+    <string name="pressure">Давление</string>
+    <string name="load_weather">Загрузить погоду</string>
+    <string name="weather_data">Погодные условия</string>
+    <string name="weather_not_loaded">Погода не загружена. Нажмите кнопку, чтобы загрузить текущую погоду для выбранного места.</string>
+    <string name="weather_loading">Загрузка погоды…</string>
+    <string name="weather_error">Ошибка загрузки погоды: %1$s</string>
+    <string name="weather_need_location">Сначала выберите место ловли для загрузки погоды</string>
+    <string name="weather_success">Погода успешно загружена</string>
 </resources>

@@ -3,6 +3,7 @@ package com.example.driftnotes.fishing
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -21,7 +22,7 @@ class FishingNoteDetailActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private val firestore = FirebaseFirestore.getInstance()
     private val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-    
+
     private var noteId: String? = null
     private var currentNote: FishingNote? = null
     private lateinit var photoAdapter: PhotoPagerAdapter
@@ -30,31 +31,31 @@ class FishingNoteDetailActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityFishingNoteDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        
+
         auth = FirebaseAuth.getInstance()
-        
+
         // Получаем ID записи из интента
         noteId = intent.getStringExtra("note_id")
-        
+
         if (noteId == null) {
             Toast.makeText(this, "Ошибка: запись не найдена", Toast.LENGTH_SHORT).show()
             finish()
             return
         }
-        
+
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        
+
         // Настраиваем адаптер для фотографий
         photoAdapter = PhotoPagerAdapter(emptyList())
         binding.viewPagerPhotos.adapter = photoAdapter
-        
+
         // Настраиваем индикатор страниц
         binding.dotsIndicator.attachTo(binding.viewPagerPhotos)
-        
+
         // Загружаем данные записи
         loadNoteData()
     }
-    
+
     private fun loadNoteData() {
         noteId?.let { id ->
             firestore.collection("fishing_notes")
@@ -75,35 +76,45 @@ class FishingNoteDetailActivity : AppCompatActivity() {
                 }
         }
     }
-    
+
     private fun displayNoteData() {
         currentNote?.let { note ->
             binding.textViewLocation.text = note.location
             binding.textViewDate.text = dateFormat.format(note.date)
             binding.textViewTackle.text = note.tackle
             binding.textViewNotes.text = note.notes
-            
+
+            // Отображаем погоду, если она доступна
+            if (note.weather != null) {
+                binding.textViewWeatherLabel.visibility = View.VISIBLE
+                binding.textViewWeather.visibility = View.VISIBLE
+                binding.textViewWeather.text = note.weather.weatherDescription
+            } else {
+                binding.textViewWeatherLabel.visibility = View.GONE
+                binding.textViewWeather.visibility = View.GONE
+            }
+
             // Настраиваем ViewPager для фотографий
             if (note.photoUrls.isNotEmpty()) {
                 photoAdapter.updatePhotos(note.photoUrls)
-                binding.viewPagerPhotos.visibility = android.view.View.VISIBLE
+                binding.viewPagerPhotos.visibility = View.VISIBLE
                 binding.dotsIndicator.visibility = if (note.photoUrls.size > 1) {
-                    android.view.View.VISIBLE
+                    View.VISIBLE
                 } else {
-                    android.view.View.GONE
+                    View.GONE
                 }
             } else {
-                binding.viewPagerPhotos.visibility = android.view.View.GONE
-                binding.dotsIndicator.visibility = android.view.View.GONE
+                binding.viewPagerPhotos.visibility = View.GONE
+                binding.dotsIndicator.visibility = View.GONE
             }
         }
     }
-    
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.detail_menu, menu)
         return true
     }
-    
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             android.R.id.home -> {
@@ -117,7 +128,7 @@ class FishingNoteDetailActivity : AppCompatActivity() {
             else -> super.onOptionsItemSelected(item)
         }
     }
-    
+
     private fun confirmDelete() {
         AlertDialog.Builder(this)
             .setTitle("Удаление записи")
@@ -128,7 +139,7 @@ class FishingNoteDetailActivity : AppCompatActivity() {
             .setNegativeButton("Отмена", null)
             .show()
     }
-    
+
     private fun deleteNote() {
         noteId?.let { id ->
             firestore.collection("fishing_notes")

@@ -6,18 +6,23 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
+import androidx.lifecycle.lifecycleScope
 import com.example.driftnotes.R
 import com.example.driftnotes.databinding.ActivityAddFishingNoteBinding
 import com.example.driftnotes.maps.MapActivity
 import com.example.driftnotes.models.FishingNote
+import com.example.driftnotes.models.FishingWeather
+import com.example.driftnotes.repository.WeatherRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -31,21 +36,20 @@ class AddFishingNoteActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private val firestore = FirebaseFirestore.getInstance()
     private val storage = FirebaseStorage.getInstance()
+    private val weatherRepository = WeatherRepository()
 
     private val calendar = Calendar.getInstance()
     private val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
     private val selectedPhotos = mutableListOf<Uri>()
     private var currentPhotoUri: Uri? = null
+    private var weatherData: FishingWeather? = null
 
     private val PERMISSIONS_REQUEST_CODE = 101
-    // Добавляем константу для идентификации запроса карты
     private val MAP_REQUEST_CODE = 1002
 
-    // Добавляем переменные для хранения координат
     private var selectedLatitude: Double = 0.0
     private var selectedLongitude: Double = 0.0
 
-    // Обработчики результатов выбора фото
     private val galleryLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -75,7 +79,6 @@ class AddFishingNoteActivity : AppCompatActivity() {
 
         auth = FirebaseAuth.getInstance()
 
-        // Проверка и запрос разрешений
         checkAndRequestPermissions()
 
         // Установка начальной даты (сегодня)
@@ -101,36 +104,40 @@ class AddFishingNoteActivity : AppCompatActivity() {
             finish()
         }
 
-        // Добавляем слушатель для выбора местоположения
+        // Обработчик выбора местоположения
         binding.editTextLocation.setOnClickListener {
-            // Запускаем активность карты для выбора местоположения
             val intent = Intent(this, MapActivity::class.java)
             startActivityForResult(intent, MAP_REQUEST_CODE)
+        }
+
+        // Установка системной иконки для кнопки загрузки погоды
+        binding.buttonLoadWeather.setCompoundDrawablesWithIntrinsicBounds(
+            android.R.drawable.ic_menu_compass, 0, 0, 0
+        )
+
+        // Обработчик загрузки погоды
+        binding.buttonLoadWeather.setOnClickListener {
+            loadWeatherData()
         }
     }
 
     private fun checkAndRequestPermissions() {
         val permissionsToRequest = mutableListOf<String>()
 
-        // Проверяем разрешения в зависимости от версии Android
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            // Android 13+ (API 33+) использует READ_MEDIA_IMAGES вместо READ_EXTERNAL_STORAGE
             if (checkSelfPermission(android.Manifest.permission.READ_MEDIA_IMAGES) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
                 permissionsToRequest.add(android.Manifest.permission.READ_MEDIA_IMAGES)
             }
         } else if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.S_V2) {
-            // Android 12 и ниже используют READ_EXTERNAL_STORAGE
             if (checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
                 permissionsToRequest.add(android.Manifest.permission.READ_EXTERNAL_STORAGE)
             }
         }
 
-        // Проверка разрешения CAMERA для всех версий
         if (checkSelfPermission(android.Manifest.permission.CAMERA) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
             permissionsToRequest.add(android.Manifest.permission.CAMERA)
         }
 
-        // Если есть разрешения для запроса, запрашиваем их
         if (permissionsToRequest.isNotEmpty()) {
             requestPermissions(permissionsToRequest.toTypedArray(), PERMISSIONS_REQUEST_CODE)
         }
@@ -144,11 +151,9 @@ class AddFishingNoteActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
         if (requestCode == PERMISSIONS_REQUEST_CODE) {
-            // Проверяем, все ли разрешения предоставлены
             val allPermissionsGranted = grantResults.all { it == android.content.pm.PackageManager.PERMISSION_GRANTED }
 
             if (!allPermissionsGranted) {
-                // Если не все разрешения предоставлены, показываем сообщение
                 Toast.makeText(
                     this,
                     "Для полной функциональности приложению требуются разрешения на доступ к камере и галерее",
@@ -229,6 +234,37 @@ class AddFishingNoteActivity : AppCompatActivity() {
         )
     }
 
+    // Загрузка погоды по координатам выбранного места
+    private fun loadWeatherData() {
+        if (selectedLatitude == 0.0 && selectedLongitude == 0.0) {
+            Toast.makeText(this, R.string.weather_need_location, Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        binding.progressBarWeather.visibility = View.VISIBLE
+        binding.textViewWeatherStatus.text = getString(R.string.weather_loading)
+        binding.buttonLoadWeather.isEnabled = false
+
+        lifecycleScope.launch {
+            try {
+                val weather = weatherRepository.getWeatherForLocation(selectedLatitude, selectedLongitude)
+
+                if (weather != null) {
+                    weatherData = weather
+                    binding.textViewWeatherStatus.text = weather.weatherDescription
+                    Toast.makeText(this@AddFishingNoteActivity, R.string.weather_success, Toast.LENGTH_SHORT).show()
+                } else {
+                    binding.textViewWeatherStatus.text = getString(R.string.weather_error, "Не удалось получить данные")
+                }
+            } catch (e: Exception) {
+                binding.textViewWeatherStatus.text = getString(R.string.weather_error, e.message)
+            } finally {
+                binding.progressBarWeather.visibility = View.INVISIBLE
+                binding.buttonLoadWeather.isEnabled = true
+            }
+        }
+    }
+
     private fun saveFishingNote() {
         val location = binding.editTextLocation.text.toString().trim()
         val tackle = binding.editTextTackle.text.toString().trim()
@@ -242,10 +278,8 @@ class AddFishingNoteActivity : AppCompatActivity() {
         binding.buttonSave.isEnabled = false
 
         if (selectedPhotos.isEmpty()) {
-            // Если нет фото, сразу сохраняем запись
             saveNoteToFirestore(emptyList())
         } else {
-            // Если есть фото, сначала загружаем их в Storage
             uploadPhotosAndSaveNote()
         }
     }
@@ -254,9 +288,6 @@ class AddFishingNoteActivity : AppCompatActivity() {
         val photoUrls = mutableListOf<String>()
         var uploadedCount = 0
 
-        // Показываем индикатор загрузки
-        // (можно добавить ProgressBar в layout и управлять его видимостью здесь)
-
         for (i in selectedPhotos.indices) {
             val photoUri = selectedPhotos[i]
             val fileName = "fishing_photo_${System.currentTimeMillis()}_$i.jpg"
@@ -264,25 +295,21 @@ class AddFishingNoteActivity : AppCompatActivity() {
 
             photoRef.putFile(photoUri)
                 .addOnSuccessListener {
-                    // Получаем URL загруженного фото
                     photoRef.downloadUrl.addOnSuccessListener { uri ->
                         photoUrls.add(uri.toString())
                         uploadedCount++
 
-                        // Когда все фото загружены, сохраняем запись
                         if (uploadedCount == selectedPhotos.size) {
                             saveNoteToFirestore(photoUrls)
                         }
                     }
                 }
                 .addOnFailureListener { e ->
-                    // В случае ошибки загрузки фото
                     uploadedCount++
                     Toast.makeText(this,
                         "Ошибка при загрузке фото: ${e.message}",
                         Toast.LENGTH_SHORT).show()
 
-                    // Если все остальные фото обработаны, сохраняем запись с теми фото, что удалось загрузить
                     if (uploadedCount == selectedPhotos.size) {
                         saveNoteToFirestore(photoUrls)
                     }
@@ -299,16 +326,17 @@ class AddFishingNoteActivity : AppCompatActivity() {
             return
         }
 
-        // Создаем объект записи о рыбалке с координатами
+        // Создаем объект записи о рыбалке с координатами и погодой
         val fishingNote = FishingNote(
             userId = userId,
             location = binding.editTextLocation.text.toString().trim(),
-            latitude = selectedLatitude,  // Добавляем широту
-            longitude = selectedLongitude, // Добавляем долготу
+            latitude = selectedLatitude,
+            longitude = selectedLongitude,
             date = calendar.time,
             tackle = binding.editTextTackle.text.toString().trim(),
             notes = binding.editTextNotes.text.toString().trim(),
-            photoUrls = photoUrls
+            photoUrls = photoUrls,
+            weather = weatherData // Добавляем погодные данные
         )
 
         // Сохраняем запись в Firestore
@@ -328,7 +356,6 @@ class AddFishingNoteActivity : AppCompatActivity() {
             }
     }
 
-    // Добавляем метод для обработки результата выбора местоположения
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
@@ -338,12 +365,13 @@ class AddFishingNoteActivity : AppCompatActivity() {
                 val latitude = it.getDoubleExtra("latitude", 0.0)
                 val longitude = it.getDoubleExtra("longitude", 0.0)
 
-                // Устанавливаем выбранное место в поле ввода
                 binding.editTextLocation.setText(locationName)
-
-                // Сохраняем координаты для использования при сохранении записи
                 selectedLatitude = latitude
                 selectedLongitude = longitude
+
+                // Сбрасываем погодные данные при изменении локации
+                weatherData = null
+                binding.textViewWeatherStatus.text = getString(R.string.weather_not_loaded)
             }
         }
     }
