@@ -1,4 +1,3 @@
-Вот оптимизированный .gitignore файл для Android проекта, который поможет избежать добавления тяжелых файлов в репозиторий:
 Copy# Built application files
 *.apk
 *.aar
@@ -79,6 +78,15 @@ app/src/main/res/values/secrets.xml
 *.backup
 *~
 
+# Конкретные большие файлы
+app/src/main/res/drawable/fishing_background.jpg
+
+# Большие изображения в высоком разрешении
+app/src/main/res/drawable-xxxhdpi/
+app/src/main/res/drawable-xxhdpi/
+**/drawable/*background*.*
+**/drawable/*large*.*
+
 # Large media files
 *.mp4
 *.tiff
@@ -87,6 +95,18 @@ app/src/main/res/values/secrets.xml
 *.mov
 *.wmv
 *.webm
+*.jpg
+*.jpeg
+*.png
+*.bmp
+
+# Но сохраняем мелкие изображения для иконок
+!**/drawable/*icon*.png
+!**/drawable/*small*.png
+!**/drawable/*ic_*.png
+!**/drawable-mdpi/*.png
+!**/drawable-hdpi/*.png
+!**/drawable-xhdpi/*.png
 
 # Database files
 *.db
@@ -95,3 +115,29 @@ app/src/main/res/values/secrets.xml
 
 # NDK
 obj/
+.externalNativeBuild/
+.cxx/
+*.so
+*.o
+*.a
+
+# Temporary files
+*.tmp
+*.swp
+*~.nib
+*.orig
+
+# Captures folder
+captures/
+
+# fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+fastlane/readme.md
+
+# Crashlytics configuations
+com_crashlytics_export_strings.xml
+
+# Misc
