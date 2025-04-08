@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Путь к внешней директории файлов приложения -->
+    <external-files-path
+        name="my_images"
+        path="Pictures" />
+
+    <!-- Путь к внутренней директории файлов приложения -->
+    <files-path
+        name="internal_images"
+        path="Pictures" />
+
+    <!-- Путь к кэш-директории приложения -->
+    <cache-path
+        name="cache_images"
+        path="/" />
+
+    <!-- Путь к внешней директории кэша приложения -->
+    <external-cache-path
+        name="external_cache"
+        path="/" />
+
+    <!-- Путь к внешнему хранилищу -->
+    <external-path
+        name="external"
+        path="." />
+</paths>

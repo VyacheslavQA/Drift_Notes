@@ -1,0 +1,57 @@
+<resources>
+    <string name="app_name">Drift Notes</string>
+
+    <!-- Auth strings -->
+    <string name="login">Вход</string>
+    <string name="register">Регистрация</string>
+    <string name="email">Email</string>
+    <string name="password">Пароль</string>
+    <string name="confirm_password">Подтвердите пароль</string>
+    <string name="login_success">Вход выполнен успешно</string>
+    <string name="login_failed">Ошибка входа: %1$s</string>
+    <string name="register_success">Регистрация успешна</string>
+    <string name="register_failed">Ошибка регистрации: %1$s</string>
+    <string name="passwords_not_match">Пароли не совпадают</string>
+    <string name="no_account">Еще нет аккаунта? Зарегистрироваться</string>
+    <string name="has_account">Уже есть аккаунт? Войти</string>
+
+    <!-- Fishing notes strings -->
+    <string name="add_note">Добавить запись</string>
+    <string name="edit_note">Редактировать запись</string>
+    <string name="delete_note">Удалить запись</string>
+    <string name="location">Место ловли</string>
+    <string name="date">Дата ловли</string>
+    <string name="tackle">Снасти</string>
+    <string name="notes">Заметки</string>
+    <string name="add_photo">Добавить фото</string>
+    <string name="take_photo">Сделать фото</string>
+    <string name="choose_photo">Выбрать из галереи</string>
+    <string name="save">Сохранить</string>
+    <string name="cancel">Отмена</string>
+    <string name="note_saved">Запись сохранена</string>
+    <string name="note_deleted">Запись удалена</string>
+    <string name="error_saving">Ошибка при сохранении: %1$s</string>
+    <string name="error_loading_notes">Ошибка при загрузке заметок: %1$s</string>
+    <string name="no_notes_yet">У вас пока нет записей о рыбалке.\nНажмите + чтобы добавить запись.</string>
+
+    <!-- Menu strings -->
+    <string name="logout">Выйти</string>
+    <string name="my_notes">Мои записи</string>
+    <string name="settings">Настройки</string>
+
+    <!-- Map strings -->
+    <string name="confirm_location">Подтвердить местоположение</string>
+    <string name="my_location">Мое местоположение</string>
+    <string name="search">Поиск</string>
+    <string name="search_location">Поиск места</string>
+    <string name="selected_location">Выбранное место</string>
+    <string name="coordinates_format">Координаты: %.6f, %.6f</string>
+    <string name="selected_place_format">Выбранное место: %s</string>
+    <string name="unknown_location">Неизвестное место</string>
+    <string name="please_select_location">Пожалуйста, выберите место на карте</string>
+    <string name="location_permission_denied">Без разрешения на определение местоположения некоторые функции будут недоступны</string>
+    <string name="select_location">Выбор местоположения</string>
+    <string name="welcome_subtitle1">Твой личный журнал рыбалки</string>
+    <string name="welcome_subtitle2">Запоминай клёвые выезды</string>
+    <string name="background_image">Фоновое изображение</string>
+</resources>

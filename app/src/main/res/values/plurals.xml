@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="photo_count">
+        <item quantity="one">Выбрано: %d фото</item>
+        <item quantity="few">Выбрано: %d фото</item>
+        <item quantity="many">Выбрано: %d фото</item>
+        <item quantity="other">Выбрано: %d фото</item>
+    </plurals>
+</resources>
