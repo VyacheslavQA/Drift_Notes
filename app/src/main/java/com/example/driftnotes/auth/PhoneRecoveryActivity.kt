@@ -1,29 +1,31 @@
 package com.example.driftnotes.auth
 
-import android.content.Intent
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.text.Editable
 import android.text.TextUtils
+import android.text.TextWatcher
 import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.driftnotes.MainActivity
 import com.example.driftnotes.R
-import com.example.driftnotes.databinding.ActivityPhoneAuthBinding
+import com.example.driftnotes.databinding.ActivityPhoneRecoveryBinding
+import com.example.driftnotes.utils.PasswordValidator
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
-import com.google.firebase.auth.FirebaseAuthMissingActivityForRecaptchaException
 import com.google.firebase.auth.PhoneAuthCredential
 import com.google.firebase.auth.PhoneAuthOptions
 import com.google.firebase.auth.PhoneAuthProvider
 import java.util.concurrent.TimeUnit
-import com.google.firebase.FirebaseTooManyRequestsException
 
-class PhoneAuthActivity : AppCompatActivity() {
+/**
+ * Активность для восстановления пароля через телефон
+ */
+class PhoneRecoveryActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityPhoneAuthBinding
+    private lateinit var binding: ActivityPhoneRecoveryBinding
     private lateinit var auth: FirebaseAuth
 
     private var verificationId: String = ""
@@ -38,25 +40,16 @@ class PhoneAuthActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityPhoneAuthBinding.inflate(layoutInflater)
+        binding = ActivityPhoneRecoveryBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         auth = FirebaseAuth.getInstance()
 
-        // Настройка тестового режима для аутентификации по телефону
-        // Эти строки следует удалить перед релизом приложения
-        auth.firebaseAuthSettings.setAppVerificationDisabledForTesting(true)
-
-        // Настраиваем автоматическое получение кода для тестового номера
-        val testPhoneNumber = "+77710662277" // Должен совпадать с номером в Firebase Console
-        val testVerificationCode = "123456"  // Должен совпадать с кодом в Firebase Console
-        auth.firebaseAuthSettings.setAutoRetrievedSmsCodeForPhoneNumber(
-            testPhoneNumber,
-            testVerificationCode
-        )
-
         // Инициализация UI в режиме ввода телефона
         updateUI(ViewMode.PHONE_INPUT)
+
+        // Настройка требований к паролю
+        setupPasswordRequirements()
 
         // Обработчик кнопки "Получить код"
         binding.buttonSendCode.setOnClickListener {
@@ -77,27 +70,55 @@ class PhoneAuthActivity : AppCompatActivity() {
             startPhoneNumberVerification(this.phoneNumber)
         }
 
-        // Обработчик кнопки "Подтвердить код"
-        binding.buttonVerifyCode.setOnClickListener {
+        // Обработчик TextWatcher для валидации пароля
+        binding.editTextNewPassword.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                validatePassword(s.toString())
+            }
+        })
+
+        // Обработчик кнопки сброса пароля
+        binding.buttonResetPassword.setOnClickListener {
             val code = binding.editTextCode.text.toString().trim()
+            val newPassword = binding.editTextNewPassword.text.toString().trim()
 
             if (TextUtils.isEmpty(code) || code.length < 6) {
                 Toast.makeText(this, R.string.code_required, Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            binding.progressBar.visibility = View.VISIBLE
-            binding.buttonVerifyCode.isEnabled = false
+            if (TextUtils.isEmpty(newPassword)) {
+                binding.textInputLayoutNewPassword.error = "Введите новый пароль"
+                return@setOnClickListener
+            }
 
-            verifyPhoneNumberWithCode(verificationId, code)
+            // Проверяем пароль на соответствие требованиям
+            val validationResult = PasswordValidator.validate(newPassword)
+            if (validationResult != PasswordValidator.PasswordValidationResult.Valid) {
+                val errorMessageId = PasswordValidator.getErrorMessageResId(validationResult)
+                binding.textInputLayoutNewPassword.error = getString(errorMessageId)
+                return@setOnClickListener
+            }
+
+            binding.progressBar.visibility = View.VISIBLE
+            binding.buttonResetPassword.isEnabled = false
+
+            verifyPhoneNumberWithCode(verificationId, code, newPassword)
         }
 
         // Автоматическая проверка кода, когда введены все 6 цифр
         binding.editTextCode.setOnCodeCompleteListener { code ->
-            binding.progressBar.visibility = View.VISIBLE
-            binding.buttonVerifyCode.isEnabled = false
-
-            verifyPhoneNumberWithCode(verificationId, code)
+            if (binding.editTextNewPassword.text.toString().isNotEmpty()) {
+                val newPassword = binding.editTextNewPassword.text.toString().trim()
+                val validationResult = PasswordValidator.validate(newPassword)
+                if (validationResult == PasswordValidator.PasswordValidationResult.Valid) {
+                    binding.progressBar.visibility = View.VISIBLE
+                    binding.buttonResetPassword.isEnabled = false
+                    verifyPhoneNumberWithCode(verificationId, code, newPassword)
+                }
+            }
         }
 
         // Обработчик для повторной отправки кода
@@ -112,10 +133,38 @@ class PhoneAuthActivity : AppCompatActivity() {
             }
         }
 
-        // Кнопка возврата к вводу телефона
-        binding.textBackToPhone.setOnClickListener {
-            updateUI(ViewMode.PHONE_INPUT)
+        // Кнопка возврата на экран выбора способа восстановления
+        binding.textViewBack.setOnClickListener {
+            finish()
         }
+    }
+
+    private fun validatePassword(password: String) {
+        if (password.isEmpty()) {
+            binding.textInputLayoutNewPassword.error = null
+            return
+        }
+
+        val validationResult = PasswordValidator.validate(password)
+        if (validationResult == PasswordValidator.PasswordValidationResult.Valid) {
+            binding.textInputLayoutNewPassword.error = null
+            binding.textInputLayoutNewPassword.helperText = "Пароль соответствует требованиям"
+        } else {
+            val errorMessageId = PasswordValidator.getErrorMessageResId(validationResult)
+            binding.textInputLayoutNewPassword.error = getString(errorMessageId)
+        }
+    }
+
+    private fun setupPasswordRequirements() {
+        // Добавляем требования к паролю в виде bulleted list
+        val requirementsList = StringBuilder()
+        requirementsList.append(getString(R.string.password_requirements_title)).append("\n")
+
+        PasswordValidator.getPasswordRequirements().forEach { stringId ->
+            requirementsList.append("• ").append(getString(stringId)).append("\n")
+        }
+
+        binding.textPasswordRequirements.text = requirementsList.toString()
     }
 
     private fun startPhoneNumberVerification(phoneNumber: String) {
@@ -129,9 +178,9 @@ class PhoneAuthActivity : AppCompatActivity() {
         PhoneAuthProvider.verifyPhoneNumber(options)
     }
 
-    private fun verifyPhoneNumberWithCode(verificationId: String, code: String) {
+    private fun verifyPhoneNumberWithCode(verificationId: String, code: String, newPassword: String) {
         val credential = PhoneAuthProvider.getCredential(verificationId, code)
-        signInWithPhoneAuthCredential(credential)
+        signInWithPhoneAuthCredentialAndResetPassword(credential, newPassword)
     }
 
     private fun resendVerificationCode(
@@ -153,11 +202,17 @@ class PhoneAuthActivity : AppCompatActivity() {
         override fun onVerificationCompleted(credential: PhoneAuthCredential) {
             Log.d(TAG, "onVerificationCompleted:$credential")
 
-            // Автоматически получен код верификации (например, через SMS Retriever API)
-            binding.progressBar.visibility = View.VISIBLE
-            binding.buttonVerifyCode.isEnabled = false
+            // Для восстановления пароля требуется ввод нового пароля, поэтому
+            // мы не можем автоматически установить пароль без его ввода
+            binding.progressBar.visibility = View.GONE
 
-            signInWithPhoneAuthCredential(credential)
+            // Но можем автоматически заполнить поле кода
+            val code = credential.smsCode
+            if (!code.isNullOrEmpty()) {
+                binding.editTextCode.setText(code)
+                // Фокус на поле ввода пароля
+                binding.editTextNewPassword.requestFocus()
+            }
         }
 
         override fun onVerificationFailed(e: FirebaseException) {
@@ -165,39 +220,13 @@ class PhoneAuthActivity : AppCompatActivity() {
 
             binding.progressBar.visibility = View.GONE
             binding.buttonSendCode.isEnabled = true
-            binding.buttonVerifyCode.isEnabled = true
 
-            // Более детальная обработка ошибок
-            when (e) {
-                is FirebaseAuthInvalidCredentialsException -> {
-                    // Неверный формат номера телефона
-                    binding.editTextPhone.error = "Неверный формат номера телефона"
-                }
-                is FirebaseTooManyRequestsException -> {
-                    // Превышена квота SMS для проекта
-                    Toast.makeText(
-                        this@PhoneAuthActivity,
-                        "Превышен лимит SMS-сообщений. Попробуйте позже.",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-                is FirebaseAuthMissingActivityForRecaptchaException -> {
-                    // Проблема с reCAPTCHA проверкой
-                    Toast.makeText(
-                        this@PhoneAuthActivity,
-                        "Ошибка проверки reCAPTCHA.",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-                else -> {
-                    // Другие ошибки
-                    Toast.makeText(
-                        this@PhoneAuthActivity,
-                        getString(R.string.verification_failed, e.message),
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-            }
+            // Обработка ошибок верификации
+            Toast.makeText(
+                this@PhoneRecoveryActivity,
+                getString(R.string.verification_failed, e.message),
+                Toast.LENGTH_LONG
+            ).show()
 
             updateUI(ViewMode.PHONE_INPUT)
         }
@@ -209,16 +238,17 @@ class PhoneAuthActivity : AppCompatActivity() {
             Log.d(TAG, "onCodeSent:$verificationId")
 
             // Код отправлен, сохраняем verificationId и token для последующего использования
-            this@PhoneAuthActivity.verificationId = verificationId
-            this@PhoneAuthActivity.resendToken = token
+            this@PhoneRecoveryActivity.verificationId = verificationId
+            this@PhoneRecoveryActivity.resendToken = token
 
             Toast.makeText(
-                this@PhoneAuthActivity,
+                this@PhoneRecoveryActivity,
                 R.string.code_sent,
                 Toast.LENGTH_SHORT
             ).show()
 
             binding.progressBar.visibility = View.GONE
+            binding.buttonSendCode.isEnabled = true
 
             // Переходим к экрану ввода кода
             updateUI(ViewMode.CODE_VERIFICATION)
@@ -228,28 +258,19 @@ class PhoneAuthActivity : AppCompatActivity() {
         }
     }
 
-    private fun signInWithPhoneAuthCredential(credential: PhoneAuthCredential) {
+    private fun signInWithPhoneAuthCredentialAndResetPassword(credential: PhoneAuthCredential, newPassword: String) {
         auth.signInWithCredential(credential)
             .addOnCompleteListener(this) { task ->
-                binding.progressBar.visibility = View.GONE
-
                 if (task.isSuccessful) {
                     Log.d(TAG, "signInWithCredential:success")
 
-                    Toast.makeText(
-                        this,
-                        R.string.login_success,
-                        Toast.LENGTH_SHORT
-                    ).show()
-
-                    // Переходим на главный экран
-                    startActivity(Intent(this, MainActivity::class.java))
-                    finish()
+                    // После успешной аутентификации меняем пароль
+                    changePassword(newPassword)
                 } else {
                     Log.w(TAG, "signInWithCredential:failure", task.exception)
 
-                    // Включаем кнопку
-                    binding.buttonVerifyCode.isEnabled = true
+                    binding.progressBar.visibility = View.GONE
+                    binding.buttonResetPassword.isEnabled = true
 
                     // Обработка ошибок
                     if (task.exception is FirebaseAuthInvalidCredentialsException) {
@@ -265,15 +286,48 @@ class PhoneAuthActivity : AppCompatActivity() {
             }
     }
 
+    private fun changePassword(newPassword: String) {
+        val user = auth.currentUser
+        user?.updatePassword(newPassword)
+            ?.addOnCompleteListener { task ->
+                binding.progressBar.visibility = View.GONE
+
+                if (task.isSuccessful) {
+                    Toast.makeText(
+                        this,
+                        R.string.password_reset_success,
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    // Выходим из аккаунта (т.к. это восстановление пароля)
+                    auth.signOut()
+
+                    // Возвращаемся к экрану входа
+                    finish()
+                } else {
+                    binding.buttonResetPassword.isEnabled = true
+
+                    val message = task.exception?.message ?: "Неизвестная ошибка"
+                    Toast.makeText(
+                        this,
+                        getString(R.string.password_reset_error, message),
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+    }
+
     private fun updateUI(mode: ViewMode) {
         when (mode) {
             ViewMode.PHONE_INPUT -> {
                 binding.phoneInputLayout.visibility = View.VISIBLE
                 binding.codeVerificationLayout.visibility = View.GONE
+                binding.textViewBack.visibility = View.VISIBLE
             }
             ViewMode.CODE_VERIFICATION -> {
                 binding.phoneInputLayout.visibility = View.GONE
                 binding.codeVerificationLayout.visibility = View.VISIBLE
+                binding.textViewBack.visibility = View.GONE
 
                 // Показываем номер телефона, на который отправлен код
                 binding.textPhoneNumber.text = getString(R.string.code_sent_to, phoneNumber)
@@ -282,7 +336,7 @@ class PhoneAuthActivity : AppCompatActivity() {
     }
 
     private fun startResendTimer() {
-        // Сначала отменяем предыдущий таймер, если он существует
+        // Сначала отменим предыдущий таймер, если он существует
         countDownTimer?.cancel()
 
         countDownTimer = object : CountDownTimer(60000, 1000) {
@@ -302,11 +356,10 @@ class PhoneAuthActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        // Отменяем таймер при уничтожении активности
         countDownTimer?.cancel()
     }
 
     companion object {
-        private const val TAG = "PhoneAuthActivity"
+        private const val TAG = "PhoneRecoveryActivity"
     }
 }

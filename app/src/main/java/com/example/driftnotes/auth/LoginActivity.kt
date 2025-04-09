@@ -59,6 +59,11 @@ class LoginActivity : AppCompatActivity() {
         binding.textViewRegister.setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
         }
+
+        // Добавляем обработчик нажатия на ссылку "Забыли пароль?"
+        binding.textViewForgotPassword.setOnClickListener {
+            startActivity(Intent(this, PasswordRecoveryActivity::class.java))
+        }
     }
 
     private fun validatePassword(password: String) {

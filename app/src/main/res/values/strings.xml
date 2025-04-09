@@ -100,4 +100,24 @@
     <string name="password_requirement_no_special">Только буквы и цифры (без специальных символов)</string>
     <string name="password_requirements_title">Требования к паролю:</string>
 
+    <!-- Строки для восстановления пароля -->
+    <string name="password_recovery">Восстановление пароля</string>
+    <string name="forgot_password">Забыли пароль?</string>
+    <string name="recovery_description">Выберите способ восстановления пароля</string>
+    <string name="recovery_by_email">По электронной почте</string>
+    <string name="recovery_by_phone">По номеру телефона</string>
+    <string name="recovery_email_description">Введите адрес электронной почты, на который будет отправлена ссылка для сброса пароля</string>
+    <string name="recovery_phone_description">Введите номер телефона, на который будет отправлен код подтверждения</string>
+    <string name="send_reset_link">Отправить ссылку для сброса</string>
+    <string name="recovery_email_sent">Инструкция по сбросу пароля отправлена на %1$s</string>
+    <string name="recovery_email_error">Ошибка отправки: %1$s</string>
+    <string name="recovery_phone_verification_sent">Код подтверждения отправлен на %1$s</string>
+    <string name="recovery_phone_verification_error">Ошибка отправки: %1$s</string>
+    <string name="reset_password">Сбросить пароль</string>
+    <string name="enter_new_password">Введите новый пароль</string>
+    <string name="password_reset_success">Пароль успешно изменен</string>
+    <string name="password_reset_error">Ошибка изменения пароля: %1$s</string>
+    <string name="recovery_back">Назад к выбору способа восстановления</string>
+    <string name="back_to_login">Вернуться к входу</string>
+
 </resources>

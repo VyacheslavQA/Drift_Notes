@@ -62,6 +62,12 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+        <!-- Активности для восстановления пароля -->
+        <activity android:name=".auth.PasswordRecoveryActivity" />
+        <activity android:name=".auth.EmailRecoveryActivity" />
+        <activity android:name=".auth.PhoneRecoveryActivity" />
+
     </application>
 
 </manifest>
