@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Drift Notes</string>
 
@@ -88,5 +89,15 @@
     <string name="resend_code_timer">Повторная отправка через %1$d сек</string>
     <string name="back_to_phone">Изменить номер телефона</string>
     <string name="login_with_phone">Войти по номеру телефона</string>
+
+    <!-- Строки для валидации паролей -->
+    <string name="password_too_short">Пароль должен содержать не менее 8 символов</string>
+    <string name="password_no_uppercase">Пароль должен содержать хотя бы одну заглавную букву</string>
+    <string name="password_has_special_chars">Пароль не должен содержать специальных символов</string>
+    <string name="password_invalid">Пароль не соответствует требованиям безопасности</string>
+    <string name="password_requirement_length">Не менее 8 символов</string>
+    <string name="password_requirement_uppercase">Хотя бы одна заглавная буква</string>
+    <string name="password_requirement_no_special">Только буквы и цифры (без специальных символов)</string>
+    <string name="password_requirements_title">Требования к паролю:</string>
 
 </resources>

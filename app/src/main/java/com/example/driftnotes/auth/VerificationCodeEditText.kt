@@ -24,8 +24,8 @@ class VerificationCodeEditText : AppCompatEditText {
     private var spacing = DEFAULT_SPACING
     private var charSize = DEFAULT_CHAR_SIZE
     private var codeLength = DEFAULT_CODE_LENGTH
-    private var lineColor = ContextCompat.getColor(context, R.color.design_default_color_primary)
-    private var lineSelectedColor = ContextCompat.getColor(context, R.color.purple_500)
+    private var lineColor = ContextCompat.getColor(context, R.color.purple_500)
+    private var lineSelectedColor = ContextCompat.getColor(context, R.color.purple_700)
 
     private val textRect = Rect()
     private val paint = Paint().apply {
@@ -110,10 +110,11 @@ class VerificationCodeEditText : AppCompatEditText {
                 val textWidth = paint.measureText(character)
                 val textHeight = textRect.height()
 
+                // Вот здесь проблема - нужно преобразовать Int в Float
                 canvas.drawText(
                     character,
-                    left + (cellWidth - textWidth) / 2,
-                    top + (charSize + textHeight) / 2,
+                    (left + (cellWidth - textWidth) / 2).toFloat(),  // Преобразовать Int в Float
+                    (top + (charSize + textHeight) / 2).toFloat(),   // Преобразовать Int в Float
                     Paint().apply {
                         color = currentTextColor
                         textSize = this@VerificationCodeEditText.textSize
