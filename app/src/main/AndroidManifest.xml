@@ -12,8 +12,10 @@
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
 
     <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.telephony" android:required="false" />
 
     <application
+        android:name="com.example.driftnotes.DriftNotesApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -30,7 +32,7 @@
 
         <!-- Активность приветствия -->
         <activity
-            android:name=".WelcomeActivity"
+            android:name="com.example.driftnotes.WelcomeActivity"
             android:exported="true"
             android:theme="@style/Theme.DriftNotes.NoActionBar">
             <intent-filter>
@@ -40,19 +42,19 @@
         </activity>
 
         <activity
-            android:name=".MainActivity"
+            android:name="com.example.driftnotes.MainActivity"
             android:exported="false">
         </activity>
 
         <!-- Активность для выбора метода входа -->
-        <activity android:name=".auth.AuthMethodsActivity" />
+        <activity android:name="com.example.driftnotes.auth.AuthMethodsActivity" />
 
-        <activity android:name=".auth.LoginActivity" />
-        <activity android:name=".auth.RegisterActivity" />
-        <activity android:name=".auth.PhoneAuthActivity" />
-        <activity android:name=".fishing.AddFishingNoteActivity" />
-        <activity android:name=".fishing.FishingNoteDetailActivity" />
-        <activity android:name=".maps.MapActivity" android:label="@string/select_location" />
+        <activity android:name="com.example.driftnotes.auth.LoginActivity" />
+        <activity android:name="com.example.driftnotes.auth.RegisterActivity" />
+        <activity android:name="com.example.driftnotes.auth.PhoneAuthActivity" />
+        <activity android:name="com.example.driftnotes.fishing.AddFishingNoteActivity" />
+        <activity android:name="com.example.driftnotes.fishing.FishingNoteDetailActivity" />
+        <activity android:name="com.example.driftnotes.maps.MapActivity" android:label="@string/select_location" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -65,9 +67,9 @@
         </provider>
 
         <!-- Активности для восстановления пароля -->
-        <activity android:name=".auth.PasswordRecoveryActivity" />
-        <activity android:name=".auth.EmailRecoveryActivity" />
-        <activity android:name=".auth.PhoneRecoveryActivity" />
+        <activity android:name="com.example.driftnotes.auth.PasswordRecoveryActivity" />
+        <activity android:name="com.example.driftnotes.auth.EmailRecoveryActivity" />
+        <activity android:name="com.example.driftnotes.auth.PhoneRecoveryActivity" />
 
     </application>
 
