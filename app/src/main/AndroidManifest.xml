@@ -28,7 +28,7 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyA-test-key-replace-with-your-real-key" />
+            android:value="AIzaSyBqUt38wEY9SHAQo6mCyG7ORDCPQgORlBA" />
 
         <!-- Активность приветствия -->
         <activity

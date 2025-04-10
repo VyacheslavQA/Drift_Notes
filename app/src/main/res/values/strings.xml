@@ -145,4 +145,9 @@
     <!-- Кнопка для просмотра места на карте -->
     <string name="view_on_map">Показать на карте</string>
     <string name="no_location_data">Данные о местоположении отсутствуют</string>
+
+    <!-- Новые строки для типов карты -->
+    <string name="map_type_toggle">Переключить тип карты</string>
+    <string name="map_type_normal">Обычная карта</string>
+    <string name="map_type_satellite">Спутниковая карта</string>
 </resources>

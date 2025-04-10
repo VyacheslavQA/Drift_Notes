@@ -39,6 +39,9 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private val LOCATION_PERMISSION_REQUEST_CODE = 1001
 
+    // Переменная для отслеживания текущего типа карты
+    private var currentMapType = GoogleMap.MAP_TYPE_NORMAL
+
     // Новые переменные для режима просмотра
     private var isViewOnlyMode = false
     private var viewLatitude = 0.0
@@ -75,6 +78,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         // Настраиваем слушатели, только если не в режиме просмотра
+        binding.fabMapType.setOnClickListener {
+            toggleMapType()
+        }
+
         if (!isViewOnlyMode) {
             binding.fabMyLocation.setOnClickListener {
                 checkLocationPermissionAndGetLocation()
@@ -96,6 +103,12 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
         // Настраиваем карту
         googleMap.uiSettings.isZoomControlsEnabled = true
+        // Улучшаем юзабилити карты
+        googleMap.uiSettings.isCompassEnabled = true
+        googleMap.uiSettings.isMapToolbarEnabled = true
+
+        // Устанавливаем тип карты по умолчанию
+        googleMap.mapType = currentMapType
 
         if (isViewOnlyMode) {
             // В режиме просмотра сразу показываем место с заголовком
@@ -116,6 +129,25 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
             // Проверяем разрешение на местоположение и пытаемся показать текущее местоположение
             checkLocationPermissionAndGetLocation()
+        }
+    }
+
+    private fun toggleMapType() {
+        currentMapType = if (currentMapType == GoogleMap.MAP_TYPE_NORMAL) {
+            // Переключаем на спутник
+            GoogleMap.MAP_TYPE_HYBRID
+        } else {
+            // Переключаем на обычную карту
+            GoogleMap.MAP_TYPE_NORMAL
+        }
+
+        // Применяем новый тип карты
+        if (::googleMap.isInitialized) {
+            googleMap.mapType = currentMapType
+            // Показываем уведомление о смене типа карты
+            val mapTypeName = if (currentMapType == GoogleMap.MAP_TYPE_NORMAL)
+                getString(R.string.map_type_normal) else getString(R.string.map_type_satellite)
+            Toast.makeText(this, mapTypeName, Toast.LENGTH_SHORT).show()
         }
     }
 
