@@ -79,7 +79,7 @@ app/src/main/res/values/secrets.xml
 *~
 
 # Конкретные большие файлы
-app/src/main/res/drawable/fishing_background.jpg
+app/src/main/res/drawable/fishing_background.png
 
 # Большие изображения в высоком разрешении
 app/src/main/res/drawable-xxxhdpi/
