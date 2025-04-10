@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -38,11 +39,28 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private val LOCATION_PERMISSION_REQUEST_CODE = 1001
 
+    // Новые переменные для режима просмотра
+    private var isViewOnlyMode = false
+    private var viewLatitude = 0.0
+    private var viewLongitude = 0.0
+    private var viewTitle = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d("MapActivity", "onCreate: Starting MapActivity")
         binding = ActivityMapBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Проверяем режим просмотра
+        isViewOnlyMode = intent.getBooleanExtra("view_only", false)
+        if (isViewOnlyMode) {
+            viewLatitude = intent.getDoubleExtra("latitude", 0.0)
+            viewLongitude = intent.getDoubleExtra("longitude", 0.0)
+            viewTitle = intent.getStringExtra("title") ?: ""
+
+            // В режиме просмотра скрываем нижнюю панель с выбором местоположения
+            binding.bottomPanel.visibility = View.GONE
+        }
 
         try {
             // Получаем SupportMapFragment и запрашиваем уведомление при готовности карты
@@ -56,17 +74,19 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        // Настраиваем слушатели
-        binding.fabMyLocation.setOnClickListener {
-            checkLocationPermissionAndGetLocation()
-        }
+        // Настраиваем слушатели, только если не в режиме просмотра
+        if (!isViewOnlyMode) {
+            binding.fabMyLocation.setOnClickListener {
+                checkLocationPermissionAndGetLocation()
+            }
 
-        binding.fabSearch.setOnClickListener {
-            showSearchDialog()
-        }
+            binding.fabSearch.setOnClickListener {
+                showSearchDialog()
+            }
 
-        binding.buttonConfirmLocation.setOnClickListener {
-            confirmSelectedLocation()
+            binding.buttonConfirmLocation.setOnClickListener {
+                confirmSelectedLocation()
+            }
         }
     }
 
@@ -77,14 +97,26 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         // Настраиваем карту
         googleMap.uiSettings.isZoomControlsEnabled = true
 
-        // Обработка нажатия на карту
-        googleMap.setOnMapClickListener { latLng ->
-            Log.d("MapActivity", "Map clicked at lat: ${latLng.latitude}, lng: ${latLng.longitude}")
-            updateSelectedLocation(latLng)
-        }
+        if (isViewOnlyMode) {
+            // В режиме просмотра сразу показываем место с заголовком
+            val location = LatLng(viewLatitude, viewLongitude)
+            currentMarker = googleMap.addMarker(
+                MarkerOptions()
+                    .position(location)
+                    .title(viewTitle)
+            )
+            currentMarker?.showInfoWindow()
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15f))
+        } else {
+            // В обычном режиме позволяем выбирать место на карте
+            googleMap.setOnMapClickListener { latLng ->
+                Log.d("MapActivity", "Map clicked at lat: ${latLng.latitude}, lng: ${latLng.longitude}")
+                updateSelectedLocation(latLng)
+            }
 
-        // Проверяем разрешение на местоположение и пытаемся показать текущее местоположение
-        checkLocationPermissionAndGetLocation()
+            // Проверяем разрешение на местоположение и пытаемся показать текущее местоположение
+            checkLocationPermissionAndGetLocation()
+        }
     }
 
     private fun checkLocationPermissionAndGetLocation() {
@@ -118,7 +150,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
                     googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 12f))
 
                     // Если еще не выбрана локация, устанавливаем маркер на текущее местоположение
-                    if (selectedLatLng == null) {
+                    if (selectedLatLng == null && !isViewOnlyMode) {
                         updateSelectedLocation(currentLatLng)
                     }
                 } ?: Log.d("MapActivity", "Last location is null")

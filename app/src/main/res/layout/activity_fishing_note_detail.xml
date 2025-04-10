@@ -34,6 +34,31 @@
             app:layout_constraintStart_toStartOf="parent"
             app:selectedDotColor="@color/white" />
 
+        <!-- Тип рыбалки -->
+        <TextView
+            android:id="@+id/textViewFishingTypeLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:text="@string/fishing_type"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/viewPagerPhotos" />
+
+        <TextView
+            android:id="@+id/textViewFishingType"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="16dp"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textViewFishingTypeLabel"
+            tools:text="Спиннинг" />
+
         <TextView
             android:id="@+id/textViewLocationLabel"
             android:layout_width="wrap_content"
@@ -43,7 +68,7 @@
             android:text="@string/location"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/viewPagerPhotos" />
+            app:layout_constraintTop_toBottomOf="@+id/textViewFishingType" />
 
         <TextView
             android:id="@+id/textViewLocation"
@@ -58,6 +83,17 @@
             app:layout_constraintTop_toBottomOf="@+id/textViewLocationLabel"
             tools:text="Река Волга, Самарская область" />
 
+        <!-- Кнопка для открытия карты -->
+        <Button
+            android:id="@+id/buttonViewOnMap"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/view_on_map"
+            app:icon="@android:drawable/ic_dialog_map"
+            app:layout_constraintStart_toStartOf="@+id/textViewLocation"
+            app:layout_constraintTop_toBottomOf="@+id/textViewLocation" />
+
         <TextView
             android:id="@+id/textViewDateLabel"
             android:layout_width="wrap_content"
@@ -67,7 +103,7 @@
             android:text="@string/date"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textViewLocation" />
+            app:layout_constraintTop_toBottomOf="@+id/buttonViewOnMap" />
 
         <TextView
             android:id="@+id/textViewDate"

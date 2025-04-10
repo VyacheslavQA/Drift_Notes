@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
@@ -28,7 +29,6 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import java.util.UUID
 
 class AddFishingNoteActivity : AppCompatActivity() {
 
@@ -49,6 +49,7 @@ class AddFishingNoteActivity : AppCompatActivity() {
 
     private var selectedLatitude: Double = 0.0
     private var selectedLongitude: Double = 0.0
+    private var selectedFishingType: String = ""
 
     private val galleryLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -84,6 +85,12 @@ class AddFishingNoteActivity : AppCompatActivity() {
         // Установка начальной даты (сегодня)
         updateDateDisplay()
 
+        // Инициализация выпадающего списка типов рыбалки
+        setupFishingTypeDropdown()
+
+        // Скрываем текст с координатами, пока они не выбраны
+        binding.textViewSelectedCoordinates.visibility = View.GONE
+
         // Обработчик выбора даты
         binding.editTextDate.setOnClickListener {
             showDatePicker()
@@ -104,10 +111,9 @@ class AddFishingNoteActivity : AppCompatActivity() {
             finish()
         }
 
-        // Обработчик выбора местоположения
-        binding.editTextLocation.setOnClickListener {
-            val intent = Intent(this, MapActivity::class.java)
-            startActivityForResult(intent, MAP_REQUEST_CODE)
+        // Обработчик нажатия на кнопку открытия карты
+        binding.buttonOpenMap.setOnClickListener {
+            openMap()
         }
 
         // Установка системной иконки для кнопки загрузки погоды
@@ -119,6 +125,38 @@ class AddFishingNoteActivity : AppCompatActivity() {
         binding.buttonLoadWeather.setOnClickListener {
             loadWeatherData()
         }
+    }
+
+    private fun setupFishingTypeDropdown() {
+        // Создаем список типов рыбалки из строковых ресурсов
+        val fishingTypes = listOf(
+            getString(R.string.fishing_type_carp),    // Добавлена карповая рыбалка
+            getString(R.string.fishing_type_spinning),
+            getString(R.string.fishing_type_feeder),
+            getString(R.string.fishing_type_float),
+            getString(R.string.fishing_type_winter),
+            getString(R.string.fishing_type_flyfishing),
+            getString(R.string.fishing_type_trolling),
+            getString(R.string.fishing_type_other)
+        )
+
+        // Создаем адаптер для выпадающего списка
+        val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, fishingTypes)
+        binding.dropdownFishingType.setAdapter(adapter)
+
+        // Устанавливаем слушатель выбора
+        binding.dropdownFishingType.setOnItemClickListener { _, _, position, _ ->
+            selectedFishingType = fishingTypes[position]
+        }
+
+        // Устанавливаем значение по умолчанию
+        binding.dropdownFishingType.setText(fishingTypes[0], false)
+        selectedFishingType = fishingTypes[0]
+    }
+
+    private fun openMap() {
+        val intent = Intent(this, MapActivity::class.java)
+        startActivityForResult(intent, MAP_REQUEST_CODE)
     }
 
     private fun checkAndRequestPermissions() {
@@ -326,7 +364,7 @@ class AddFishingNoteActivity : AppCompatActivity() {
             return
         }
 
-        // Создаем объект записи о рыбалке с координатами и погодой
+        // Создаем объект записи о рыбалке с координатами, погодой и типом рыбалки
         val fishingNote = FishingNote(
             userId = userId,
             location = binding.editTextLocation.text.toString().trim(),
@@ -336,6 +374,7 @@ class AddFishingNoteActivity : AppCompatActivity() {
             tackle = binding.editTextTackle.text.toString().trim(),
             notes = binding.editTextNotes.text.toString().trim(),
             photoUrls = photoUrls,
+            fishingType = selectedFishingType,  // Сохраняем выбранный тип рыбалки
             weather = weatherData // Добавляем погодные данные
         )
 
@@ -365,7 +404,20 @@ class AddFishingNoteActivity : AppCompatActivity() {
                 val latitude = it.getDoubleExtra("latitude", 0.0)
                 val longitude = it.getDoubleExtra("longitude", 0.0)
 
-                binding.editTextLocation.setText(locationName)
+                // Показываем и заполняем текстовое поле с координатами
+                binding.textViewSelectedCoordinates.visibility = View.VISIBLE
+                binding.textViewSelectedCoordinates.text = getString(
+                    R.string.coordinates_format,
+                    latitude,
+                    longitude
+                )
+
+                // Теперь пользователь может ввести название места сам
+                // или использовать предложенное с карты
+                if (binding.editTextLocation.text.toString().isEmpty()) {
+                    binding.editTextLocation.setText(locationName)
+                }
+
                 selectedLatitude = latitude
                 selectedLongitude = longitude
 

@@ -1,5 +1,6 @@
 package com.example.driftnotes.fishing
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -7,9 +8,9 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.viewpager2.widget.ViewPager2
 import com.example.driftnotes.R
 import com.example.driftnotes.databinding.ActivityFishingNoteDetailBinding
+import com.example.driftnotes.maps.MapActivity
 import com.example.driftnotes.models.FishingNote
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -52,8 +53,28 @@ class FishingNoteDetailActivity : AppCompatActivity() {
         // Настраиваем индикатор страниц
         binding.dotsIndicator.attachTo(binding.viewPagerPhotos)
 
+        // Устанавливаем обработчик для кнопки просмотра на карте
+        binding.buttonViewOnMap.setOnClickListener {
+            openLocationOnMap()
+        }
+
         // Загружаем данные записи
         loadNoteData()
+    }
+
+    private fun openLocationOnMap() {
+        currentNote?.let { note ->
+            if (note.latitude != 0.0 && note.longitude != 0.0) {
+                val intent = Intent(this, MapActivity::class.java)
+                intent.putExtra("view_only", true)
+                intent.putExtra("latitude", note.latitude)
+                intent.putExtra("longitude", note.longitude)
+                intent.putExtra("title", note.location)
+                startActivity(intent)
+            } else {
+                Toast.makeText(this, R.string.no_location_data, Toast.LENGTH_SHORT).show()
+            }
+        } ?: Toast.makeText(this, R.string.no_location_data, Toast.LENGTH_SHORT).show()
     }
 
     private fun loadNoteData() {
@@ -79,10 +100,23 @@ class FishingNoteDetailActivity : AppCompatActivity() {
 
     private fun displayNoteData() {
         currentNote?.let { note ->
+            // Отображаем тип рыбалки
+            if (note.fishingType.isNotEmpty()) {
+                binding.textViewFishingTypeLabel.visibility = View.VISIBLE
+                binding.textViewFishingType.visibility = View.VISIBLE
+                binding.textViewFishingType.text = note.fishingType
+            } else {
+                binding.textViewFishingTypeLabel.visibility = View.GONE
+                binding.textViewFishingType.visibility = View.GONE
+            }
+
             binding.textViewLocation.text = note.location
             binding.textViewDate.text = dateFormat.format(note.date)
             binding.textViewTackle.text = note.tackle
             binding.textViewNotes.text = note.notes
+
+            // Включаем/отключаем кнопку просмотра на карте в зависимости от наличия координат
+            binding.buttonViewOnMap.isEnabled = note.latitude != 0.0 && note.longitude != 0.0
 
             // Отображаем погоду, если она доступна
             if (note.weather != null) {

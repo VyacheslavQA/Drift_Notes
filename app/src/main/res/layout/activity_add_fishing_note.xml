@@ -23,14 +23,35 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <!-- Выпадающий список типов рыбалки -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textInputLayoutFishingType"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:hint="@string/fishing_type"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textViewTitle">
+
+            <AutoCompleteTextView
+                android:id="@+id/dropdownFishingType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Раздел локации с кнопкой открытия карты -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/textInputLayoutLocation"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintEnd_toStartOf="@+id/buttonOpenMap"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textViewTitle">
+            app:layout_constraintTop_toBottomOf="@+id/textInputLayoutFishingType">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/editTextLocation"
@@ -40,6 +61,30 @@
                 android:inputType="text" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Кнопка открытия карты -->
+        <Button
+            android:id="@+id/buttonOpenMap"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/open_map"
+            app:icon="@android:drawable/ic_dialog_map"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/textInputLayoutLocation"
+            app:layout_constraintBottom_toBottomOf="@+id/textInputLayoutLocation" />
+
+        <!-- Отображение выбранных координат -->
+        <TextView
+            android:id="@+id/textViewSelectedCoordinates"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textSize="12sp"
+            android:textColor="@android:color/darker_gray"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textInputLayoutLocation"
+            tools:text="Координаты: 55.755826, 37.617300" />
+
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/textInputLayoutDate"
             android:layout_width="0dp"
@@ -47,7 +92,7 @@
             android:layout_marginTop="16dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textInputLayoutLocation">
+            app:layout_constraintTop_toBottomOf="@+id/textViewSelectedCoordinates">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/editTextDate"

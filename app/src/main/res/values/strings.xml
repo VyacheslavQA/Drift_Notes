@@ -130,4 +130,19 @@
     <string name="password_reset_error">Ошибка изменения пароля: %1$s</string>
     <string name="recovery_back">Назад к выбору способа восстановления</string>
     <string name="back_to_login">Вернуться к входу</string>
+    <string name="open_map">Карта</string>
+    <!-- Строки для типов рыбалки -->
+    <string name="fishing_type">Тип рыбалки</string>
+    <string name="fishing_type_carp">Карповая</string>
+    <string name="fishing_type_spinning">Спиннинг</string>
+    <string name="fishing_type_feeder">Фидер</string>
+    <string name="fishing_type_float">Поплавочная</string>
+    <string name="fishing_type_winter">Зимняя рыбалка</string>
+    <string name="fishing_type_flyfishing">Нахлыст</string>
+    <string name="fishing_type_trolling">Троллинг</string>
+    <string name="fishing_type_other">Другое</string>
+
+    <!-- Кнопка для просмотра места на карте -->
+    <string name="view_on_map">Показать на карте</string>
+    <string name="no_location_data">Данные о местоположении отсутствуют</string>
 </resources>

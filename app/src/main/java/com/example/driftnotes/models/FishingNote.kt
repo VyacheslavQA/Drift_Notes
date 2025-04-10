@@ -12,7 +12,8 @@ data class FishingNote(
     val tackle: String = "",
     val notes: String = "",
     val photoUrls: List<String> = listOf(),
+    val fishingType: String = "",  // Новое поле для типа рыбалки
 
-    // Добавляем информацию о погоде
+    // Информация о погоде
     val weather: FishingWeather? = null
 )
