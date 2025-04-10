@@ -107,6 +107,7 @@ app/src/main/res/drawable-xxhdpi/
 !**/drawable-mdpi/*.png
 !**/drawable-hdpi/*.png
 !**/drawable-xhdpi/*.png
+!**/drawable/fishing_background.png
 
 # Database files
 *.db
