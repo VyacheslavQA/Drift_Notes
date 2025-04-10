@@ -9,7 +9,6 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.CAMERA" />
-    <!-- Добавляем разрешение на чтение SMS для автоматического чтения кода верификации -->
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
 
     <uses-feature android:name="android.hardware.camera" android:required="false" />
@@ -27,7 +26,7 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="@string/google_maps_key" />
+            android:value="AIzaSyA-test-key-replace-with-your-real-key" />
 
         <!-- Активность приветствия -->
         <activity
@@ -45,9 +44,11 @@
             android:exported="false">
         </activity>
 
+        <!-- Активность для выбора метода входа -->
+        <activity android:name=".auth.AuthMethodsActivity" />
+
         <activity android:name=".auth.LoginActivity" />
         <activity android:name=".auth.RegisterActivity" />
-        <!-- Добавляем новую активность для аутентификации по телефону -->
         <activity android:name=".auth.PhoneAuthActivity" />
         <activity android:name=".fishing.AddFishingNoteActivity" />
         <activity android:name=".fishing.FishingNoteDetailActivity" />

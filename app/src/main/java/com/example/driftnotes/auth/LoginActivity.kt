@@ -24,6 +24,10 @@ class LoginActivity : AppCompatActivity() {
 
         auth = FirebaseAuth.getInstance()
 
+        // Добавляем кнопку "Назад" в ActionBar
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.title = getString(R.string.login_with_email)
+
         // Добавляем TextWatcher для валидации пароля в режиме реального времени
         binding.editTextPassword.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -58,6 +62,7 @@ class LoginActivity : AppCompatActivity() {
         // Обработка нажатия на ссылку регистрации
         binding.textViewRegister.setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
+            finish()
         }
 
         // Добавляем обработчик нажатия на ссылку "Забыли пароль?"
@@ -108,5 +113,10 @@ class LoginActivity : AppCompatActivity() {
                     ).show()
                 }
             }
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressed()
+        return true
     }
 }

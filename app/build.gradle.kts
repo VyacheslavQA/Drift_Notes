@@ -22,27 +22,22 @@ android {
 
     buildFeatures {
         viewBinding = true
-        // Включаем поддержку Compose
         compose = true
-        // Включаем BuildConfig для хранения API ключей
         buildConfig = true
     }
 
-    // Настраиваем Compose для работы с Kotlin 1.9.0
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.0"  // Эта версия совместима с Kotlin 1.9.0
+        kotlinCompilerExtensionVersion = "1.5.0"
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            // Добавляем API ключ Яндекс.Погоды для релизной сборки
             buildConfigField("String", "YANDEX_WEATHER_API_KEY", "\"fb7df948-f5c4-463c-b76d-d69dec8105dc\"")
         }
 
         debug {
-            // Добавляем API ключ Яндекс.Погоды для отладочной сборки
             buildConfigField("String", "YANDEX_WEATHER_API_KEY", "\"fb7df948-f5c4-463c-b76d-d69dec8105dc\"")
         }
     }
@@ -60,8 +55,8 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("com.tbuonomo:dotsindicator:5.1.0")
 
-    // Зависимости Compose, версии совместимые с Kotlin 1.9.0
-    val composeBomVersion = "2023.08.00"  // BOM версия совместимая с Compose Compiler 1.5.0
+    // Зависимости Compose
+    val composeBomVersion = "2023.08.00"
     implementation(platform("androidx.compose:compose-bom:$composeBomVersion"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
@@ -79,6 +74,9 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-database")
     implementation("com.google.firebase:firebase-storage")
+
+    // Google Auth - нужен для Firebase Auth с Google
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
 
     // Тестирование
     testImplementation("junit:junit:4.13.2")
@@ -98,12 +96,4 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
-
-    // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
-    implementation("com.google.firebase:firebase-analytics")
-    implementation("com.google.firebase:firebase-auth") // Уже присутствует для аутентификации по email
-    implementation("com.google.firebase:firebase-firestore")
-    implementation("com.google.firebase:firebase-database")
-    implementation("com.google.firebase:firebase-storage")
 }

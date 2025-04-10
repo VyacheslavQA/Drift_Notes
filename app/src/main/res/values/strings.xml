@@ -16,6 +16,18 @@
     <string name="no_account">Еще нет аккаунта? Зарегистрироваться</string>
     <string name="has_account">Уже есть аккаунт? Войти</string>
 
+    <!-- Методы аутентификации и выбор способа входа -->
+    <string name="choose_login_method">Выберите способ входа</string>
+    <string name="login_methods_description">Выберите удобный для вас способ входа в приложение</string>
+    <string name="login_with_email">Войти с помощью email</string>
+    <string name="login_with_phone">Войти по номеру телефона</string>
+    <string name="login_with_google">Войти через Google</string>
+    <string name="login_anonymously">Войти анонимно</string>
+    <string name="back">Назад</string>
+    <string name="social_auth_error">Ошибка аутентификации: %1$s</string>
+    <string name="google_auth_cancelled">Аутентификация Google была отменена</string>
+    <string name="anonymous_login_success">Вы вошли анонимно</string>
+
     <!-- Fishing notes strings -->
     <string name="add_note">Добавить запись</string>
     <string name="edit_note">Редактировать запись</string>
@@ -88,7 +100,6 @@
     <string name="resend_code">Отправить код повторно</string>
     <string name="resend_code_timer">Повторная отправка через %1$d сек</string>
     <string name="back_to_phone">Изменить номер телефона</string>
-    <string name="login_with_phone">Войти по номеру телефона</string>
 
     <!-- Строки для валидации паролей -->
     <string name="password_too_short">Пароль должен содержать не менее 8 символов</string>
@@ -119,5 +130,4 @@
     <string name="password_reset_error">Ошибка изменения пароля: %1$s</string>
     <string name="recovery_back">Назад к выбору способа восстановления</string>
     <string name="back_to_login">Вернуться к входу</string>
-
 </resources>

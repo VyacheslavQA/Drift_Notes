@@ -41,6 +41,10 @@ class PhoneAuthActivity : AppCompatActivity() {
         binding = ActivityPhoneAuthBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Добавляем кнопку назад в ActionBar
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.title = getString(R.string.phone_auth_title)
+
         auth = FirebaseAuth.getInstance()
 
         // Настройка тестового режима для аутентификации по телефону
@@ -304,6 +308,11 @@ class PhoneAuthActivity : AppCompatActivity() {
         super.onDestroy()
         // Отменяем таймер при уничтожении активности
         countDownTimer?.cancel()
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressed()
+        return true
     }
 
     companion object {
