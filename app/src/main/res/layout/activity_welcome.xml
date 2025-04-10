@@ -43,7 +43,11 @@
         android:fontFamily="sans-serif-light"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:autoSizeTextType="uniform"
+        android:autoSizeMinTextSize="36sp"
+        android:autoSizeMaxTextSize="54sp"
+        android:autoSizeStepGranularity="2sp" />
 
     <TextView
         android:id="@+id/textSubtitle1"
@@ -56,7 +60,11 @@
         android:fontFamily="sans-serif-light"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textAppName" />
+        app:layout_constraintTop_toBottomOf="@+id/textAppName"
+        android:autoSizeTextType="uniform"
+        android:autoSizeMinTextSize="16sp"
+        android:autoSizeMaxTextSize="20sp"
+        android:autoSizeStepGranularity="1sp" />
 
     <TextView
         android:id="@+id/textSubtitle2"
@@ -69,7 +77,11 @@
         android:fontFamily="sans-serif-light"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textSubtitle1" />
+        app:layout_constraintTop_toBottomOf="@+id/textSubtitle1"
+        android:autoSizeTextType="uniform"
+        android:autoSizeMinTextSize="16sp"
+        android:autoSizeMaxTextSize="20sp"
+        android:autoSizeStepGranularity="1sp" />
 
     <!-- Кнопки для входа и регистрации -->
     <com.google.android.material.button.MaterialButton
@@ -81,7 +93,7 @@
         android:layout_marginBottom="24dp"
         android:text="@string/login"
         android:textColor="#FFFFFF"
-        android:textSize="18sp"
+        android:textSize="16sp"
         app:cornerRadius="28dp"
         app:backgroundTint="#AA1E3C4B"
         app:layout_constraintBottom_toTopOf="@+id/buttonPhoneLogin"
@@ -98,7 +110,7 @@
         android:layout_marginBottom="24dp"
         android:text="@string/login_with_phone"
         android:textColor="#FFFFFF"
-        android:textSize="18sp"
+        android:textSize="14sp"
         app:cornerRadius="28dp"
         app:backgroundTint="#AA1E3C4B"
         app:icon="@android:drawable/ic_menu_call"
@@ -116,7 +128,7 @@
         android:layout_marginBottom="48dp"
         android:text="@string/register"
         android:textColor="#FFFFFF"
-        android:textSize="18sp"
+        android:textSize="16sp"
         app:cornerRadius="28dp"
         app:backgroundTint="#661E3C4B"
         app:strokeColor="#FFFFFF"
