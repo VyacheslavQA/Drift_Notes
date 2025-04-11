@@ -130,7 +130,7 @@ class AddFishingNoteActivity : AppCompatActivity() {
     private fun setupFishingTypeDropdown() {
         // Создаем список типов рыбалки из строковых ресурсов
         val fishingTypes = listOf(
-            getString(R.string.fishing_type_carp),    // Добавлена карповая рыбалка
+            getString(R.string.fishing_type_carp),    // Карповая рыбалка
             getString(R.string.fishing_type_spinning),
             getString(R.string.fishing_type_feeder),
             getString(R.string.fishing_type_float),
@@ -149,9 +149,7 @@ class AddFishingNoteActivity : AppCompatActivity() {
             selectedFishingType = fishingTypes[position]
         }
 
-        // Устанавливаем значение по умолчанию
-        binding.dropdownFishingType.setText(fishingTypes[0], false)
-        selectedFishingType = fishingTypes[0]
+        // НЕ устанавливаем значение по умолчанию, теперь будет показан hint
     }
 
     private fun openMap() {
@@ -277,7 +275,6 @@ class AddFishingNoteActivity : AppCompatActivity() {
         if (selectedLatitude == 0.0 && selectedLongitude == 0.0) {
             Toast.makeText(this, R.string.weather_need_location, Toast.LENGTH_SHORT).show()
             return
-            Toast.makeText(this, "Координаты: $selectedLatitude, $selectedLongitude", Toast.LENGTH_SHORT).show()
         }
 
         binding.progressBarWeather.visibility = View.VISIBLE
@@ -308,6 +305,12 @@ class AddFishingNoteActivity : AppCompatActivity() {
         val location = binding.editTextLocation.text.toString().trim()
         val tackle = binding.editTextTackle.text.toString().trim()
         val notes = binding.editTextNotes.text.toString().trim()
+
+        // Проверяем, что пользователь выбрал тип рыбалки
+        if (selectedFishingType.isEmpty()) {
+            Toast.makeText(this, "Выберите тип рыбалки", Toast.LENGTH_SHORT).show()
+            return
+        }
 
         if (location.isEmpty() || tackle.isEmpty()) {
             Toast.makeText(this, "Пожалуйста, заполните обязательные поля", Toast.LENGTH_SHORT).show()

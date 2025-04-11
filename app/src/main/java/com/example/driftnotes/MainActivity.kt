@@ -8,6 +8,7 @@ import android.view.MenuItem
 import com.example.driftnotes.databinding.ActivityMainBinding
 import com.example.driftnotes.utils.FirebaseManager
 import com.example.driftnotes.auth.LoginActivity
+import com.example.driftnotes.fishing.AddFishingNoteActivity
 
 class MainActivity : AppCompatActivity() {
 
@@ -34,13 +35,21 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupUI() {
-        // Здесь можно добавить элементы главного экрана (например, карту активности,
-        // последние записи, статистику и т.д.)
+        // Добавляем плавающую кнопку для быстрого добавления заметки
+        val fabAddNote = binding.root.findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabAddNote)
+        fabAddNote?.setOnClickListener {
+            startActivity(Intent(this, AddFishingNoteActivity::class.java))
+        }
 
-        // Если в макете есть кнопка, настраиваем её
-        binding.root.findViewById<android.widget.Button>(R.id.buttonMyNotes)?.setOnClickListener {
+        // Если нужна кнопка для перехода к списку заметок, но в разметке её нет,
+        // можете добавить её в activity_main.xml и раскомментировать эти строки:
+
+        /*
+        val buttonMyNotes = binding.root.findViewById<android.widget.Button>(R.id.buttonMyNotes)
+        buttonMyNotes?.setOnClickListener {
             startActivity(Intent(this, NotesActivity::class.java))
         }
+        */
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -50,6 +59,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
+            // Проверьте, что в вашем main_menu.xml есть пункт с id="menu_my_notes"
+            // Если нет, то замените на правильный id или добавьте его в меню
             R.id.menu_my_notes -> {
                 startActivity(Intent(this, NotesActivity::class.java))
                 true
