@@ -4,103 +4,106 @@ import com.google.gson.annotations.SerializedName
 import java.util.Date
 
 /**
- * Модель ответа Яндекс.Погоды
+ * Модель ответа Open Meteo API
  */
-data class YandexWeatherResponse(
-    @SerializedName("now") val timestamp: Long,
-    @SerializedName("fact") val fact: WeatherFact,
-    @SerializedName("info") val info: WeatherInfo
+data class OpenMeteoResponse(
+    val latitude: Double,
+    val longitude: Double,
+    val timezone: String,
+    @SerializedName("timezone_abbreviation") val timezoneAbbreviation: String,
+    val current: CurrentWeather,
+    val daily: DailyWeather
 )
 
 /**
- * Модель фактической погоды
+ * Модель текущих погодных условий
  */
-data class WeatherFact(
-    @SerializedName("temp") val temperature: Int, // Температура в градусах Цельсия
-    @SerializedName("feels_like") val feelsLike: Int, // Ощущаемая температура
-    @SerializedName("icon") val icon: String, // Код иконки погоды
-    @SerializedName("condition") val condition: String, // Код погодного явления
-    @SerializedName("wind_speed") val windSpeed: Double, // Скорость ветра (м/с)
-    @SerializedName("wind_dir") val windDirection: String, // Направление ветра
-    @SerializedName("pressure_mm") val pressureMm: Int, // Давление (в мм рт. ст.)
-    @SerializedName("humidity") val humidity: Int, // Влажность воздуха (%)
-    @SerializedName("daytime") val daytime: String, // Светлое или темное время суток
-    @SerializedName("season") val season: String, // Время года в данном населенном пункте
-    @SerializedName("obs_time") val observationTime: Long // Время замера погодных данных
-) {
+data class CurrentWeather(
+    @SerializedName("time") val time: String,
+    @SerializedName("temperature_2m") val temperature: Double,
+    @SerializedName("relative_humidity_2m") val humidity: Int,
+    @SerializedName("apparent_temperature") val feelsLike: Double,
+    @SerializedName("is_day") val isDay: Int,
+    @SerializedName("precipitation") val precipitation: Double,
+    @SerializedName("rain") val rain: Double,
+    @SerializedName("weather_code") val weatherCode: Int,
+    @SerializedName("cloud_cover") val cloudCover: Int,
+    @SerializedName("pressure_msl") val pressure: Double,
+    @SerializedName("wind_speed_10m") val windSpeed: Double,
+    @SerializedName("wind_direction_10m") val windDirection: Int
+)
+
+/**
+ * Модель ежедневных погодных условий
+ */
+data class DailyWeather(
+    @SerializedName("time") val time: List<String>,
+    @SerializedName("temperature_2m_max") val temperatureMax: List<Double>,
+    @SerializedName("temperature_2m_min") val temperatureMin: List<Double>,
+    @SerializedName("sunrise") val sunrise: List<String>,
+    @SerializedName("sunset") val sunset: List<String>,
+    @SerializedName("uv_index_max") val uvIndexMax: List<Double>
+)
+
+/**
+ * Вспомогательный класс для работы с кодами погоды
+ */
+object WeatherCodeHelper {
     /**
-     * Получить удобочитаемое название погодного условия
+     * Получить описание погоды по коду
      */
-    fun getReadableCondition(): String {
-        return when (condition) {
-            "clear" -> "Ясно"
-            "partly-cloudy" -> "Малооблачно"
-            "cloudy" -> "Облачно с прояснениями"
-            "overcast" -> "Пасмурно"
-            "drizzle" -> "Морось"
-            "rain" -> "Дождь"
-            "heavy-rain" -> "Сильный дождь"
-            "showers" -> "Ливень"
-            "wet-snow" -> "Дождь со снегом"
-            "light-snow" -> "Небольшой снег"
-            "snow" -> "Снег"
-            "snow-showers" -> "Снегопад"
-            "hail" -> "Град"
-            "thunderstorm" -> "Гроза"
-            "thunderstorm-with-rain" -> "Дождь с грозой"
-            "thunderstorm-with-hail" -> "Гроза с градом"
-            else -> condition
+    fun getWeatherDescription(code: Int): String {
+        return when (code) {
+            0 -> "Ясно"
+            1, 2, 3 -> "Переменная облачность"
+            45, 48 -> "Туман"
+            51, 53, 55 -> "Морось"
+            56, 57 -> "Морось со снегом"
+            61, 63, 65 -> "Дождь"
+            66, 67 -> "Ледяной дождь"
+            71, 73, 75 -> "Снег"
+            77 -> "Снежные зерна"
+            80, 81, 82 -> "Ливень"
+            85, 86 -> "Снежный шквал"
+            95 -> "Гроза"
+            96, 99 -> "Гроза с градом"
+            else -> "Неизвестно"
         }
     }
 
     /**
-     * Получить читаемое направление ветра
+     * Получить направление ветра
      */
-    fun getReadableWindDirection(): String {
-        return when (windDirection) {
-            "nw" -> "СЗ"
-            "n" -> "С"
-            "ne" -> "СВ"
-            "e" -> "В"
-            "se" -> "ЮВ"
-            "s" -> "Ю"
-            "sw" -> "ЮЗ"
-            "w" -> "З"
-            "c" -> "Штиль"
-            else -> windDirection
+    fun getWindDirection(degrees: Int): String {
+        return when {
+            (degrees >= 337.5 || degrees < 22.5) -> "С"
+            (degrees >= 22.5 && degrees < 67.5) -> "СВ"
+            (degrees >= 67.5 && degrees < 112.5) -> "В"
+            (degrees >= 112.5 && degrees < 157.5) -> "ЮВ"
+            (degrees >= 157.5 && degrees < 202.5) -> "Ю"
+            (degrees >= 202.5 && degrees < 247.5) -> "ЮЗ"
+            (degrees >= 247.5 && degrees < 292.5) -> "З"
+            (degrees >= 292.5 && degrees < 337.5) -> "СЗ"
+            else -> "Неизвестно"
         }
-    }
-
-    /**
-     * Полный текст о погоде
-     */
-    fun getWeatherSummary(): String {
-        return "${getReadableCondition()}, ${temperature}°C, " +
-                "ощущается как ${feelsLike}°C\n" +
-                "Ветер: ${getReadableWindDirection()}, ${windSpeed} м/с\n" +
-                "Влажность: ${humidity}%, Давление: ${pressureMm} мм рт.ст."
     }
 }
-
-/**
- * Информация о геолокации
- */
-data class WeatherInfo(
-    @SerializedName("lat") val latitude: Double,
-    @SerializedName("lon") val longitude: Double,
-    @SerializedName("url") val url: String
-)
 
 /**
  * Модель для сохранения погодных данных в заметке о рыбалке
  */
 data class FishingWeather(
-    val temperature: Int = 0,
-    val condition: String = "",
+    val temperature: Double = 0.0,
+    val feelsLike: Double = 0.0,
+    val humidity: Int = 0,
+    val pressure: Double = 0.0,
     val windSpeed: Double = 0.0,
     val windDirection: String = "",
-    val humidity: Int = 0,
-    val pressure: Int = 0,
+    val weatherDescription: String = "",
+    val cloudCover: Int = 0,
+    val moonPhase: String = "",
     val observationTime: Date = Date(),
-    val weatherDescription: String = ""
+    val sunrise: String = "",
+    val sunset: String = "",
+    val isDay: Boolean = true
 )

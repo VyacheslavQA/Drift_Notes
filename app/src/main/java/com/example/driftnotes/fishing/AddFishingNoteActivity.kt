@@ -277,6 +277,7 @@ class AddFishingNoteActivity : AppCompatActivity() {
         if (selectedLatitude == 0.0 && selectedLongitude == 0.0) {
             Toast.makeText(this, R.string.weather_need_location, Toast.LENGTH_SHORT).show()
             return
+            Toast.makeText(this, "Координаты: $selectedLatitude, $selectedLongitude", Toast.LENGTH_SHORT).show()
         }
 
         binding.progressBarWeather.visibility = View.VISIBLE

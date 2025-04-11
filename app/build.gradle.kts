@@ -34,13 +34,10 @@ android {
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            // Используем прямое значение для BuildConfig вместо ссылки на ресурс
-            buildConfigField("String", "YANDEX_WEATHER_API_KEY", "\"YOUR_YANDEX_WEATHER_API_KEY\"")
         }
 
         debug {
-            // Используем прямое значение для BuildConfig вместо ссылки на ресурс
-            buildConfigField("String", "YANDEX_WEATHER_API_KEY", "\"YOUR_YANDEX_WEATHER_API_KEY\"")
+            // Для отладки
         }
     }
 
@@ -48,6 +45,7 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
 }
 
 dependencies {
