@@ -57,7 +57,10 @@
         <activity android:name="com.example.driftnotes.fishing.AddFishingNoteActivity" />
         <activity android:name="com.example.driftnotes.fishing.FishingNoteDetailActivity" />
         <activity android:name="com.example.driftnotes.maps.MapActivity" android:label="@string/select_location" />
-
+        <activity
+            android:name=".NotesActivity"
+            android:exported="false"
+            android:label="@string/my_notes" />
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.example.driftnotes.fileprovider"

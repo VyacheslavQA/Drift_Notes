@@ -49,7 +49,7 @@
 
     <!-- Menu strings -->
     <string name="logout">Выйти</string>
-    <string name="my_notes">Мои записи</string>
+    <string name="my_notes">Мои заметки</string>
     <string name="settings">Настройки</string>
 
     <!-- Map strings -->
