@@ -150,4 +150,7 @@
     <string name="map_type_toggle">Переключить тип карты</string>
     <string name="map_type_normal">Обычная карта</string>
     <string name="map_type_satellite">Спутниковая карта</string>
+
+    <string name="select_fishing_type_first">Сначала выберите тип рыбалки:</string>
+    <string name="fishing_details_for">Детали для рыбалки: %1$s</string>
 </resources>

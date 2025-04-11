@@ -3,6 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/scrollView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp"
@@ -23,16 +24,27 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <!-- Секция выбора типа рыбалки -->
+        <TextView
+            android:id="@+id/textViewSelectFishingTypeTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/select_fishing_type_first"
+            android:textSize="16sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textViewTitle" />
+
         <!-- Выпадающий список типов рыбалки -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/textInputLayoutFishingType"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textViewTitle">
+            app:layout_constraintTop_toBottomOf="@+id/textViewSelectFishingTypeTitle">
 
             <AutoCompleteTextView
                 android:id="@+id/dropdownFishingType"
@@ -42,205 +54,243 @@
                 android:inputType="none" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Раздел локации с кнопкой открытия карты -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/textInputLayoutLocation"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="8dp"
-            app:layout_constraintEnd_toStartOf="@+id/buttonOpenMap"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textInputLayoutFishingType">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/editTextLocation"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/location"
-                android:inputType="text" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- Кнопка открытия карты -->
+        <!-- Кнопка отмены на начальном экране -->
         <Button
-            android:id="@+id/buttonOpenMap"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/open_map"
-            app:icon="@android:drawable/ic_dialog_map"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/textInputLayoutLocation"
-            app:layout_constraintBottom_toBottomOf="@+id/textInputLayoutLocation" />
-
-        <!-- Отображение выбранных координат -->
-        <TextView
-            android:id="@+id/textViewSelectedCoordinates"
+            android:id="@+id/buttonInitialCancel"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textSize="12sp"
-            android:textColor="@android:color/darker_gray"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textInputLayoutLocation"
-            tools:text="Координаты: 55.755826, 37.617300" />
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/textInputLayoutDate"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textViewSelectedCoordinates">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/editTextDate"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/date"
-                android:inputType="none"
-                android:focusable="false"
-                android:clickable="true" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- Секция погоды -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/cardViewWeather"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="2dp"
-            app:contentPadding="8dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textInputLayoutDate">
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:id="@+id/textViewWeatherTitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/weather_data"
-                    android:textStyle="bold"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <TextView
-                    android:id="@+id/textViewWeatherStatus"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="@string/weather_not_loaded"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/textViewWeatherTitle" />
-
-                <Button
-                    android:id="@+id/buttonLoadWeather"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="@string/load_weather"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/textViewWeatherStatus" />
-
-                <ProgressBar
-                    android:id="@+id/progressBarWeather"
-                    style="?android:attr/progressBarStyleSmall"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_marginStart="8dp"
-                    android:visibility="invisible"
-                    app:layout_constraintBottom_toBottomOf="@+id/buttonLoadWeather"
-                    app:layout_constraintStart_toEndOf="@+id/buttonLoadWeather"
-                    app:layout_constraintTop_toTopOf="@+id/buttonLoadWeather" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-        </androidx.cardview.widget.CardView>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/textInputLayoutTackle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/cardViewWeather">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/editTextTackle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/tackle"
-                android:inputType="text" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/textInputLayoutNotes"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textInputLayoutTackle">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/editTextNotes"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/notes"
-                android:inputType="textMultiLine"
-                android:minLines="3"
-                android:gravity="top|start" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <Button
-            android:id="@+id/buttonAddPhoto"
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:text="@string/add_photo"
-            app:icon="@android:drawable/ic_menu_camera"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textInputLayoutNotes" />
-
-        <TextView
-            android:id="@+id/textViewPhotoCount"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            tools:text="Выбрано: 2 фото"
-            app:layout_constraintBottom_toBottomOf="@+id/buttonAddPhoto"
-            app:layout_constraintStart_toEndOf="@+id/buttonAddPhoto"
-            app:layout_constraintTop_toTopOf="@+id/buttonAddPhoto" />
-
-        <Button
-            android:id="@+id/buttonSave"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:text="@string/save"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/buttonAddPhoto" />
-
-        <Button
-            android:id="@+id/buttonCancel"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
             android:layout_marginBottom="16dp"
             android:text="@string/cancel"
             android:backgroundTint="@color/material_on_surface_disabled"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/buttonSave" />
+            app:layout_constraintTop_toBottomOf="@+id/textInputLayoutFishingType"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <!-- Основная форма (скрыта изначально) -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/formContent"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textInputLayoutFishingType">
+
+            <TextView
+                android:id="@+id/formContentTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="Детали для Спиннинга" />
+
+            <!-- Раздел локации с кнопкой открытия карты -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInputLayoutLocation"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="8dp"
+                app:layout_constraintEnd_toStartOf="@+id/buttonOpenMap"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/formContentTitle">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editTextLocation"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/location"
+                    android:inputType="text" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Кнопка открытия карты -->
+            <Button
+                android:id="@+id/buttonOpenMap"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/open_map"
+                app:icon="@android:drawable/ic_dialog_map"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/textInputLayoutLocation"
+                app:layout_constraintBottom_toBottomOf="@+id/textInputLayoutLocation" />
+
+            <!-- Отображение выбранных координат -->
+            <TextView
+                android:id="@+id/textViewSelectedCoordinates"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textSize="12sp"
+                android:textColor="@android:color/darker_gray"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textInputLayoutLocation"
+                tools:text="Координаты: 55.755826, 37.617300" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInputLayoutDate"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textViewSelectedCoordinates">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editTextDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/date"
+                    android:inputType="none"
+                    android:focusable="false"
+                    android:clickable="true" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Секция погоды -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardViewWeather"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="2dp"
+                app:contentPadding="8dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textInputLayoutDate">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:id="@+id/textViewWeatherTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/weather_data"
+                        android:textStyle="bold"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/textViewWeatherStatus"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="@string/weather_not_loaded"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/textViewWeatherTitle" />
+
+                    <Button
+                        android:id="@+id/buttonLoadWeather"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="@string/load_weather"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/textViewWeatherStatus" />
+
+                    <ProgressBar
+                        android:id="@+id/progressBarWeather"
+                        style="?android:attr/progressBarStyleSmall"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginStart="8dp"
+                        android:visibility="invisible"
+                        app:layout_constraintBottom_toBottomOf="@+id/buttonLoadWeather"
+                        app:layout_constraintStart_toEndOf="@+id/buttonLoadWeather"
+                        app:layout_constraintTop_toTopOf="@+id/buttonLoadWeather" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.cardview.widget.CardView>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInputLayoutTackle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/cardViewWeather">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editTextTackle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/tackle"
+                    android:inputType="text" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInputLayoutNotes"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textInputLayoutTackle">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editTextNotes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/notes"
+                    android:inputType="textMultiLine"
+                    android:minLines="3"
+                    android:gravity="top|start" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <Button
+                android:id="@+id/buttonAddPhoto"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="@string/add_photo"
+                app:icon="@android:drawable/ic_menu_camera"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textInputLayoutNotes" />
+
+            <TextView
+                android:id="@+id/textViewPhotoCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                tools:text="Выбрано: 2 фото"
+                app:layout_constraintBottom_toBottomOf="@+id/buttonAddPhoto"
+                app:layout_constraintStart_toEndOf="@+id/buttonAddPhoto"
+                app:layout_constraintTop_toTopOf="@+id/buttonAddPhoto" />
+
+            <!-- Кнопки сохранения и отмены (в форме) -->
+            <Button
+                android:id="@+id/buttonSave"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:text="@string/save"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/buttonAddPhoto" />
+
+            <Button
+                android:id="@+id/buttonCancel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="16dp"
+                android:text="@string/cancel"
+                android:backgroundTint="@color/material_on_surface_disabled"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/buttonSave" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

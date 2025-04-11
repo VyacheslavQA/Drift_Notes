@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.View
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -88,6 +89,10 @@ class AddFishingNoteActivity : AppCompatActivity() {
         // Инициализация выпадающего списка типов рыбалки
         setupFishingTypeDropdown()
 
+        // Скрываем основную форму до выбора типа рыбалки
+        binding.formContent.visibility = View.GONE
+        binding.buttonInitialCancel.visibility = View.VISIBLE
+
         // Скрываем текст с координатами, пока они не выбраны
         binding.textViewSelectedCoordinates.visibility = View.GONE
 
@@ -106,8 +111,12 @@ class AddFishingNoteActivity : AppCompatActivity() {
             saveFishingNote()
         }
 
-        // Обработчик отмены
+        // Обработчик отмены (обе кнопки отмены)
         binding.buttonCancel.setOnClickListener {
+            finish()
+        }
+
+        binding.buttonInitialCancel.setOnClickListener {
             finish()
         }
 
@@ -147,9 +156,17 @@ class AddFishingNoteActivity : AppCompatActivity() {
         // Устанавливаем слушатель выбора
         binding.dropdownFishingType.setOnItemClickListener { _, _, position, _ ->
             selectedFishingType = fishingTypes[position]
-        }
 
-        // НЕ устанавливаем значение по умолчанию, теперь будет показан hint
+            // Показываем форму после выбора типа рыбалки
+            binding.formContent.visibility = View.VISIBLE
+            binding.buttonInitialCancel.visibility = View.GONE
+            binding.formContentTitle.text = getString(R.string.fishing_details_for, selectedFishingType)
+
+            // Прокручиваем до начала формы
+            binding.scrollView.post {
+                binding.scrollView.smoothScrollTo(0, binding.formContent.top)
+            }
+        }
     }
 
     private fun openMap() {
@@ -302,15 +319,15 @@ class AddFishingNoteActivity : AppCompatActivity() {
     }
 
     private fun saveFishingNote() {
-        val location = binding.editTextLocation.text.toString().trim()
-        val tackle = binding.editTextTackle.text.toString().trim()
-        val notes = binding.editTextNotes.text.toString().trim()
-
         // Проверяем, что пользователь выбрал тип рыбалки
         if (selectedFishingType.isEmpty()) {
             Toast.makeText(this, "Выберите тип рыбалки", Toast.LENGTH_SHORT).show()
             return
         }
+
+        val location = binding.editTextLocation.text.toString().trim()
+        val tackle = binding.editTextTackle.text.toString().trim()
+        val notes = binding.editTextNotes.text.toString().trim()
 
         if (location.isEmpty() || tackle.isEmpty()) {
             Toast.makeText(this, "Пожалуйста, заполните обязательные поля", Toast.LENGTH_SHORT).show()
@@ -381,7 +398,6 @@ class AddFishingNoteActivity : AppCompatActivity() {
             fishingType = selectedFishingType,  // Сохраняем выбранный тип рыбалки
             weather = weatherData // Добавляем погодные данные
         )
-
         // Сохраняем запись в Firestore
         firestore.collection("fishing_notes")
             .add(fishingNote)
