@@ -61,6 +61,10 @@
             android:name=".NotesActivity"
             android:exported="false"
             android:label="@string/my_notes" />
+        <activity
+            android:name=".fishing.markermap.MarkerMapActivity"
+            android:exported="false"
+            android:label="@string/marker_map_title" />
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.example.driftnotes.fileprovider"

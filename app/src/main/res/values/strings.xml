@@ -153,4 +153,10 @@
 
     <string name="select_fishing_type_first">Сначала выберите тип рыбалки:</string>
     <string name="fishing_details_for">Детали для рыбалки: %1$s</string>
+
+    <!-- Строки для маркерной карты -->
+    <string name="marker_map_title">Маркерная карта дна</string>
+    <string name="marker_map_info">Здесь будет отображаться маркерная карта дна.\nНажмите кнопку + чтобы добавить новую карту.</string>
+    <string name="add_map">Добавить карту</string>
+    <string name="open_marker_map">Маркерная карта дна</string>
 </resources>

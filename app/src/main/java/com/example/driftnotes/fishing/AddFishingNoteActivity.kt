@@ -17,6 +17,7 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
 import com.example.driftnotes.R
 import com.example.driftnotes.databinding.ActivityAddFishingNoteBinding
+import com.example.driftnotes.fishing.markermap.MarkerMapActivity
 import com.example.driftnotes.maps.MapActivity
 import com.example.driftnotes.models.FishingNote
 import com.example.driftnotes.models.FishingWeather
@@ -125,6 +126,12 @@ class AddFishingNoteActivity : AppCompatActivity() {
             openMap()
         }
 
+        // Обработчик нажатия на кнопку открытия маркерной карты
+        binding.buttonOpenMarkerMap.setOnClickListener {
+            val intent = Intent(this, MarkerMapActivity::class.java)
+            startActivity(intent)
+        }
+
         // Установка системной иконки для кнопки загрузки погоды
         binding.buttonLoadWeather.setCompoundDrawablesWithIntrinsicBounds(
             android.R.drawable.ic_menu_compass, 0, 0, 0
@@ -161,6 +168,13 @@ class AddFishingNoteActivity : AppCompatActivity() {
             binding.formContent.visibility = View.VISIBLE
             binding.buttonInitialCancel.visibility = View.GONE
             binding.formContentTitle.text = getString(R.string.fishing_details_for, selectedFishingType)
+
+            // Показываем кнопку маркерной карты только для карповой рыбалки
+            if (selectedFishingType == getString(R.string.fishing_type_carp)) {
+                binding.buttonOpenMarkerMap.visibility = View.VISIBLE
+            } else {
+                binding.buttonOpenMarkerMap.visibility = View.GONE
+            }
 
             // Прокручиваем до начала формы
             binding.scrollView.post {
