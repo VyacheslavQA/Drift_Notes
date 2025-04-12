@@ -556,10 +556,14 @@ class MarkerMapView @JvmOverloads constructor(
                 // Информационный текст
                 val depthText = String.format("%.1f м", marker.depth)
                 val typeText = marker.type.description
-                val distanceText = String.format("%.1f м от центра",
-                    calculateDistanceFromCenter(marker.x, marker.y))
-                val angleText = String.format("%.1f°",
-                    calculateAngleFromCenter(marker.x, marker.y))
+                val distanceText = String.format(
+                    "%.1f м от центра",
+                    calculateDistanceFromCenter(marker.x, marker.y)
+                )
+                val angleText = String.format(
+                    "%.1f°",
+                    calculateAngleFromCenter(marker.x, marker.y)
+                )
 
                 val infoText = "$typeText\n$depthText\n$distanceText\n$angleText"
                 val lines = infoText.split("\n")
@@ -762,7 +766,15 @@ class MarkerMapView @JvmOverloads constructor(
     /**
      * Добавляет маркер программно
      */
-    fun addMarker(x: Float, y: Float, type: MarkerType, depth: Float = 0f, color: Int = MarkerColors.RED, size: MarkerSize = MarkerSize.SMALL, notes: String = ""): Marker {
+    fun addMarker(
+        x: Float,
+        y: Float,
+        type: MarkerType,
+        depth: Float = 0f,
+        color: Int = MarkerColors.RED,
+        size: MarkerSize = MarkerSize.SMALL,
+        notes: String = ""
+    ): Marker {
         val marker = Marker(
             x = x,
             y = y,
@@ -843,3 +855,4 @@ class MarkerMapView @JvmOverloads constructor(
     companion object {
         private const val TAG = "MarkerMapView"
     }
+}
