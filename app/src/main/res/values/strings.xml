@@ -131,6 +131,7 @@
     <string name="recovery_back">Назад к выбору способа восстановления</string>
     <string name="back_to_login">Вернуться к входу</string>
     <string name="open_map">Карта</string>
+
     <!-- Строки для типов рыбалки -->
     <string name="fishing_type">Тип рыбалки</string>
     <string name="fishing_type_carp">Карповая</string>
@@ -146,7 +147,7 @@
     <string name="view_on_map">Показать на карте</string>
     <string name="no_location_data">Данные о местоположении отсутствуют</string>
 
-    <!-- Новые строки для типов карты -->
+    <!-- Строки для типов карты -->
     <string name="map_type_toggle">Переключить тип карты</string>
     <string name="map_type_normal">Обычная карта</string>
     <string name="map_type_satellite">Спутниковая карта</string>
@@ -156,7 +157,79 @@
 
     <!-- Строки для маркерной карты -->
     <string name="marker_map_title">Маркерная карта дна</string>
-    <string name="marker_map_info">Здесь будет отображаться маркерная карта дна.\nНажмите кнопку + чтобы добавить новую карту.</string>
+    <string name="marker_map_info">Интерактивная карта дна для отметки интересных мест.</string>
     <string name="add_map">Добавить карту</string>
     <string name="open_marker_map">Маркерная карта дна</string>
+    <string name="add_marker">Добавить маркер</string>
+    <string name="edit_marker">Редактировать маркер</string>
+    <string name="delete_marker">Удалить маркер</string>
+    <string name="connect_markers">Соединить маркеры</string>
+    <string name="move_marker">Переместить маркер</string>
+    <string name="marker_type">Тип маркера</string>
+    <string name="marker_depth">Глубина</string>
+    <string name="marker_notes">Примечания</string>
+    <string name="confirm_delete_marker">Вы уверены, что хотите удалить этот маркер?</string>
+    <string name="marker_saved">Маркер сохранен</string>
+    <string name="marker_deleted">Маркер удален</string>
+    <string name="error_saving_marker">Ошибка при сохранении маркера</string>
+    <string name="map_saved">Карта сохранена</string>
+    <string name="error_saving_map">Ошибка при сохранении карты</string>
+    <string name="first_marker_selected">Выберите второй маркер для соединения</string>
+    <string name="distance_format">%.1f м</string>
+    <string name="depth_format">%.1f м</string>
+    <string name="angle_format">%.1f°</string>
+
+    <!-- Типы маркеров -->
+    <string name="marker_type_rock">Камень (К)</string>
+    <string name="marker_type_snag">Коряга (С)</string>
+    <string name="marker_type_hole">Яма (Я)</string>
+    <string name="marker_type_plateau">Плато (П)</string>
+    <string name="marker_type_slope">Свал (С)</string>
+    <string name="marker_type_drop_off">Обрыв (О)</string>
+    <string name="marker_type_weed">Водоросли (В)</string>
+
+    <!-- Инструменты карты -->
+    <string name="view_mode">Просмотр</string>
+    <string name="add_mode">Добавление</string>
+    <string name="move_mode">Перемещение</string>
+    <string name="connect_mode">Соединение</string>
+    <string name="delete_mode">Удаление</string>
+    <string name="map_settings">Настройки карты</string>
+    <string name="rename_map">Переименовать карту</string>
+    <string name="clear_markers">Очистить все маркеры</string>
+    <string name="reset_view">Сбросить вид</string>
+    <string name="export_map">Экспортировать карту</string>
+    <string name="confirm_clear_markers">Вы уверены, что хотите удалить все маркеры с карты?</string>
+    <string name="confirm_save_before_exit">Сохранить изменения перед выходом?</string>
+    <string name="save_and_exit">Сохранить и выйти</string>
+    <string name="discard_and_exit">Не сохранять</string>
+    <string name="stay">Остаться</string>
+
+    <!-- Для хранения SVG строки маркерной карты -->
+    <string name="marker_map_svg" translatable="false">
+<![CDATA[
+<svg viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
+  <!-- Вставьте сюда SVG код из предыдущего артефакта -->
+</svg>
+]]>
+</string>
+
+    <string name="marker_type_selected">Выбран тип: %1$s</string>
+    <string name="connect_markers_hint">Выберите первый маркер, затем второй для соединения</string>
+    <string name="delete_marker_hint">Нажмите на маркер для удаления</string>
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
+    <string name="map_not_found">Карта не найдена</string>
+    <string name="error_loading_map">Ошибка загрузки карты: %1$s</string>
+    <string name="error_loading_markers">Ошибка загрузки маркеров: %1$s</string>
+    <string name="error_loading_connections">Ошибка загрузки соединений: %1$s</string>
+    <string name="error_saving_markers">Ошибка сохранения маркеров: %1$s</string>
+    <string name="error_saving_connections">Ошибка сохранения соединений: %1$s</string>
+    <string name="auth_error">Ошибка авторизации</string>
+    <string name="unsaved_changes">Несохраненные изменения</string>
+    <string name="save_before_exit">Сохранить изменения перед выходом?</string>
+    <string name="edit_marker_map">Редактировать карту дна</string>
+    <string name="marker_map_created">Карта дна создана и будет привязана к заметке</string>
+    <string name="view_marker_map">Просмотреть карту дна</string>
+
 </resources>

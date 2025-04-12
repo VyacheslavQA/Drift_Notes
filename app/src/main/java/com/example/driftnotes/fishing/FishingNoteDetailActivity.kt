@@ -10,6 +10,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.driftnotes.R
 import com.example.driftnotes.databinding.ActivityFishingNoteDetailBinding
+import com.example.driftnotes.fishing.markermap.MarkerMapActivity
 import com.example.driftnotes.maps.MapActivity
 import com.example.driftnotes.models.FishingNote
 import com.google.firebase.auth.FirebaseAuth
@@ -141,6 +142,19 @@ class FishingNoteDetailActivity : AppCompatActivity() {
                 binding.viewPagerPhotos.visibility = View.GONE
                 binding.dotsIndicator.visibility = View.GONE
             }
+
+            // Отображаем кнопку просмотра маркерной карты, если она есть
+            if (note.markerMapId.isNotEmpty() && note.fishingType == getString(R.string.fishing_type_carp)) {
+                binding.buttonViewMarkerMap.visibility = View.VISIBLE
+                binding.buttonViewMarkerMap.setOnClickListener {
+                    val intent = Intent(this, MarkerMapActivity::class.java)
+                    intent.putExtra(MarkerMapActivity.EXTRA_MAP_ID, note.markerMapId)
+                    intent.putExtra(MarkerMapActivity.EXTRA_MAP_NAME, note.location)
+                    startActivity(intent)
+                }
+            } else {
+                binding.buttonViewMarkerMap.visibility = View.GONE
+            }
         }
     }
 
@@ -176,12 +190,21 @@ class FishingNoteDetailActivity : AppCompatActivity() {
 
     private fun deleteNote() {
         noteId?.let { id ->
+            // Получаем ID маркерной карты (если есть)
+            val markerMapId = currentNote?.markerMapId ?: ""
+
+            // Удаляем запись
             firestore.collection("fishing_notes")
                 .document(id)
                 .delete()
                 .addOnSuccessListener {
-                    Toast.makeText(this, R.string.note_deleted, Toast.LENGTH_SHORT).show()
-                    finish()
+                    // Если есть маркерная карта, предлагаем удалить и её
+                    if (markerMapId.isNotEmpty()) {
+                        showDeleteMarkerMapDialog(markerMapId)
+                    } else {
+                        Toast.makeText(this, R.string.note_deleted, Toast.LENGTH_SHORT).show()
+                        finish()
+                    }
                 }
                 .addOnFailureListener { e ->
                     Toast.makeText(
@@ -190,6 +213,97 @@ class FishingNoteDetailActivity : AppCompatActivity() {
                         Toast.LENGTH_SHORT
                     ).show()
                 }
+        }
+    }
+
+    /**
+     * Показывает диалог подтверждения удаления маркерной карты
+     */
+    private fun showDeleteMarkerMapDialog(markerMapId: String) {
+        AlertDialog.Builder(this)
+            .setTitle("Удаление маркерной карты")
+            .setMessage("Хотите также удалить маркерную карту дна?")
+            .setPositiveButton("Да") { _, _ ->
+                deleteMarkerMap(markerMapId)
+            }
+            .setNegativeButton("Нет") { _, _ ->
+                Toast.makeText(this, R.string.note_deleted, Toast.LENGTH_SHORT).show()
+                finish()
+            }
+            .show()
+    }
+
+    /**
+     * Удаляет маркерную карту
+     */
+    private fun deleteMarkerMap(markerMapId: String) {
+        try {
+            // Удаляем маркеры
+            firestore.collection("marker_maps")
+                .document(markerMapId)
+                .collection("markers")
+                .get()
+                .addOnSuccessListener { markersSnapshot ->
+                    val batch = firestore.batch()
+
+                    // Удаляем все маркеры
+                    for (doc in markersSnapshot.documents) {
+                        batch.delete(doc.reference)
+                    }
+
+                    // Получаем соединения для удаления
+                    firestore.collection("marker_maps")
+                        .document(markerMapId)
+                        .collection("connections")
+                        .get()
+                        .addOnSuccessListener { connectionsSnapshot ->
+                            // Удаляем все соединения
+                            for (doc in connectionsSnapshot.documents) {
+                                batch.delete(doc.reference)
+                            }
+
+                            // Удаляем саму карту
+                            batch.delete(firestore.collection("marker_maps").document(markerMapId))
+
+                            // Выполняем пакетную операцию
+                            batch.commit()
+                                .addOnSuccessListener {
+                                    Toast.makeText(this, "Запись и карта удалены", Toast.LENGTH_SHORT).show()
+                                    finish()
+                                }
+                                .addOnFailureListener { e ->
+                                    Toast.makeText(
+                                        this,
+                                        "Ошибка при удалении карты: ${e.message}",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    finish()
+                                }
+                        }
+                        .addOnFailureListener { e ->
+                            Toast.makeText(
+                                this,
+                                "Ошибка при удалении соединений: ${e.message}",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            finish()
+                        }
+                }
+                .addOnFailureListener { e ->
+                    Toast.makeText(
+                        this,
+                        "Ошибка при удалении маркеров: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    finish()
+                }
+        } catch (e: Exception) {
+            Toast.makeText(
+                this,
+                "Ошибка при удалении карты: ${e.message}",
+                Toast.LENGTH_SHORT
+            ).show()
+            finish()
         }
     }
 }

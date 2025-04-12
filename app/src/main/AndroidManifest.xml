@@ -80,7 +80,13 @@
         <activity android:name="com.example.driftnotes.auth.EmailRecoveryActivity" />
         <activity android:name="com.example.driftnotes.auth.PhoneRecoveryActivity" />
 
+        <!-- Добавьте в секцию <application> вашего AndroidManifest.xml -->
 
+        <!-- Активность маркерной карты -->
+        <activity
+            android:name=".fishing.markermap.MarkerMapActivity"
+            android:exported="false"
+            android:label="@string/marker_map_title" />
 
     </application>
 

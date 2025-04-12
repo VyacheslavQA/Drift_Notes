@@ -48,10 +48,14 @@ class AddFishingNoteActivity : AppCompatActivity() {
 
     private val PERMISSIONS_REQUEST_CODE = 101
     private val MAP_REQUEST_CODE = 1002
+    private val MARKER_MAP_REQUEST_CODE = 1003
 
     private var selectedLatitude: Double = 0.0
     private var selectedLongitude: Double = 0.0
     private var selectedFishingType: String = ""
+
+    // ID маркерной карты (если создана)
+    private var markerMapId: String = ""
 
     private val galleryLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -128,8 +132,7 @@ class AddFishingNoteActivity : AppCompatActivity() {
 
         // Обработчик нажатия на кнопку открытия маркерной карты
         binding.buttonOpenMarkerMap.setOnClickListener {
-            val intent = Intent(this, MarkerMapActivity::class.java)
-            startActivity(intent)
+            openMarkerMap()
         }
 
         // Установка системной иконки для кнопки загрузки погоды
@@ -186,6 +189,30 @@ class AddFishingNoteActivity : AppCompatActivity() {
     private fun openMap() {
         val intent = Intent(this, MapActivity::class.java)
         startActivityForResult(intent, MAP_REQUEST_CODE)
+    }
+
+    /**
+     * Открытие маркерной карты дна
+     */
+    private fun openMarkerMap() {
+        val intent = Intent(this, MarkerMapActivity::class.java)
+
+        // Если уже есть ID карты, передаем его
+        if (markerMapId.isNotEmpty()) {
+            intent.putExtra(MarkerMapActivity.EXTRA_MAP_ID, markerMapId)
+        }
+
+        // Передаем имя карты (название места ловли)
+        val locationName = binding.editTextLocation.text.toString().trim()
+        val mapName = if (locationName.isNotEmpty()) {
+            "Карта $locationName"
+        } else {
+            "Новая карта"
+        }
+        intent.putExtra(MarkerMapActivity.EXTRA_MAP_NAME, mapName)
+
+        // Запускаем активность
+        startActivityForResult(intent, MARKER_MAP_REQUEST_CODE)
     }
 
     private fun checkAndRequestPermissions() {
@@ -399,7 +426,7 @@ class AddFishingNoteActivity : AppCompatActivity() {
             return
         }
 
-        // Создаем объект записи о рыбалке с координатами, погодой и типом рыбалки
+        // Создаем объект записи о рыбалке с координатами, погодой, типом рыбалки и ID маркерной карты
         val fishingNote = FishingNote(
             userId = userId,
             location = binding.editTextLocation.text.toString().trim(),
@@ -409,9 +436,11 @@ class AddFishingNoteActivity : AppCompatActivity() {
             tackle = binding.editTextTackle.text.toString().trim(),
             notes = binding.editTextNotes.text.toString().trim(),
             photoUrls = photoUrls,
-            fishingType = selectedFishingType,  // Сохраняем выбранный тип рыбалки
-            weather = weatherData // Добавляем погодные данные
+            fishingType = selectedFishingType,
+            weather = weatherData,
+            markerMapId = markerMapId // Добавляем ID маркерной карты
         )
+
         // Сохраняем запись в Firestore
         firestore.collection("fishing_notes")
             .add(fishingNote)
@@ -432,32 +461,54 @@ class AddFishingNoteActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode == MAP_REQUEST_CODE && resultCode == RESULT_OK) {
-            data?.let {
-                val locationName = it.getStringExtra("location_name") ?: ""
-                val latitude = it.getDoubleExtra("latitude", 0.0)
-                val longitude = it.getDoubleExtra("longitude", 0.0)
+        when (requestCode) {
+            MAP_REQUEST_CODE -> {
+                if (resultCode == RESULT_OK) {
+                    data?.let {
+                        val locationName = it.getStringExtra("location_name") ?: ""
+                        val latitude = it.getDoubleExtra("latitude", 0.0)
+                        val longitude = it.getDoubleExtra("longitude", 0.0)
 
-                // Показываем и заполняем текстовое поле с координатами
-                binding.textViewSelectedCoordinates.visibility = View.VISIBLE
-                binding.textViewSelectedCoordinates.text = getString(
-                    R.string.coordinates_format,
-                    latitude,
-                    longitude
-                )
+                        // Показываем и заполняем текстовое поле с координатами
+                        binding.textViewSelectedCoordinates.visibility = View.VISIBLE
+                        binding.textViewSelectedCoordinates.text = getString(
+                            R.string.coordinates_format,
+                            latitude,
+                            longitude
+                        )
 
-                // Теперь пользователь может ввести название места сам
-                // или использовать предложенное с карты
-                if (binding.editTextLocation.text.toString().isEmpty()) {
-                    binding.editTextLocation.setText(locationName)
+                        // Теперь пользователь может ввести название места сам
+                        // или использовать предложенное с карты
+                        if (binding.editTextLocation.text.toString().isEmpty()) {
+                            binding.editTextLocation.setText(locationName)
+                        }
+
+                        selectedLatitude = latitude
+                        selectedLongitude = longitude
+
+                        // Сбрасываем погодные данные при изменении локации
+                        weatherData = null
+                        binding.textViewWeatherStatus.text = getString(R.string.weather_not_loaded)
+                    }
                 }
+            }
+            MARKER_MAP_REQUEST_CODE -> {
+                if (resultCode == RESULT_OK && data != null) {
+                    // Получаем ID маркерной карты и сохраняем его
+                    val mapId = data.getStringExtra(MarkerMapActivity.EXTRA_MAP_ID)
+                    if (mapId != null) {
+                        markerMapId = mapId
 
-                selectedLatitude = latitude
-                selectedLongitude = longitude
+                        // Обновляем надпись на кнопке, чтобы показать, что карта создана
+                        binding.buttonOpenMarkerMap.text = getString(R.string.edit_marker_map)
 
-                // Сбрасываем погодные данные при изменении локации
-                weatherData = null
-                binding.textViewWeatherStatus.text = getString(R.string.weather_not_loaded)
+                        Toast.makeText(
+                            this,
+                            getString(R.string.marker_map_created),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
             }
         }
     }
