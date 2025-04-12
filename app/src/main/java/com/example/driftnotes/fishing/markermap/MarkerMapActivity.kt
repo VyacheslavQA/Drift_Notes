@@ -22,10 +22,6 @@ import java.util.UUID
 class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
 
     private lateinit var binding: ActivityMarkerMapBinding
-    private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
-
-    // Текущий режим редактирования карты
-    private var currentEditMode = EditMode.NONE
 
     // ID и имя карты
     private var mapId: String = ""
@@ -53,36 +49,30 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
         mapName = intent.getStringExtra(EXTRA_MAP_NAME) ?: getString(R.string.marker_map_title)
         supportActionBar?.title = mapName
 
-        // Настраиваем нижнюю панель для выбора типа маркера
-        setupBottomSheet()
-
-        // Настраиваем обработчики для кнопок
-        setupButtons()
-
         // Устанавливаем обработчик событий для карты
         binding.markerMapView.listener = this
 
         // Настраиваем обработчик нажатия кнопки "Назад"
         setupBackPressedCallback()
 
+        // Настраиваем кнопки режимов редактирования
+        setupEditButtons()
+
         // Если передан ID карты, загружаем её данные
         if (intent.hasExtra(EXTRA_MAP_ID)) {
             loadMapData()
         }
+
+        // Настраиваем кнопки сохранения и настроек
+        setupActionButtons()
     }
 
     /**
-     * Настройка обработчика нажатия кнопки "Назад"
+     * Настраивает обработчик нажатия кнопки "Назад"
      */
     private fun setupBackPressedCallback() {
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                // Если открыта нижняя панель, закрываем её
-                if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED) {
-                    bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
-                    return
-                }
-
                 // Если есть изменения, предлагаем сохранить
                 if (hasChanges) {
                     showSaveBeforeExitDialog()
@@ -96,65 +86,22 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
     }
 
     /**
-     * Настройка нижней панели с выбором типа маркера
+     * Настраивает кнопки режимов редактирования
      */
-    private fun setupBottomSheet() {
-        // Убедимся, что bottomSheet существует
-        val bottomSheetView = binding.bottomSheet ?: run {
-            Toast.makeText(this, "Ошибка инициализации нижней панели", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheetView)
-        bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
-
-        // Устанавливаем обработчик для кнопки применения типа маркера
-        binding.buttonApplyMarkerType.setOnClickListener {
-            // Определяем выбранный тип маркера
-            val selectedType = when (binding.radioGroupMarkerType.checkedRadioButtonId) {
-                R.id.radioRock -> MarkerType.ROCK
-                R.id.radioSnag -> MarkerType.SNAG
-                R.id.radioHole -> MarkerType.HOLE
-                R.id.radioPlateau -> MarkerType.PLATEAU
-                R.id.radioSlope -> MarkerType.SLOPE
-                R.id.radioDropOff -> MarkerType.DROP_OFF
-                R.id.radioWeed -> MarkerType.WEED
-                else -> MarkerType.ROCK // По умолчанию
-            }
-
-            // Устанавливаем выбранный тип для карты
-            binding.markerMapView.currentMarkerType = selectedType
-
-            // Скрываем нижнюю панель
-            bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
-
-            // Показываем сообщение
-            Toast.makeText(
-                this,
-                getString(R.string.marker_type_selected, selectedType.description),
-                Toast.LENGTH_SHORT
-            ).show()
-        }
-    }
-
-    /**
-     * Настройка обработчиков для кнопок
-     */
-    private fun setupButtons() {
+    private fun setupEditButtons() {
         // Кнопка режима просмотра
         binding.buttonViewMode.setOnClickListener {
-            setEditMode(EditMode.NONE)
-        }
-
-        // Кнопка добавления маркеров
-        binding.buttonAddMarker.setOnClickListener {
-            showMarkerTypePicker()
-            setEditMode(EditMode.ADD_MARKER)
+            setEditMode(EditMode.VIEW_ONLY)
         }
 
         // Кнопка перемещения маркеров
         binding.buttonMoveMarker.setOnClickListener {
             setEditMode(EditMode.MOVE_MARKER)
+            Toast.makeText(
+                this,
+                "Нажмите на маркер, чтобы начать перемещение",
+                Toast.LENGTH_SHORT
+            ).show()
         }
 
         // Кнопка соединения маркеров
@@ -166,33 +113,12 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
                 Toast.LENGTH_SHORT
             ).show()
         }
-
-        // Кнопка удаления маркеров
-        binding.buttonDeleteMarker.setOnClickListener {
-            setEditMode(EditMode.DELETE_MARKER)
-            Toast.makeText(
-                this,
-                getString(R.string.delete_marker_hint),
-                Toast.LENGTH_SHORT
-            ).show()
-        }
-
-        // Кнопка сохранения
-        binding.fabSave.setOnClickListener {
-            saveMapData()
-        }
-
-        // Кнопка настроек
-        binding.fabSettings.setOnClickListener {
-            showSettingsDialog()
-        }
     }
 
     /**
      * Устанавливает режим редактирования карты
      */
     private fun setEditMode(mode: EditMode) {
-        currentEditMode = mode
         binding.markerMapView.editMode = mode
         updateButtonsState()
     }
@@ -203,43 +129,30 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
     private fun updateButtonsState() {
         // Сначала сбрасываем стиль всех кнопок
         binding.buttonViewMode.setStrokeColorResource(R.color.button_stroke_default)
-        binding.buttonAddMarker.setStrokeColorResource(R.color.button_stroke_default)
         binding.buttonMoveMarker.setStrokeColorResource(R.color.button_stroke_default)
         binding.buttonConnectMarkers.setStrokeColorResource(R.color.button_stroke_default)
-        binding.buttonDeleteMarker.setStrokeColorResource(R.color.button_stroke_default)
 
         // Выделяем активную кнопку
-        when (currentEditMode) {
-            EditMode.NONE -> binding.buttonViewMode.setStrokeColorResource(R.color.button_stroke_active)
-            EditMode.ADD_MARKER -> binding.buttonAddMarker.setStrokeColorResource(R.color.button_stroke_active)
+        when (binding.markerMapView.editMode) {
+            EditMode.VIEW_ONLY -> binding.buttonViewMode.setStrokeColorResource(R.color.button_stroke_active)
             EditMode.MOVE_MARKER -> binding.buttonMoveMarker.setStrokeColorResource(R.color.button_stroke_active)
             EditMode.CONNECT_MARKERS -> binding.buttonConnectMarkers.setStrokeColorResource(R.color.button_stroke_active)
-            EditMode.DELETE_MARKER -> binding.buttonDeleteMarker.setStrokeColorResource(R.color.button_stroke_active)
         }
     }
 
     /**
-     * Показывает диалог выбора типа маркера
+     * Настраивает кнопки сохранения и настроек
      */
-    private fun showMarkerTypePicker() {
-        // Определяем текущий тип маркера
-        val currentType = binding.markerMapView.currentMarkerType
-
-        // Устанавливаем соответствующую радиокнопку
-        val radioButtonId = when (currentType) {
-            MarkerType.ROCK -> R.id.radioRock
-            MarkerType.SNAG -> R.id.radioSnag
-            MarkerType.HOLE -> R.id.radioHole
-            MarkerType.PLATEAU -> R.id.radioPlateau
-            MarkerType.SLOPE -> R.id.radioSlope
-            MarkerType.DROP_OFF -> R.id.radioDropOff
-            MarkerType.WEED -> R.id.radioWeed
+    private fun setupActionButtons() {
+        // Кнопка сохранения
+        binding.fabSave.setOnClickListener {
+            saveMapData()
         }
 
-        binding.radioGroupMarkerType.check(radioButtonId)
-
-        // Показываем нижнюю панель
-        bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+        // Кнопка настроек
+        binding.fabSettings.setOnClickListener {
+            showSettingsDialog()
+        }
     }
 
     /**
@@ -369,6 +282,8 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
                             val typeStr = doc.getString("type") ?: MarkerType.ROCK.name
                             val depth = doc.getDouble("depth")?.toFloat() ?: 0f
                             val notes = doc.getString("notes") ?: ""
+                            val colorInt = doc.getLong("color")?.toInt() ?: MarkerColors.RED
+                            val sizeStr = doc.getString("size") ?: MarkerSize.SMALL.name
 
                             // Преобразуем строку в тип маркера
                             val type = try {
@@ -377,7 +292,14 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
                                 MarkerType.ROCK
                             }
 
-                            markers.add(Marker(id, x, y, type, depth, notes))
+                            // Преобразуем строку в размер маркера
+                            val size = try {
+                                MarkerSize.valueOf(sizeStr)
+                            } catch (e: Exception) {
+                                MarkerSize.SMALL
+                            }
+
+                            markers.add(Marker(id, x, y, type, depth, colorInt, size, notes))
                         } catch (e: Exception) {
                             // Пропускаем маркер с ошибкой
                         }
@@ -539,6 +461,8 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
                             "y" to marker.y,
                             "type" to marker.type.name,
                             "depth" to marker.depth,
+                            "color" to marker.color,
+                            "size" to marker.size.name,
                             "notes" to marker.notes
                         )
 
@@ -665,9 +589,7 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
      * Показывает/скрывает индикатор загрузки
      */
     private fun showLoading(show: Boolean) {
-        // Здесь можно добавить ProgressBar в макет и управлять его видимостью
-        // Например:
-        // binding.progressBar?.visibility = if (show) View.VISIBLE else View.GONE
+        binding.progressBar.visibility = if (show) View.VISIBLE else View.GONE
     }
 
     // Реализация методов интерфейса MarkerMapListener
@@ -690,6 +612,70 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
 
     override fun onConnectionCreated(connection: MarkerConnection) {
         hasChanges = true
+    }
+
+    override fun onLongPress(x: Float, y: Float) {
+        // Показываем диалог добавления маркера
+        MarkerPopupDialog(
+            context = this,
+            markerX = x,
+            markerY = y,
+            onMarkerCreated = { newMarker ->
+                // Добавляем новый маркер на карту
+                binding.markerMapView.addMarker(
+                    x = newMarker.x,
+                    y = newMarker.y,
+                    type = newMarker.type,
+                    depth = newMarker.depth,
+                    color = newMarker.color,
+                    size = newMarker.size,
+                    notes = newMarker.notes
+                )
+
+                // Отмечаем, что были внесены изменения
+                hasChanges = true
+
+                // Уведомляем пользователя
+                Toast.makeText(this, "Маркер добавлен", Toast.LENGTH_SHORT).show()
+            },
+            onMarkerUpdated = { /* Не используется для нового маркера */ },
+            onMarkerDeleted = { /* Не используется для нового маркера */ }
+        ).show()
+    }
+
+    override fun onMarkerLongPress(marker: Marker, x: Float, y: Float) {
+        // Показываем диалог редактирования маркера
+        MarkerPopupDialog(
+            context = this,
+            isEdit = true,
+            marker = marker,
+            onMarkerCreated = { /* Не используется для существующего маркера */ },
+            onMarkerUpdated = { updatedMarker ->
+                // Обновляем маркер
+                val markers = binding.markerMapView.getMarkers().toMutableList()
+                val index = markers.indexOfFirst { it.id == updatedMarker.id }
+                if (index != -1) {
+                    markers[index] = updatedMarker
+                    binding.markerMapView.setMapData(markers, binding.markerMapView.getConnections())
+
+                    // Отмечаем, что были внесены изменения
+                    hasChanges = true
+
+                    // Уведомляем пользователя
+                    Toast.makeText(this, "Маркер обновлен", Toast.LENGTH_SHORT).show()
+                }
+            },
+            onMarkerDeleted = { markerToDelete ->
+                // Удаляем маркер
+                binding.markerMapView.removeMarker(markerToDelete)
+
+                // Отмечаем, что были внесены изменения
+                hasChanges = true
+
+                // Уведомляем пользователя
+                Toast.makeText(this, "Маркер удален", Toast.LENGTH_SHORT).show()
+            }
+        ).show()
     }
 
     /**

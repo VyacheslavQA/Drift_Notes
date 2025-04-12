@@ -8,6 +8,7 @@ import android.graphics.Color
 import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.PointF
+import android.graphics.RectF
 import android.util.AttributeSet
 import android.util.Log
 import android.view.GestureDetector
@@ -23,15 +24,60 @@ import java.util.UUID
 
 /**
  * Типы маркеров для карты дна
+ * Используем изображения символов вместо текста
  */
-enum class MarkerType(val symbol: String, val color: Int, val description: String) {
-    SNAG("С", Color.YELLOW, "Коряга"),
-    ROCK("К", Color.LTGRAY, "Камень"),
-    HOLE("Я", Color.CYAN, "Яма"),
-    PLATEAU("П", Color.GREEN, "Плато"),
-    SLOPE("С", Color.MAGENTA, "Свал"),
-    DROP_OFF("О", Color.RED, "Обрыв"),
-    WEED("В", Color.parseColor("#7CFC00"), "Водоросли")
+enum class MarkerType(val iconResId: Int, val description: String) {
+    ROCK(R.drawable.ic_marker_rock, "Камень"),
+    SNAG(R.drawable.ic_marker_snag, "Коряга"),
+    HOLE(R.drawable.ic_marker_hole, "Яма"),
+    PLATEAU(R.drawable.ic_marker_plateau, "Плато"),
+    SLOPE(R.drawable.ic_marker_slope, "Свал"),
+    DROP_OFF(R.drawable.ic_marker_drop_off, "Обрыв"),
+    WEED(R.drawable.ic_marker_weed, "Водоросли"),
+    SILT(R.drawable.ic_marker_silt, "Ил"),
+    DEEP_SILT(R.drawable.ic_marker_deep_silt, "Глубокий ил"),
+    SHELL(R.drawable.ic_marker_shell, "Ракушка"),
+    HILL(R.drawable.ic_marker_hill, "Бугор"),
+    FEEDING_SPOT(R.drawable.ic_marker_feeding_spot, "Точка кормления")
+}
+
+/**
+ * Размеры маркеров
+ */
+enum class MarkerSize(val factor: Float, val description: String) {
+    SMALL(1.0f, "Маленький"),
+    MEDIUM(1.5f, "Средний"),
+    LARGE(2.0f, "Большой")
+}
+
+/**
+ * Цвета маркеров
+ */
+object MarkerColors {
+    val RED = Color.RED
+    val GREEN = Color.GREEN
+    val BLUE = Color.BLUE
+    val YELLOW = Color.YELLOW
+    val CYAN = Color.CYAN
+    val MAGENTA = Color.MAGENTA
+    val WHITE = Color.WHITE
+    val BLACK = Color.BLACK
+
+    val allColors = listOf(RED, GREEN, BLUE, YELLOW, CYAN, MAGENTA, WHITE, BLACK)
+
+    fun getColorName(color: Int): String {
+        return when (color) {
+            RED -> "Красный"
+            GREEN -> "Зеленый"
+            BLUE -> "Синий"
+            YELLOW -> "Желтый"
+            CYAN -> "Голубой"
+            MAGENTA -> "Фиолетовый"
+            WHITE -> "Белый"
+            BLACK -> "Черный"
+            else -> "Неизвестный"
+        }
+    }
 }
 
 /**
@@ -43,6 +89,8 @@ data class Marker(
     var y: Float,
     var type: MarkerType,
     var depth: Float,
+    var color: Int = MarkerColors.RED,
+    var size: MarkerSize = MarkerSize.SMALL,
     var notes: String = ""
 )
 
@@ -65,17 +113,17 @@ interface MarkerMapListener {
     fun onMarkerMoved(marker: Marker)
     fun onMarkerDeleted(marker: Marker)
     fun onConnectionCreated(connection: MarkerConnection)
+    fun onLongPress(x: Float, y: Float)
+    fun onMarkerLongPress(marker: Marker, x: Float, y: Float)
 }
 
 /**
  * Режимы редактирования карты
  */
 enum class EditMode {
-    NONE,               // Просмотр без редактирования
-    ADD_MARKER,         // Режим добавления маркеров
-    MOVE_MARKER,        // Режим перемещения маркеров
-    CONNECT_MARKERS,    // Режим соединения маркеров
-    DELETE_MARKER       // Режим удаления маркеров
+    VIEW_ONLY,       // Только просмотр
+    MOVE_MARKER,     // Режим перемещения маркеров
+    CONNECT_MARKERS  // Режим соединения маркеров
 }
 
 /**
@@ -90,8 +138,12 @@ class MarkerMapView @JvmOverloads constructor(
     // Базовая карта
     private var mapBitmap: Bitmap? = null
 
+    // Иконки маркеров
+    private val markerIcons = mutableMapOf<MarkerType, Bitmap>()
+
     // Матрица трансформации (для масштабирования и перемещения)
     private val matrix = Matrix()
+    private val inverseMatrix = Matrix()
 
     // Список маркеров
     private val markers = mutableListOf<Marker>()
@@ -103,10 +155,7 @@ class MarkerMapView @JvmOverloads constructor(
     var listener: MarkerMapListener? = null
 
     // Текущий режим редактирования
-    var editMode = EditMode.NONE
-
-    // Текущий выбранный тип маркера
-    var currentMarkerType = MarkerType.ROCK
+    var editMode = EditMode.VIEW_ONLY
 
     // Выбранный маркер
     private var selectedMarker: Marker? = null
@@ -121,9 +170,34 @@ class MarkerMapView @JvmOverloads constructor(
     private val minScale = 0.5f
     private val maxScale = 5.0f
 
+    // Переменная для определения перемещения
+    private var isDragging = false
+    private var hasMovedWhileDown = false
+    private var touchStartX = 0f
+    private var touchStartY = 0f
+
+    // Долгое нажатие
+    private var isLongPressActive = false
+
     // Детекторы жестов
     private lateinit var scaleGestureDetector: ScaleGestureDetector
     private lateinit var gestureDetector: GestureDetector
+
+    // Обработчик длительного нажатия
+    private val longPressRunnable = Runnable {
+        isLongPressActive = true
+        val mappedPoint = mapTouchPointToMapCoordinates(touchStartX, touchStartY)
+
+        // Проверяем, не попал ли пользователь на существующий маркер
+        val marker = findMarkerAtPoint(touchStartX, touchStartY)
+        if (marker != null) {
+            // Если маркер существует, вызываем обработчик длительного нажатия на маркере
+            listener?.onMarkerLongPress(marker, touchStartX, touchStartY)
+        } else {
+            // Иначе вызываем обработчик длительного нажатия на карте
+            listener?.onLongPress(mappedPoint.x, mappedPoint.y)
+        }
+    }
 
     // Краски для рисования
     private val markerPaint = Paint().apply {
@@ -136,13 +210,6 @@ class MarkerMapView @JvmOverloads constructor(
         strokeWidth = 2f
         style = Paint.Style.STROKE
         isAntiAlias = true
-    }
-
-    private val markerTextPaint = Paint().apply {
-        color = Color.BLACK
-        textSize = 30f
-        isAntiAlias = true
-        textAlign = Paint.Align.CENTER
     }
 
     private val connectionPaint = Paint().apply {
@@ -167,6 +234,9 @@ class MarkerMapView @JvmOverloads constructor(
     init {
         // Загружаем карту из ресурсов
         loadMapBitmap()
+
+        // Загружаем иконки маркеров
+        loadMarkerIcons()
 
         // Инициализируем детекторы жестов
         scaleGestureDetector = ScaleGestureDetector(context, ScaleListener())
@@ -216,6 +286,23 @@ class MarkerMapView @JvmOverloads constructor(
         }
     }
 
+    /**
+     * Загружает иконки для типов маркеров
+     */
+    private fun loadMarkerIcons() {
+        MarkerType.values().forEach { type ->
+            try {
+                val drawable = ContextCompat.getDrawable(context, type.iconResId)
+                val bitmap = drawable?.toBitmap(width = 48, height = 48)
+                if (bitmap != null) {
+                    markerIcons[type] = bitmap
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Ошибка загрузки иконки для ${type.name}", e)
+            }
+        }
+    }
+
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
 
@@ -236,172 +323,134 @@ class MarkerMapView @JvmOverloads constructor(
             matrix.postScale(scale, scale)
             matrix.postTranslate(dx, dy)
 
+            // Обновляем инверсную матрицу
+            matrix.invert(inverseMatrix)
+
             scaleFactor = scale
+        }
+
+        // Перезагружаем иконки маркеров, если нужно
+        if (markerIcons.isEmpty()) {
+            loadMarkerIcons()
         }
     }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        // Обрабатываем события масштабирования и жестов
-        scaleGestureDetector.onTouchEvent(event)
-        gestureDetector.onTouchEvent(event)
+        // Проверяем, не обрабатывает ли масштабирование
+        val scaleHandled = scaleGestureDetector.onTouchEvent(event)
 
-        // Обработка прочих событий в зависимости от режима
-        when (editMode) {
-            EditMode.ADD_MARKER -> handleAddMarkerTouch(event)
-            EditMode.MOVE_MARKER -> handleMoveMarkerTouch(event)
-            EditMode.CONNECT_MARKERS -> handleConnectMarkersTouch(event)
-            EditMode.DELETE_MARKER -> handleDeleteMarkerTouch(event)
-            EditMode.NONE -> handleViewModeTouch(event)
-        }
+        // Проверяем, обрабатывает ли жесты (тапы, свайпы)
+        val gestureHandled = gestureDetector.onTouchEvent(event)
 
-        return true
-    }
-
-    /**
-     * Обработка касаний в режиме просмотра
-     */
-    private fun handleViewModeTouch(event: MotionEvent) {
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
-                // Проверяем, нажал ли пользователь на маркер
-                selectedMarker = findMarkerAtPoint(event.x, event.y)
-                selectedMarker?.let {
-                    listener?.onMarkerSelected(it)
-                }
-                invalidate()
-            }
-        }
-    }
+                // Запоминаем начальные координаты касания
+                touchStartX = event.x
+                touchStartY = event.y
+                lastTouchX = event.x
+                lastTouchY = event.y
+                hasMovedWhileDown = false
+                isLongPressActive = false
 
-    /**
-     * Обработка касаний в режиме добавления маркеров
-     */
-    private fun handleAddMarkerTouch(event: MotionEvent) {
-        when (event.actionMasked) {
-            MotionEvent.ACTION_UP -> {
-                // Преобразуем координаты касания в координаты карты
-                val mappedPoint = mapTouchPointToMapCoordinates(event.x, event.y)
-
-                // Получаем информацию о глубине на основе расстояния от центра
-                val depth = calculateDepthForPoint(mappedPoint.x, mappedPoint.y)
-
-                // Создаем новый маркер
-                val marker = Marker(
-                    x = mappedPoint.x,
-                    y = mappedPoint.y,
-                    type = currentMarkerType,
-                    depth = depth
-                )
-
-                // Добавляем маркер в список
-                markers.add(marker)
-
-                // Уведомляем слушателя
-                listener?.onMarkerAdded(marker)
-
-                // Перерисовываем карту
-                invalidate()
-            }
-        }
-    }
-
-    /**
-     * Обработка касаний в режиме перемещения маркеров
-     */
-    private fun handleMoveMarkerTouch(event: MotionEvent) {
-        when (event.actionMasked) {
-            MotionEvent.ACTION_DOWN -> {
-                // Выбираем маркер для перемещения
-                selectedMarker = findMarkerAtPoint(event.x, event.y)
-                invalidate()
-            }
-            MotionEvent.ACTION_MOVE -> {
-                // Перемещаем выбранный маркер
-                selectedMarker?.let {
-                    val mappedPoint = mapTouchPointToMapCoordinates(event.x, event.y)
-                    it.x = mappedPoint.x
-                    it.y = mappedPoint.y
-
-                    // Обновляем глубину
-                    it.depth = calculateDepthForPoint(mappedPoint.x, mappedPoint.y)
-
-                    invalidate()
-                }
-            }
-            MotionEvent.ACTION_UP -> {
-                // Уведомляем слушателя о перемещении маркера
-                selectedMarker?.let {
-                    listener?.onMarkerMoved(it)
-                }
-            }
-        }
-    }
-
-    /**
-     * Обработка касаний в режиме соединения маркеров
-     */
-    private fun handleConnectMarkersTouch(event: MotionEvent) {
-        when (event.actionMasked) {
-            MotionEvent.ACTION_DOWN -> {
-                // Ищем маркер под точкой касания
+                // Ищем маркер под пальцем
                 val marker = findMarkerAtPoint(event.x, event.y)
-
                 if (marker != null) {
-                    if (firstConnectionMarker == null) {
-                        // Выбираем первый маркер для соединения
-                        firstConnectionMarker = marker
-                        selectedMarker = marker
-                    } else if (firstConnectionMarker != marker) {
-                        // Создаем соединение между маркерами
-                        val connection = MarkerConnection(
-                            marker1Id = firstConnectionMarker!!.id,
-                            marker2Id = marker.id
-                        )
+                    selectedMarker = marker
+                    invalidate()
 
-                        // Добавляем соединение
-                        connections.add(connection)
+                    if (editMode == EditMode.CONNECT_MARKERS) {
+                        if (firstConnectionMarker == null) {
+                            firstConnectionMarker = marker
+                        } else if (firstConnectionMarker != marker) {
+                            // Создаем соединение между маркерами
+                            val connection = MarkerConnection(
+                                marker1Id = firstConnectionMarker!!.id,
+                                marker2Id = marker.id
+                            )
 
-                        // Уведомляем слушателя
-                        listener?.onConnectionCreated(connection)
+                            // Добавляем соединение
+                            connections.add(connection)
 
-                        // Сбрасываем выбранные маркеры
-                        firstConnectionMarker = null
-                        selectedMarker = null
+                            // Уведомляем слушателя
+                            listener?.onConnectionCreated(connection)
 
-                        // Перерисовываем карту
-                        invalidate()
+                            // Сбрасываем выбранные маркеры
+                            firstConnectionMarker = null
+                            selectedMarker = null
+
+                            invalidate()
+                        }
                     }
                 }
+
+                // Устанавливаем планировщик длительного нажатия (700 мс)
+                postDelayed(longPressRunnable, 700)
+
+                return true
             }
-        }
-    }
 
-    /**
-     * Обработка касаний в режиме удаления маркеров
-     */
-    private fun handleDeleteMarkerTouch(event: MotionEvent) {
-        when (event.actionMasked) {
-            MotionEvent.ACTION_UP -> {
-                // Ищем маркер под точкой касания
-                val marker = findMarkerAtPoint(event.x, event.y)
+            MotionEvent.ACTION_MOVE -> {
+                // Проверяем, было ли движение значительным
+                val dx = event.x - touchStartX
+                val dy = event.y - touchStartY
+                val moveDistance = hypot(dx, dy)
 
-                // Удаляем маркер, если найден
-                if (marker != null) {
-                    // Удаляем соединения, содержащие этот маркер
-                    connections.removeAll { it.marker1Id == marker.id || it.marker2Id == marker.id }
+                // Если значительное движение, отменяем длительное нажатие
+                if (moveDistance > 10) {
+                    hasMovedWhileDown = true
+                    removeCallbacks(longPressRunnable)
+                }
 
-                    // Удаляем сам маркер
-                    markers.remove(marker)
+                // Если в режиме перемещения маркера и маркер выбран
+                if (editMode == EditMode.MOVE_MARKER && selectedMarker != null && !isLongPressActive) {
+                    // Перемещаем выбранный маркер
+                    val mappedPoint = mapTouchPointToMapCoordinates(event.x, event.y)
+                    selectedMarker?.let {
+                        it.x = mappedPoint.x
+                        it.y = mappedPoint.y
 
-                    // Уведомляем слушателя
-                    listener?.onMarkerDeleted(marker)
+                        // Обновляем глубину на основе расстояния от центра
+                        it.depth = calculateDepthForPoint(mappedPoint.x, mappedPoint.y)
 
-                    // Перерисовываем карту
+                        invalidate()
+                        listener?.onMarkerMoved(it)
+                    }
+                } else if (!scaleHandled && hasMovedWhileDown) {
+                    // Перемещение карты
+                    val dx = event.x - lastTouchX
+                    val dy = event.y - lastTouchY
+
+                    matrix.postTranslate(dx, dy)
+                    matrix.invert(inverseMatrix)
                     invalidate()
                 }
+
+                lastTouchX = event.x
+                lastTouchY = event.y
+
+                return true
+            }
+
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                // Убираем планировщик длительного нажатия
+                removeCallbacks(longPressRunnable)
+                isLongPressActive = false
+
+                // Проверяем, был ли простой клик (без перемещения)
+                if (!hasMovedWhileDown) {
+                    // Обработка нажатия на маркер
+                    val marker = findMarkerAtPoint(event.x, event.y)
+                    if (marker != null) {
+                        listener?.onMarkerSelected(marker)
+                    }
+                }
+
+                return true
             }
         }
+
+        return scaleHandled || gestureHandled || true
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -475,17 +524,32 @@ class MarkerMapView @JvmOverloads constructor(
     private fun drawMarkers(canvas: Canvas) {
         for (marker in markers) {
             // Определяем цвет маркера
-            markerPaint.color = marker.type.color
+            markerPaint.color = marker.color
 
-            // Размер маркера (больше для выбранного)
-            val markerSize = if (marker == selectedMarker || marker == firstConnectionMarker) 25f else 20f
+            // Размер маркера
+            val markerSize = when (marker.size) {
+                MarkerSize.SMALL -> 20f
+                MarkerSize.MEDIUM -> 30f
+                MarkerSize.LARGE -> 40f
+            } * (if (marker == selectedMarker || marker == firstConnectionMarker) 1.2f else 1.0f)
 
             // Рисуем круг маркера
             canvas.drawCircle(marker.x, marker.y, markerSize, markerPaint)
             canvas.drawCircle(marker.x, marker.y, markerSize, markerStrokePaint)
 
-            // Рисуем символ маркера
-            canvas.drawText(marker.type.symbol, marker.x, marker.y + markerTextPaint.textSize / 3, markerTextPaint)
+            // Рисуем иконку маркера
+            val iconBitmap = markerIcons[marker.type]
+            if (iconBitmap != null) {
+                val iconWidth = markerSize * 1.5f
+                val iconHeight = markerSize * 1.5f
+                val rectF = RectF(
+                    marker.x - iconWidth / 2,
+                    marker.y - iconHeight / 2,
+                    marker.x + iconWidth / 2,
+                    marker.y + iconHeight / 2
+                )
+                canvas.drawBitmap(iconBitmap, null, rectF, null)
+            }
 
             // Если маркер выбран, показываем информацию о нем
             if (marker == selectedMarker || marker == firstConnectionMarker) {
@@ -536,7 +600,15 @@ class MarkerMapView @JvmOverloads constructor(
         // Проверяем каждый маркер
         for (marker in markers) {
             val distance = hypot(marker.x - mappedPoint.x, marker.y - mappedPoint.y)
-            if (distance <= 30f) { // Зона касания 30 пикселей
+
+            // Размер зоны касания зависит от размера маркера
+            val touchZone = when (marker.size) {
+                MarkerSize.SMALL -> 25f
+                MarkerSize.MEDIUM -> 35f
+                MarkerSize.LARGE -> 45f
+            }
+
+            if (distance <= touchZone) {
                 return marker
             }
         }
@@ -548,12 +620,8 @@ class MarkerMapView @JvmOverloads constructor(
      * Преобразует координаты касания в координаты карты
      */
     private fun mapTouchPointToMapCoordinates(touchX: Float, touchY: Float): PointF {
-        val inverse = Matrix()
-        matrix.invert(inverse)
-
         val mappedPoints = floatArrayOf(touchX, touchY)
-        inverse.mapPoints(mappedPoints)
-
+        inverseMatrix.mapPoints(mappedPoints)
         return PointF(mappedPoints[0], mappedPoints[1])
     }
 
@@ -630,6 +698,9 @@ class MarkerMapView @JvmOverloads constructor(
                 detector.focusX, detector.focusY
             )
 
+            // Обновляем инверсную матрицу
+            matrix.invert(inverseMatrix)
+
             invalidate()
             return true
         }
@@ -647,6 +718,7 @@ class MarkerMapView @JvmOverloads constructor(
         ): Boolean {
             // Перемещаем карту
             matrix.postTranslate(-distanceX, -distanceY)
+            matrix.invert(inverseMatrix)
             invalidate()
             return true
         }
@@ -679,6 +751,7 @@ class MarkerMapView @JvmOverloads constructor(
 
             matrix.postScale(scale, scale)
             matrix.postTranslate(dx, dy)
+            matrix.invert(inverseMatrix)
 
             scaleFactor = scale
         }
@@ -689,12 +762,14 @@ class MarkerMapView @JvmOverloads constructor(
     /**
      * Добавляет маркер программно
      */
-    fun addMarker(x: Float, y: Float, type: MarkerType, depth: Float = 0f, notes: String = ""): Marker {
+    fun addMarker(x: Float, y: Float, type: MarkerType, depth: Float = 0f, color: Int = MarkerColors.RED, size: MarkerSize = MarkerSize.SMALL, notes: String = ""): Marker {
         val marker = Marker(
             x = x,
             y = y,
             type = type,
             depth = depth,
+            color = color,
+            size = size,
             notes = notes
         )
 
@@ -768,4 +843,3 @@ class MarkerMapView @JvmOverloads constructor(
     companion object {
         private const val TAG = "MarkerMapView"
     }
-}

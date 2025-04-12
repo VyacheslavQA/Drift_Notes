@@ -160,17 +160,13 @@
     <string name="marker_map_info">Интерактивная карта дна для отметки интересных мест.</string>
     <string name="add_map">Добавить карту</string>
     <string name="open_marker_map">Маркерная карта дна</string>
-    <string name="add_marker">Добавить маркер</string>
-    <string name="edit_marker">Редактировать маркер</string>
     <string name="delete_marker">Удалить маркер</string>
     <string name="connect_markers">Соединить маркеры</string>
     <string name="move_marker">Переместить маркер</string>
     <string name="marker_type">Тип маркера</string>
     <string name="marker_depth">Глубина</string>
     <string name="marker_notes">Примечания</string>
-    <string name="confirm_delete_marker">Вы уверены, что хотите удалить этот маркер?</string>
     <string name="marker_saved">Маркер сохранен</string>
-    <string name="marker_deleted">Маркер удален</string>
     <string name="error_saving_marker">Ошибка при сохранении маркера</string>
     <string name="map_saved">Карта сохранена</string>
     <string name="error_saving_map">Ошибка при сохранении карты</string>
@@ -179,14 +175,6 @@
     <string name="depth_format">%.1f м</string>
     <string name="angle_format">%.1f°</string>
 
-    <!-- Типы маркеров -->
-    <string name="marker_type_rock">Камень (К)</string>
-    <string name="marker_type_snag">Коряга (С)</string>
-    <string name="marker_type_hole">Яма (Я)</string>
-    <string name="marker_type_plateau">Плато (П)</string>
-    <string name="marker_type_slope">Свал (С)</string>
-    <string name="marker_type_drop_off">Обрыв (О)</string>
-    <string name="marker_type_weed">Водоросли (В)</string>
 
     <!-- Инструменты карты -->
     <string name="view_mode">Просмотр</string>
@@ -231,5 +219,42 @@
     <string name="edit_marker_map">Редактировать карту дна</string>
     <string name="marker_map_created">Карта дна создана и будет привязана к заметке</string>
     <string name="view_marker_map">Просмотреть карту дна</string>
+
+
+        <!-- Дополнительные строки для обновленной маркерной карты -->
+        <string name="marker_type_title">Тип маркера</string>
+        <string name="marker_size_title">Размер маркера</string>
+        <string name="marker_color_title">Цвет маркера</string>
+        <string name="marker_depth_title">Глубина</string>
+        <string name="marker_notes_title">Примечания</string>
+
+        <string name="marker_size_small">Маленький</string>
+        <string name="marker_size_medium">Средний</string>
+        <string name="marker_size_large">Большой</string>
+
+        <string name="add_marker">Добавить маркер</string>
+        <string name="edit_marker">Редактировать маркер</string>
+        <string name="confirm_delete_marker">Вы уверены, что хотите удалить этот маркер?</string>
+        <string name="marker_added">Маркер добавлен</string>
+        <string name="marker_updated">Маркер обновлен</string>
+        <string name="marker_deleted">Маркер удален</string>
+
+        <string name="press_and_hold">Нажмите и удерживайте для добавления маркера</string>
+        <string name="press_and_hold_marker">Нажмите и удерживайте маркер для редактирования</string>
+
+    <!-- Дополнительные типы маркеров -->
+    <string name="marker_type_rock">Камень</string>
+    <string name="marker_type_snag">Коряга</string>
+    <string name="marker_type_hole">Яма</string>
+    <string name="marker_type_plateau">Плато</string>
+    <string name="marker_type_slope">Свал</string>
+    <string name="marker_type_drop_off">Обрыв</string>
+    <string name="marker_type_weed">Водоросли</string>
+    <string name="marker_type_silt">Ил</string>
+    <string name="marker_type_deep_silt">Глубокий ил</string>
+    <string name="marker_type_shell">Ракушка</string>
+    <string name="marker_type_hill">Бугор</string>
+    <string name="marker_type_feeding_spot">Точка кормления</string>
+
 
 </resources>

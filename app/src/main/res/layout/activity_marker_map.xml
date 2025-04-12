@@ -56,15 +56,6 @@
                         app:icon="@android:drawable/ic_menu_view" />
 
                     <com.google.android.material.button.MaterialButton
-                        android:id="@+id/buttonAddMarker"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="8dp"
-                        android:text="Добавить"
-                        app:icon="@android:drawable/ic_menu_add" />
-
-                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/buttonMoveMarker"
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                         android:layout_width="wrap_content"
@@ -81,14 +72,6 @@
                         android:layout_marginEnd="8dp"
                         android:text="Соединить"
                         app:icon="@android:drawable/ic_menu_share" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/buttonDeleteMarker"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Удалить"
-                        app:icon="@android:drawable/ic_menu_delete" />
                 </LinearLayout>
             </HorizontalScrollView>
         </com.google.android.material.card.MaterialCardView>
@@ -114,92 +97,17 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:srcCompat="@android:drawable/ic_menu_manage" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <!-- Bottom Sheet для выбора типа маркера -->
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/bottomSheet"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:color/white"
-        android:padding="16dp"
-        app:behavior_hideable="true"
-        app:behavior_peekHeight="0dp"
-        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
-
-        <TextView
-            android:id="@+id/textViewMarkerTypeTitle"
-            android:layout_width="0dp"
+        <!-- Индикатор загрузки -->
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Выберите тип маркера"
-            android:textSize="18sp"
-            android:textStyle="bold"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
-
-        <RadioGroup
-            android:id="@+id/radioGroupMarkerType"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textViewMarkerTypeTitle">
-
-            <RadioButton
-                android:id="@+id/radioRock"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/marker_type_rock" />
-
-            <RadioButton
-                android:id="@+id/radioSnag"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/marker_type_snag" />
-
-            <RadioButton
-                android:id="@+id/radioHole"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/marker_type_hole" />
-
-            <RadioButton
-                android:id="@+id/radioPlateau"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/marker_type_plateau" />
-
-            <RadioButton
-                android:id="@+id/radioSlope"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/marker_type_slope" />
-
-            <RadioButton
-                android:id="@+id/radioDropOff"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/marker_type_drop_off" />
-
-            <RadioButton
-                android:id="@+id/radioWeed"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/marker_type_weed" />
-
-        </RadioGroup>
-
-        <Button
-            android:id="@+id/buttonApplyMarkerType"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Применить"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/radioGroupMarkerType" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
