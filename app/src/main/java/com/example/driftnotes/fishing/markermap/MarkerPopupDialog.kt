@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.Window
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.ImageView
@@ -45,11 +46,17 @@ class MarkerPopupDialog(
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Убираем заголовок диалога
+        requestWindowFeature(Window.FEATURE_NO_TITLE)
+
         binding = DialogMarkerPopupBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Устанавливаем заголовок диалога
-        binding.textViewTitle.text = if (isEdit) "Редактирование маркера" else "Добавление маркера"
+        // Увеличиваем размер диалога
+        window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+
+        // Скрываем заголовок диалогового окна
+        binding.textViewTitle.visibility = View.GONE
 
         // Настраиваем адаптеры для типов маркеров
         setupMarkerTypeGrid()
@@ -223,11 +230,11 @@ class MarkerPopupDialog(
                 AlertDialog.Builder(context)
                     .setTitle("Удаление маркера")
                     .setMessage("Вы уверены, что хотите удалить этот маркер?")
-                    .setPositiveButton("Удалить") { _, _ ->
+                    .setPositiveButton("Да") { _, _ ->
                         onMarkerDeleted(marker)
                         dismiss()
                     }
-                    .setNegativeButton("Отмена", null)
+                    .setNegativeButton("Нет", null)
                     .show()
             }
         }

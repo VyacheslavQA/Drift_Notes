@@ -231,6 +231,22 @@ class MarkerMapView @JvmOverloads constructor(
         style = Paint.Style.FILL
     }
 
+    // Новая кисть для отображения названия типа маркера
+    private val typeTextPaint = Paint().apply {
+        color = Color.BLACK
+        textSize = 16f
+        isAntiAlias = true
+        textAlign = Paint.Align.LEFT
+    }
+
+    // Новая кисть для отображения глубины
+    private val depthTextPaint = Paint().apply {
+        color = Color.BLUE
+        textSize = 16f
+        isAntiAlias = true
+        textAlign = Paint.Align.RIGHT
+    }
+
     init {
         // Загружаем карту из ресурсов
         loadMapBitmap()
@@ -551,11 +567,51 @@ class MarkerMapView @JvmOverloads constructor(
                 canvas.drawBitmap(iconBitmap, null, rectF, null)
             }
 
-            // Если маркер выбран, показываем информацию о нем
+            // Рисуем тип маркера слева от точки
+            val typeText = marker.type.description
+            val typeTextWidth = infoTextPaint.measureText(typeText)
+
+            // Фон для текста типа маркера
+            canvas.drawRect(
+                marker.x - markerSize - typeTextWidth - 10,
+                marker.y - 10,
+                marker.x - markerSize - 5,
+                marker.y + 20,
+                infoBgPaint
+            )
+
+            // Текст типа маркера
+            canvas.drawText(
+                typeText,
+                marker.x - markerSize - typeTextWidth - 5,
+                marker.y + 15,
+                infoTextPaint
+            )
+
+            // Рисуем глубину справа от точки
+            val depthText = String.format("%.1f м", marker.depth)
+            val depthTextWidth = infoTextPaint.measureText(depthText)
+
+            // Фон для текста глубины
+            canvas.drawRect(
+                marker.x + markerSize + 5,
+                marker.y - 10,
+                marker.x + markerSize + depthTextWidth + 10,
+                marker.y + 20,
+                infoBgPaint
+            )
+
+            // Текст глубины
+            canvas.drawText(
+                depthText,
+                marker.x + markerSize + 8,
+                marker.y + 15,
+                infoTextPaint
+            )
+
+            // Если маркер выбран, показываем дополнительную информацию о нем
             if (marker == selectedMarker || marker == firstConnectionMarker) {
-                // Информационный текст
-                val depthText = String.format("%.1f м", marker.depth)
-                val typeText = marker.type.description
+                // Информационный текст с расстоянием и углом
                 val distanceText = String.format(
                     "%.1f м от центра",
                     calculateDistanceFromCenter(marker.x, marker.y)
@@ -565,19 +621,19 @@ class MarkerMapView @JvmOverloads constructor(
                     calculateAngleFromCenter(marker.x, marker.y)
                 )
 
-                val infoText = "$typeText\n$depthText\n$distanceText\n$angleText"
+                val infoText = "$distanceText\n$angleText"
                 val lines = infoText.split("\n")
 
-                // Фон для информации
+                // Фон для информации - отображаем над маркером
                 val maxTextWidth = lines.maxOf { infoTextPaint.measureText(it) }
                 val textHeight = infoTextPaint.textSize
                 val padding = 10f
 
                 canvas.drawRect(
-                    marker.x + markerSize + 5,
-                    marker.y - textHeight * lines.size / 2 - padding,
-                    marker.x + markerSize + 5 + maxTextWidth + padding * 2,
-                    marker.y + textHeight * lines.size / 2 + padding,
+                    marker.x - maxTextWidth / 2 - padding,
+                    marker.y - textHeight * lines.size - padding * 2,
+                    marker.x + maxTextWidth / 2 + padding,
+                    marker.y - padding,
                     infoBgPaint
                 )
 
@@ -585,8 +641,8 @@ class MarkerMapView @JvmOverloads constructor(
                 for (i in lines.indices) {
                     canvas.drawText(
                         lines[i],
-                        marker.x + markerSize + 5 + padding,
-                        marker.y - textHeight * lines.size / 2 + textHeight * (i + 0.8f),
+                        marker.x - maxTextWidth / 2 + padding,
+                        marker.y - padding * 2 - textHeight * (lines.size - i - 1),
                         infoTextPaint
                     )
                 }
@@ -740,7 +796,6 @@ class MarkerMapView @JvmOverloads constructor(
     fun resetView() {
         // Сбрасываем матрицу трансформации
         matrix.reset()
-
         // Центрируем карту
         val width = width.toFloat()
         val height = height.toFloat()
@@ -787,6 +842,7 @@ class MarkerMapView @JvmOverloads constructor(
 
         markers.add(marker)
         invalidate()
+        listener?.onMarkerAdded(marker)
         return marker
     }
 
@@ -809,6 +865,7 @@ class MarkerMapView @JvmOverloads constructor(
         }
 
         invalidate()
+        listener?.onMarkerDeleted(marker)
     }
 
     /**
