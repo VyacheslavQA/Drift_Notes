@@ -10,8 +10,6 @@
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.telephony" android:required="false" />
@@ -61,10 +59,13 @@
             android:name=".NotesActivity"
             android:exported="false"
             android:label="@string/my_notes" />
+
+        <!-- Активность маркерной карты (удалил дубликат) -->
         <activity
             android:name=".fishing.markermap.MarkerMapActivity"
             android:exported="false"
             android:label="@string/marker_map_title" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.example.driftnotes.fileprovider"
@@ -79,14 +80,6 @@
         <activity android:name="com.example.driftnotes.auth.PasswordRecoveryActivity" />
         <activity android:name="com.example.driftnotes.auth.EmailRecoveryActivity" />
         <activity android:name="com.example.driftnotes.auth.PhoneRecoveryActivity" />
-
-        <!-- Добавьте в секцию <application> вашего AndroidManifest.xml -->
-
-        <!-- Активность маркерной карты -->
-        <activity
-            android:name=".fishing.markermap.MarkerMapActivity"
-            android:exported="false"
-            android:label="@string/marker_map_title" />
 
     </application>
 

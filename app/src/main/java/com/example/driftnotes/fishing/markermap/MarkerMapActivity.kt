@@ -4,8 +4,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
-import android.widget.RadioButton
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.driftnotes.R
@@ -62,6 +62,9 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
         // Устанавливаем обработчик событий для карты
         binding.markerMapView.listener = this
 
+        // Настраиваем обработчик нажатия кнопки "Назад"
+        setupBackPressedCallback()
+
         // Если передан ID карты, загружаем её данные
         if (intent.hasExtra(EXTRA_MAP_ID)) {
             loadMapData()
@@ -69,10 +72,40 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
     }
 
     /**
+     * Настройка обработчика нажатия кнопки "Назад"
+     */
+    private fun setupBackPressedCallback() {
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                // Если открыта нижняя панель, закрываем её
+                if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED) {
+                    bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+                    return
+                }
+
+                // Если есть изменения, предлагаем сохранить
+                if (hasChanges) {
+                    showSaveBeforeExitDialog()
+                } else {
+                    // Разрешаем стандартную обработку нажатия кнопки "Назад"
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                }
+            }
+        })
+    }
+
+    /**
      * Настройка нижней панели с выбором типа маркера
      */
     private fun setupBottomSheet() {
-        bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet)
+        // Убедимся, что bottomSheet существует
+        val bottomSheetView = binding.bottomSheet ?: run {
+            Toast.makeText(this, "Ошибка инициализации нижней панели", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheetView)
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
 
         // Устанавливаем обработчик для кнопки применения типа маркера
@@ -498,7 +531,9 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
                     }
 
                     // Добавляем новые маркеры
-                    for (marker in binding.markerMapView.getMarkers()) {
+                    val markers = binding.markerMapView.getMarkers()
+
+                    for (marker in markers) {
                         val data = hashMapOf(
                             "x" to marker.x,
                             "y" to marker.y,
@@ -565,7 +600,9 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
                     }
 
                     // Добавляем новые соединения
-                    for (connection in binding.markerMapView.getConnections()) {
+                    val connections = binding.markerMapView.getConnections()
+
+                    for (connection in connections) {
                         val data = hashMapOf(
                             "marker1Id" to connection.marker1Id,
                             "marker2Id" to connection.marker2Id,
@@ -629,6 +666,8 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
      */
     private fun showLoading(show: Boolean) {
         // Здесь можно добавить ProgressBar в макет и управлять его видимостью
+        // Например:
+        // binding.progressBar?.visibility = if (show) View.VISIBLE else View.GONE
     }
 
     // Реализация методов интерфейса MarkerMapListener
@@ -658,28 +697,10 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
      */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == android.R.id.home) {
-            onBackPressed()
+            onBackPressedDispatcher.onBackPressed()
             return true
         }
         return super.onOptionsItemSelected(item)
-    }
-
-    /**
-     * Обработка нажатия системной кнопки "Назад"
-     */
-    override fun onBackPressed() {
-        // Если открыта нижняя панель, закрываем её
-        if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED) {
-            bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
-            return
-        }
-
-        // Если есть изменения, предлагаем сохранить
-        if (hasChanges) {
-            showSaveBeforeExitDialog()
-        } else {
-            super.onBackPressed()
-        }
     }
 
     /**
@@ -696,7 +717,7 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
             }
             .setNegativeButton(getString(R.string.discard_and_exit)) { _, _ ->
                 // Выходим без сохранения
-                super.onBackPressed()
+                finish()
             }
             .setNeutralButton(getString(R.string.stay), null)
             .show()
