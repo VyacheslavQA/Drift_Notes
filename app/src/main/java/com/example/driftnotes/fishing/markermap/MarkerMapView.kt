@@ -23,110 +23,6 @@ import kotlin.math.hypot
 import java.util.UUID
 
 /**
- * Типы маркеров для карты дна
- * Используем изображения символов вместо текста
- */
-enum class MarkerType(val iconResId: Int, val description: String) {
-    ROCK(R.drawable.ic_marker_rock, "Камень"),
-    SNAG(R.drawable.ic_marker_snag, "Коряга"),
-    HOLE(R.drawable.ic_marker_hole, "Яма"),
-    PLATEAU(R.drawable.ic_marker_plateau, "Плато"),
-    SLOPE(R.drawable.ic_marker_slope, "Свал"),
-    DROP_OFF(R.drawable.ic_marker_drop_off, "Обрыв"),
-    WEED(R.drawable.ic_marker_weed, "Водоросли"),
-    SILT(R.drawable.ic_marker_silt, "Ил"),
-    DEEP_SILT(R.drawable.ic_marker_deep_silt, "Глубокий ил"),
-    SHELL(R.drawable.ic_marker_shell, "Ракушка"),
-    HILL(R.drawable.ic_marker_hill, "Бугор"),
-    FEEDING_SPOT(R.drawable.ic_marker_feeding_spot, "Точка кормления")
-}
-
-/**
- * Размеры маркеров
- */
-enum class MarkerSize(val factor: Float, val description: String) {
-    SMALL(1.0f, "Маленький"),
-    MEDIUM(1.5f, "Средний"),
-    LARGE(2.0f, "Большой")
-}
-
-/**
- * Цвета маркеров
- */
-object MarkerColors {
-    val RED = Color.RED
-    val GREEN = Color.GREEN
-    val BLUE = Color.BLUE
-    val YELLOW = Color.YELLOW
-    val CYAN = Color.CYAN
-    val MAGENTA = Color.MAGENTA
-    val WHITE = Color.WHITE
-    val BLACK = Color.BLACK
-
-    val allColors = listOf(RED, GREEN, BLUE, YELLOW, CYAN, MAGENTA, WHITE, BLACK)
-
-    fun getColorName(color: Int): String {
-        return when (color) {
-            RED -> "Красный"
-            GREEN -> "Зеленый"
-            BLUE -> "Синий"
-            YELLOW -> "Желтый"
-            CYAN -> "Голубой"
-            MAGENTA -> "Фиолетовый"
-            WHITE -> "Белый"
-            BLACK -> "Черный"
-            else -> "Неизвестный"
-        }
-    }
-}
-
-/**
- * Класс для хранения информации о маркере
- */
-data class Marker(
-    val id: String = UUID.randomUUID().toString(),
-    var x: Float,
-    var y: Float,
-    var type: MarkerType,
-    var depth: Float,
-    var color: Int = MarkerColors.RED,
-    var size: MarkerSize = MarkerSize.SMALL,
-    var notes: String = ""
-)
-
-/**
- * Класс для соединений между маркерами
- */
-data class MarkerConnection(
-    val id: String = UUID.randomUUID().toString(),
-    val marker1Id: String,
-    val marker2Id: String,
-    var notes: String = ""
-)
-
-/**
- * Интерфейс слушателя событий карты
- */
-interface MarkerMapListener {
-    fun onMarkerAdded(marker: Marker)
-    fun onMarkerSelected(marker: Marker)
-    fun onMarkerMoved(marker: Marker)
-    fun onMarkerDeleted(marker: Marker)
-    fun onConnectionCreated(connection: MarkerConnection)
-    fun onLongPress(x: Float, y: Float)
-    fun onMarkerLongPress(marker: Marker, x: Float, y: Float)
-}
-
-/**
- * Режимы редактирования карты
- */
-enum class EditMode {
-    VIEW_ONLY,       // Только просмотр
-    MOVE_MARKER,     // Режим перемещения маркеров
-    CONNECT_MARKERS  // Режим соединения маркеров
-}
-
-/**
  * Кастомный View для маркерной карты дна
  */
 class MarkerMapView @JvmOverloads constructor(
@@ -796,7 +692,6 @@ class MarkerMapView @JvmOverloads constructor(
     fun resetView() {
         // Сбрасываем матрицу трансформации
         matrix.reset()
-
         // Центрируем карту
         val width = width.toFloat()
         val height = height.toFloat()

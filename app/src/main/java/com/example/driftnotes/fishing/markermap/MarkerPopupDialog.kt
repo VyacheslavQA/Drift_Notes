@@ -67,26 +67,25 @@ class MarkerPopupDialog(
         // Настраиваем выбор цвета
         setupColorGrid()
 
-        // Настраиваем ввод глубины
-        setupDepthSlider()
-
         // Устанавливаем начальные значения при редактировании
         if (isEdit && marker != null) {
             // Заполняем поля данными существующего маркера
             binding.editTextNotes.setText(marker.notes)
 
+            // Устанавливаем глубину в поле для ввода
+            binding.editTextDepth.setText(String.format("%.1f", marker.depth))
+
             // Выбираем тип маркера
             updateSelectedMarkerType(marker.type)
-
-            // Устанавливаем глубину
-            binding.sliderDepth.value = marker.depth
-            binding.textViewDepthValue.text = String.format("%.1f м", marker.depth)
 
             // Показываем кнопку удаления
             binding.buttonDelete.visibility = View.VISIBLE
         } else {
             // Скрываем кнопку удаления для нового маркера
             binding.buttonDelete.visibility = View.GONE
+
+            // Устанавливаем начальное значение глубины
+            binding.editTextDepth.setText(String.format("%.1f", selectedDepth))
         }
 
         // Настраиваем обработчики кнопок
@@ -164,32 +163,20 @@ class MarkerPopupDialog(
     }
 
     /**
-     * Настраивает слайдер глубины
-     */
-    private fun setupDepthSlider() {
-        binding.sliderDepth.apply {
-            valueFrom = 0f
-            valueTo = 100f
-            value = selectedDepth
-            stepSize = 0.1f
-
-            addOnChangeListener { _, value, _ ->
-                selectedDepth = value
-                binding.textViewDepthValue.text = String.format("%.1f м", value)
-            }
-        }
-
-        // Устанавливаем начальное значение
-        binding.textViewDepthValue.text = String.format("%.1f м", selectedDepth)
-    }
-
-    /**
      * Настраивает обработчики кнопок
      */
     private fun setupButtons() {
         // Кнопка Сохранить
         binding.buttonSave.setOnClickListener {
             notes = binding.editTextNotes.text.toString()
+
+            // Получаем введенную глубину (с проверкой на корректность ввода)
+            val depthText = binding.editTextDepth.text.toString()
+            selectedDepth = try {
+                depthText.toFloat()
+            } catch (e: NumberFormatException) {
+                0f
+            }
 
             if (isEdit && marker != null) {
                 // Обновляем существующий маркер

@@ -11,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.driftnotes.R
 import com.example.driftnotes.databinding.ActivityMarkerMapBinding
 import com.example.driftnotes.utils.FirebaseManager
-import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import java.util.UUID
@@ -65,6 +64,25 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
 
         // Настраиваем кнопки сохранения и настроек
         setupActionButtons()
+
+        // Настраиваем кнопку подтверждения
+        binding.buttonConfirmMap.setOnClickListener {
+            saveAndConfirm()
+        }
+    }
+
+    /**
+     * Сохраняет карту и возвращает результат в вызвавшую активность
+     */
+    private fun saveAndConfirm() {
+        // Показываем индикатор загрузки
+        showLoading(true)
+
+        // Сохраняем данные карты
+        saveMapData()
+
+        // Результат будет возвращен в методе saveConnections() после успешного сохранения
+        Toast.makeText(this, R.string.map_saved, Toast.LENGTH_SHORT).show()
     }
 
     /**
@@ -656,7 +674,10 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
                 val index = markers.indexOfFirst { it.id == updatedMarker.id }
                 if (index != -1) {
                     markers[index] = updatedMarker
-                    binding.markerMapView.setMapData(markers, binding.markerMapView.getConnections())
+                    binding.markerMapView.setMapData(
+                        markers,
+                        binding.markerMapView.getConnections()
+                    )
 
                     // Отмечаем, что были внесены изменения
                     hasChanges = true

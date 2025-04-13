@@ -22,7 +22,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Панель инструментов сверху -->
+        <!-- Панель инструментов сверху с прокруткой -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/toolbarPanel"
             android:layout_width="0dp"
@@ -72,6 +72,17 @@
                         android:layout_marginEnd="8dp"
                         android:text="Соединить"
                         app:icon="@android:drawable/ic_menu_share" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonConfirmMap"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:text="Подтвердить"
+                        android:backgroundTint="@color/design_default_color_secondary"
+                        android:textColor="@android:color/white"
+                        app:icon="@android:drawable/ic_menu_send" />
                 </LinearLayout>
             </HorizontalScrollView>
         </com.google.android.material.card.MaterialCardView>
