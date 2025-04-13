@@ -7,16 +7,18 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
-import android.view.Gravity
+import android.view.MenuItem
 import android.view.View
-import android.view.ViewGroup
 import android.widget.ArrayAdapter
-import android.widget.FrameLayout
+import android.widget.AutoCompleteTextView
+import android.widget.Button
 import android.widget.ProgressBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
 import com.example.driftnotes.R
@@ -27,6 +29,7 @@ import com.example.driftnotes.models.FishingNote
 import com.example.driftnotes.models.FishingWeather
 import com.example.driftnotes.repository.WeatherRepository
 import com.example.driftnotes.utils.AnimationHelper
+import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
@@ -45,6 +48,27 @@ class AddFishingNoteActivity : AppCompatActivity() {
     private val firestore = FirebaseFirestore.getInstance()
     private val storage = FirebaseStorage.getInstance()
     private val weatherRepository = WeatherRepository()
+
+    // UI элементы
+    private lateinit var formContent: ConstraintLayout
+    private lateinit var buttonInitialCancel: Button
+    private lateinit var dropdownFishingType: AutoCompleteTextView
+    private lateinit var formContentTitle: TextView
+    private lateinit var textViewSelectedCoordinates: TextView
+    private lateinit var editTextDate: TextInputEditText
+    private lateinit var buttonAddPhoto: Button
+    private lateinit var buttonSave: Button
+    private lateinit var buttonCancel: Button
+    private lateinit var buttonOpenMap: Button
+    private lateinit var buttonOpenMarkerMap: Button
+    private lateinit var buttonLoadWeather: Button
+    private lateinit var progressBarWeather: ProgressBar
+    private lateinit var textViewWeatherStatus: TextView
+    private lateinit var editTextLocation: TextInputEditText
+    private lateinit var editTextTackle: TextInputEditText
+    private lateinit var editTextNotes: TextInputEditText
+    private lateinit var textViewPhotoCount: TextView
+    private lateinit var mainProgressBar: ProgressBar
 
     private val calendar = Calendar.getInstance()
     private val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
@@ -96,79 +120,86 @@ class AddFishingNoteActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = getString(R.string.add_note)
 
+        // Инициализация UI элементов с использованием findViewById
+        initViews()
+
+        // Проверка разрешений
         checkAndRequestPermissions()
 
         // Скрываем основную форму до выбора типа рыбалки
-        binding.formContent.visibility = View.GONE
-        binding.buttonInitialCancel.visibility = View.VISIBLE
+        formContent.visibility = View.GONE
+        buttonInitialCancel.visibility = View.VISIBLE
 
-        // Находим элементы внутри formContent через findViewById
-        val formContentTitle = findViewById<android.widget.TextView>(R.id.formContentTitle)
-        val textViewSelectedCoordinates = findViewById<android.widget.TextView>(R.id.textViewSelectedCoordinates)
-        val editTextDate = findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.editTextDate)
-        val buttonAddPhoto = findViewById<android.widget.Button>(R.id.buttonAddPhoto)
-        val buttonSave = findViewById<android.widget.Button>(R.id.buttonSave)
-        val buttonCancel = findViewById<android.widget.Button>(R.id.buttonCancel)
-        val buttonOpenMap = findViewById<android.widget.Button>(R.id.buttonOpenMap)
-        val buttonOpenMarkerMap = findViewById<android.widget.Button>(R.id.buttonOpenMarkerMap)
-        val buttonLoadWeather = findViewById<android.widget.Button>(R.id.buttonLoadWeather)
-        val progressBarWeather = findViewById<android.widget.ProgressBar>(R.id.progressBarWeather)
-        val textViewWeatherStatus = findViewById<android.widget.TextView>(R.id.textViewWeatherStatus)
-        val editTextLocation = findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.editTextLocation)
-        val editTextTackle = findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.editTextTackle)
-        val editTextNotes = findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.editTextNotes)
-        val textViewPhotoCount = findViewById<android.widget.TextView>(R.id.textViewPhotoCount)
-
-        // Скрываем текст с координатами, пока они не выбраны
-        textViewSelectedCoordinates?.visibility = View.GONE
-
-        // Установка начальной даты (сегодня)
+        // Устанавливаем начальную дату (сегодня)
         updateDateDisplay()
 
         // Инициализация выпадающего списка типов рыбалки
         setupFishingTypeDropdown()
 
+        // Настройка обработчиков событий
+        setupEventListeners()
+    }
+
+    private fun initViews() {
+        // Инициализация всех UI элементов через findViewById
+        formContent = findViewById(R.id.formContent)
+        buttonInitialCancel = findViewById(R.id.buttonInitialCancel)
+        dropdownFishingType = findViewById(R.id.dropdownFishingType)
+        formContentTitle = findViewById(R.id.formContentTitle)
+        textViewSelectedCoordinates = findViewById(R.id.textViewSelectedCoordinates)
+        editTextDate = findViewById(R.id.editTextDate)
+        buttonAddPhoto = findViewById(R.id.buttonAddPhoto)
+        buttonSave = findViewById(R.id.buttonSave)
+        buttonCancel = findViewById(R.id.buttonCancel)
+        buttonOpenMap = findViewById(R.id.buttonOpenMap)
+        buttonOpenMarkerMap = findViewById(R.id.buttonOpenMarkerMap)
+        buttonLoadWeather = findViewById(R.id.buttonLoadWeather)
+        progressBarWeather = findViewById(R.id.progressBarWeather)
+        textViewWeatherStatus = findViewById(R.id.textViewWeatherStatus)
+        editTextLocation = findViewById(R.id.editTextLocation)
+        editTextTackle = findViewById(R.id.editTextTackle)
+        editTextNotes = findViewById(R.id.editTextNotes)
+        textViewPhotoCount = findViewById(R.id.textViewPhotoCount)
+        mainProgressBar = findViewById(R.id.progressBar)
+    }
+
+    private fun setupEventListeners() {
         // Обработчик выбора даты
-        editTextDate?.setOnClickListener {
+        editTextDate.setOnClickListener {
             showDatePicker()
         }
 
         // Обработчик добавления фото
-        buttonAddPhoto?.setOnClickListener {
+        buttonAddPhoto.setOnClickListener {
             showPhotoSourceDialog()
         }
 
         // Обработчик сохранения
-        buttonSave?.setOnClickListener {
+        buttonSave.setOnClickListener {
             saveFishingNote()
         }
 
         // Обработчик отмены (обе кнопки отмены)
-        buttonCancel?.setOnClickListener {
+        buttonCancel.setOnClickListener {
             AnimationHelper.finishWithAnimation(this)
         }
 
-        binding.buttonInitialCancel.setOnClickListener {
+        buttonInitialCancel.setOnClickListener {
             AnimationHelper.finishWithAnimation(this)
         }
 
         // Обработчик нажатия на кнопку открытия карты
-        buttonOpenMap?.setOnClickListener {
+        buttonOpenMap.setOnClickListener {
             openMap()
         }
 
         // Обработчик нажатия на кнопку открытия маркерной карты
-        buttonOpenMarkerMap?.setOnClickListener {
+        buttonOpenMarkerMap.setOnClickListener {
             openMarkerMap()
         }
 
-        // Установка системной иконки для кнопки загрузки погоды
-        buttonLoadWeather?.setCompoundDrawablesWithIntrinsicBounds(
-            android.R.drawable.ic_menu_compass, 0, 0, 0
-        )
-
         // Обработчик загрузки погоды
-        buttonLoadWeather?.setOnClickListener {
+        buttonLoadWeather.setOnClickListener {
             loadWeatherData()
         }
     }
@@ -188,30 +219,28 @@ class AddFishingNoteActivity : AppCompatActivity() {
 
         // Создаем адаптер для выпадающего списка
         val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, fishingTypes)
-        binding.dropdownFishingType.setAdapter(adapter)
+        dropdownFishingType.setAdapter(adapter)
 
         // Устанавливаем слушатель выбора
-        binding.dropdownFishingType.setOnItemClickListener { _, _, position, _ ->
+        dropdownFishingType.setOnItemClickListener { _, _, position, _ ->
             selectedFishingType = fishingTypes[position]
 
             // Показываем форму после выбора типа рыбалки
-            binding.formContent.visibility = View.VISIBLE
-            binding.buttonInitialCancel.visibility = View.GONE
+            formContent.visibility = View.VISIBLE
+            buttonInitialCancel.visibility = View.GONE
 
-            val formContentTitle = findViewById<android.widget.TextView>(R.id.formContentTitle)
-            formContentTitle?.text = getString(R.string.fishing_details_for, selectedFishingType)
+            formContentTitle.text = getString(R.string.fishing_details_for, selectedFishingType)
 
             // Показываем кнопку маркерной карты только для карповой рыбалки
-            val buttonOpenMarkerMap = findViewById<android.widget.Button>(R.id.buttonOpenMarkerMap)
             if (selectedFishingType == getString(R.string.fishing_type_carp)) {
-                buttonOpenMarkerMap?.visibility = View.VISIBLE
+                buttonOpenMarkerMap.visibility = View.VISIBLE
             } else {
-                buttonOpenMarkerMap?.visibility = View.GONE
+                buttonOpenMarkerMap.visibility = View.GONE
             }
 
             // Прокручиваем до начала формы
             binding.scrollView.post {
-                binding.scrollView.smoothScrollTo(0, binding.formContent.top)
+                binding.scrollView.smoothScrollTo(0, formContent.top)
             }
         }
     }
@@ -233,8 +262,7 @@ class AddFishingNoteActivity : AppCompatActivity() {
         }
 
         // Передаем имя карты (название места ловли)
-        val editTextLocation = findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.editTextLocation)
-        val locationName = editTextLocation?.text.toString().trim()
+        val locationName = editTextLocation.text.toString().trim()
         val mapName = if (locationName.isNotEmpty()) {
             "Карта $locationName"
         } else {
@@ -289,8 +317,7 @@ class AddFishingNoteActivity : AppCompatActivity() {
     }
 
     private fun updateDateDisplay() {
-        val editTextDate = findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.editTextDate)
-        editTextDate?.setText(dateFormat.format(calendar.time))
+        editTextDate.setText(dateFormat.format(calendar.time))
     }
 
     private fun showDatePicker() {
@@ -353,8 +380,7 @@ class AddFishingNoteActivity : AppCompatActivity() {
     }
 
     private fun updatePhotoCounter() {
-        val textViewPhotoCount = findViewById<android.widget.TextView>(R.id.textViewPhotoCount)
-        textViewPhotoCount?.text = resources.getQuantityString(
+        textViewPhotoCount.text = resources.getQuantityString(
             R.plurals.photo_count,
             selectedPhotos.size,
             selectedPhotos.size
@@ -368,13 +394,9 @@ class AddFishingNoteActivity : AppCompatActivity() {
             return
         }
 
-        val progressBarWeather = findViewById<android.widget.ProgressBar>(R.id.progressBarWeather)
-        val textViewWeatherStatus = findViewById<android.widget.TextView>(R.id.textViewWeatherStatus)
-        val buttonLoadWeather = findViewById<android.widget.Button>(R.id.buttonLoadWeather)
-
-        progressBarWeather?.visibility = View.VISIBLE
-        textViewWeatherStatus?.text = getString(R.string.weather_loading)
-        buttonLoadWeather?.isEnabled = false
+        progressBarWeather.visibility = View.VISIBLE
+        textViewWeatherStatus.text = getString(R.string.weather_loading)
+        buttonLoadWeather.isEnabled = false
 
         lifecycleScope.launch {
             try {
@@ -382,16 +404,16 @@ class AddFishingNoteActivity : AppCompatActivity() {
 
                 if (weather != null) {
                     weatherData = weather
-                    textViewWeatherStatus?.text = weather.weatherDescription
+                    textViewWeatherStatus.text = weather.weatherDescription
                     Toast.makeText(this@AddFishingNoteActivity, R.string.weather_success, Toast.LENGTH_SHORT).show()
                 } else {
-                    textViewWeatherStatus?.text = getString(R.string.weather_error, "Не удалось получить данные")
+                    textViewWeatherStatus.text = getString(R.string.weather_error, "Не удалось получить данные")
                 }
             } catch (e: Exception) {
-                textViewWeatherStatus?.text = getString(R.string.weather_error, e.message)
+                textViewWeatherStatus.text = getString(R.string.weather_error, e.message)
             } finally {
-                progressBarWeather?.visibility = View.INVISIBLE
-                buttonLoadWeather?.isEnabled = true
+                progressBarWeather.visibility = View.INVISIBLE
+                buttonLoadWeather.isEnabled = true
             }
         }
     }
@@ -403,21 +425,16 @@ class AddFishingNoteActivity : AppCompatActivity() {
             return
         }
 
-        val editTextLocation = findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.editTextLocation)
-        val editTextTackle = findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.editTextTackle)
-        val editTextNotes = findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.editTextNotes)
-
-        val location = editTextLocation?.text.toString().trim()
-        val tackle = editTextTackle?.text.toString().trim()
-        val notes = editTextNotes?.text.toString().trim()
+        val location = editTextLocation.text.toString().trim()
+        val tackle = editTextTackle.text.toString().trim()
+        val notes = editTextNotes.text.toString().trim()
 
         if (location.isEmpty() || tackle.isEmpty()) {
             Toast.makeText(this, "Пожалуйста, заполните обязательные поля", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val buttonSave = findViewById<android.widget.Button>(R.id.buttonSave)
-        buttonSave?.isEnabled = false
+        buttonSave.isEnabled = false
 
         if (selectedPhotos.isEmpty()) {
             saveNoteToFirestore(emptyList())
@@ -431,23 +448,8 @@ class AddFishingNoteActivity : AppCompatActivity() {
         var uploadedCount = 0
         var errorCount = 0
 
-        // Показываем индикатор загрузки - создаем его программно
-        val progressBar = ProgressBar(this).apply {
-            id = View.generateViewId()
-            visibility = View.VISIBLE
-        }
-
-        val rootView = findViewById<View>(android.R.id.content)
-        (rootView as? ViewGroup)?.addView(progressBar,
-            ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply {
-                if (this is FrameLayout.LayoutParams) {
-                    gravity = Gravity.CENTER
-                }
-            }
-        )
+        // Показываем основной индикатор загрузки
+        mainProgressBar.visibility = View.VISIBLE
 
         for (i in selectedPhotos.indices) {
             val photoUri = selectedPhotos[i]
@@ -528,31 +530,20 @@ class AddFishingNoteActivity : AppCompatActivity() {
 
         if (userId == null) {
             Toast.makeText(this, "Ошибка авторизации, попробуйте войти заново", Toast.LENGTH_SHORT).show()
-
-            val buttonSave = findViewById<android.widget.Button>(R.id.buttonSave)
-            buttonSave?.isEnabled = true
-
-            // Скрываем индикатор загрузки
-            val progressBar = findViewById<ProgressBar>(View.generateViewId())
-            if (progressBar != null) {
-                (progressBar.parent as? ViewGroup)?.removeView(progressBar)
-            }
+            buttonSave.isEnabled = true
+            mainProgressBar.visibility = View.GONE
             return
         }
-
-        val editTextLocation = findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.editTextLocation)
-        val editTextTackle = findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.editTextTackle)
-        val editTextNotes = findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.editTextNotes)
 
         // Создаем объект записи о рыбалке с координатами, погодой, типом рыбалки и ID маркерной карты
         val fishingNote = FishingNote(
             userId = userId,
-            location = editTextLocation?.text.toString().trim() ?: "",
+            location = editTextLocation.text.toString().trim(),
             latitude = selectedLatitude,
             longitude = selectedLongitude,
             date = calendar.time,
-            tackle = editTextTackle?.text.toString().trim() ?: "",
-            notes = editTextNotes?.text.toString().trim() ?: "",
+            tackle = editTextTackle.text.toString().trim(),
+            notes = editTextNotes.text.toString().trim(),
             photoUrls = photoUrls,
             fishingType = selectedFishingType,
             weather = weatherData,
@@ -564,25 +555,12 @@ class AddFishingNoteActivity : AppCompatActivity() {
             .add(fishingNote)
             .addOnSuccessListener {
                 Toast.makeText(this, R.string.note_saved, Toast.LENGTH_SHORT).show()
-
-                // Скрываем индикатор загрузки
-                val progressBar = findViewById<ProgressBar>(View.generateViewId())
-                if (progressBar != null) {
-                    (progressBar.parent as? ViewGroup)?.removeView(progressBar)
-                }
-
+                mainProgressBar.visibility = View.GONE
                 AnimationHelper.finishWithAnimation(this)
             }
             .addOnFailureListener { e ->
-                val buttonSave = findViewById<android.widget.Button>(R.id.buttonSave)
-                buttonSave?.isEnabled = true
-
-                // Скрываем индикатор загрузки
-                val progressBar = findViewById<ProgressBar>(View.generateViewId())
-                if (progressBar != null) {
-                    (progressBar.parent as? ViewGroup)?.removeView(progressBar)
-                }
-
+                buttonSave.isEnabled = true
+                mainProgressBar.visibility = View.GONE
                 Toast.makeText(
                     this,
                     getString(R.string.error_saving, e.message),
@@ -602,14 +580,9 @@ class AddFishingNoteActivity : AppCompatActivity() {
                         val latitude = it.getDoubleExtra("latitude", 0.0)
                         val longitude = it.getDoubleExtra("longitude", 0.0)
 
-                        // Обновляем View с координатами
-                        val textViewSelectedCoordinates = findViewById<android.widget.TextView>(R.id.textViewSelectedCoordinates)
-                        val editTextLocation = findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.editTextLocation)
-                        val textViewWeatherStatus = findViewById<android.widget.TextView>(R.id.textViewWeatherStatus)
-
                         // Показываем и заполняем текстовое поле с координатами
-                        textViewSelectedCoordinates?.visibility = View.VISIBLE
-                        textViewSelectedCoordinates?.text = getString(
+                        textViewSelectedCoordinates.visibility = View.VISIBLE
+                        textViewSelectedCoordinates.text = getString(
                             R.string.coordinates_format,
                             latitude,
                             longitude
@@ -617,8 +590,8 @@ class AddFishingNoteActivity : AppCompatActivity() {
 
                         // Теперь пользователь может ввести название места сам
                         // или использовать предложенное с карты
-                        if (editTextLocation?.text.toString().isEmpty()) {
-                            editTextLocation?.setText(locationName)
+                        if (editTextLocation.text.toString().isEmpty()) {
+                            editTextLocation.setText(locationName)
                         }
 
                         selectedLatitude = latitude
@@ -626,7 +599,7 @@ class AddFishingNoteActivity : AppCompatActivity() {
 
                         // Сбрасываем погодные данные при изменении локации
                         weatherData = null
-                        textViewWeatherStatus?.text = getString(R.string.weather_not_loaded)
+                        textViewWeatherStatus.text = getString(R.string.weather_not_loaded)
                     }
                 }
             }
@@ -638,8 +611,7 @@ class AddFishingNoteActivity : AppCompatActivity() {
                         markerMapId = mapId
 
                         // Обновляем надпись на кнопке, чтобы показать, что карта создана
-                        val buttonOpenMarkerMap = findViewById<android.widget.Button>(R.id.buttonOpenMarkerMap)
-                        buttonOpenMarkerMap?.text = getString(R.string.edit_marker_map)
+                        buttonOpenMarkerMap.text = getString(R.string.edit_marker_map)
 
                         Toast.makeText(
                             this,
@@ -652,15 +624,15 @@ class AddFishingNoteActivity : AppCompatActivity() {
         }
     }
 
-    override fun onSupportNavigateUp(): Boolean {
-        onBackPressedDispatcher.onBackPressed()
-        return true
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == android.R.id.home) {
+            AnimationHelper.finishWithAnimation(this)
+            return true
+        }
+        return super.onOptionsItemSelected(item)
     }
 
-    // Используем диспетчер вместо переопределения
-    @Suppress("OVERRIDE_DEPRECATION")
     override fun onBackPressed() {
-        // Вызываем диспетчер
-        onBackPressedDispatcher.onBackPressed()
+        AnimationHelper.finishWithAnimation(this)
     }
 }
