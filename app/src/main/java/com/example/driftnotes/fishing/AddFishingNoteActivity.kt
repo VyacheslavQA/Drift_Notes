@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -22,6 +23,7 @@ import com.example.driftnotes.maps.MapActivity
 import com.example.driftnotes.models.FishingNote
 import com.example.driftnotes.models.FishingWeather
 import com.example.driftnotes.repository.WeatherRepository
+import com.example.driftnotes.utils.AnimationHelper
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
@@ -31,6 +33,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.UUID
 
 class AddFishingNoteActivity : AppCompatActivity() {
 
@@ -86,6 +89,10 @@ class AddFishingNoteActivity : AppCompatActivity() {
 
         auth = FirebaseAuth.getInstance()
 
+        // Добавляем кнопку "назад" в ActionBar
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.title = getString(R.string.add_note)
+
         checkAndRequestPermissions()
 
         // Установка начальной даты (сегодня)
@@ -118,11 +125,11 @@ class AddFishingNoteActivity : AppCompatActivity() {
 
         // Обработчик отмены (обе кнопки отмены)
         binding.buttonCancel.setOnClickListener {
-            finish()
+            AnimationHelper.finishWithAnimation(this)
         }
 
         binding.buttonInitialCancel.setOnClickListener {
-            finish()
+            AnimationHelper.finishWithAnimation(this)
         }
 
         // Обработчик нажатия на кнопку открытия карты
@@ -387,33 +394,82 @@ class AddFishingNoteActivity : AppCompatActivity() {
     private fun uploadPhotosAndSaveNote() {
         val photoUrls = mutableListOf<String>()
         var uploadedCount = 0
+        var errorCount = 0
+
+        // Показываем индикатор загрузки
+        binding.progressBar.visibility = View.VISIBLE
 
         for (i in selectedPhotos.indices) {
             val photoUri = selectedPhotos[i]
-            val fileName = "fishing_photo_${System.currentTimeMillis()}_$i.jpg"
-            val photoRef = storage.reference.child("fishing_photos/${auth.currentUser?.uid}/$fileName")
 
-            photoRef.putFile(photoUri)
-                .addOnSuccessListener {
-                    photoRef.downloadUrl.addOnSuccessListener { uri ->
-                        photoUrls.add(uri.toString())
-                        uploadedCount++
+            // Создаем уникальный идентификатор для файла
+            val fileUUID = UUID.randomUUID().toString()
+            val fileName = "fishing_photo_${fileUUID}.jpg"
 
-                        if (uploadedCount == selectedPhotos.size) {
+            // Полный путь к файлу в Storage
+            val userId = auth.currentUser?.uid ?: "anonymous"
+            val photoRef = storage.reference.child("users/$userId/photos/$fileName")
+
+            try {
+                Log.d("AddFishingNote", "Начинаем загрузку фото $i: $photoUri в $fileName")
+
+                // Получаем входной поток из Uri
+                val inputStream = contentResolver.openInputStream(photoUri)
+
+                if (inputStream != null) {
+                    // Загружаем фото из потока
+                    val uploadTask = photoRef.putStream(inputStream)
+
+                    uploadTask.addOnSuccessListener {
+                        Log.d("AddFishingNote", "Фото $i загружено успешно")
+
+                        // Получаем URL для загруженного файла
+                        photoRef.downloadUrl.addOnSuccessListener { downloadUri ->
+                            photoUrls.add(downloadUri.toString())
+                            uploadedCount++
+
+                            Log.d("AddFishingNote", "Получен URL $downloadUri для фото $i")
+
+                            // Если все фотографии обработаны, сохраняем запись
+                            if (uploadedCount + errorCount == selectedPhotos.size) {
+                                Log.d("AddFishingNote", "Все фото обработаны. Сохраняем запись.")
+                                saveNoteToFirestore(photoUrls)
+                            }
+                        }.addOnFailureListener { e ->
+                            Log.e("AddFishingNote", "Ошибка получения URL для фото $i: ${e.message}", e)
+                            errorCount++
+
+                            if (uploadedCount + errorCount == selectedPhotos.size) {
+                                saveNoteToFirestore(photoUrls)
+                            }
+                        }
+                    }.addOnFailureListener { e ->
+                        Log.e("AddFishingNote", "Ошибка загрузки фото $i: ${e.message}", e)
+                        errorCount++
+
+                        if (uploadedCount + errorCount == selectedPhotos.size) {
                             saveNoteToFirestore(photoUrls)
                         }
                     }
-                }
-                .addOnFailureListener { e ->
-                    uploadedCount++
-                    Toast.makeText(this,
-                        "Ошибка при загрузке фото: ${e.message}",
-                        Toast.LENGTH_SHORT).show()
 
-                    if (uploadedCount == selectedPhotos.size) {
+                    // Закрываем поток
+                    inputStream.close()
+                } else {
+                    Log.e("AddFishingNote", "Не удалось открыть поток для фото $i")
+                    errorCount++
+
+                    if (uploadedCount + errorCount == selectedPhotos.size) {
                         saveNoteToFirestore(photoUrls)
                     }
                 }
+            } catch (e: Exception) {
+                Log.e("AddFishingNote", "Исключение при обработке фото $i: ${e.message}", e)
+                errorCount++
+
+                if (uploadedCount + errorCount == selectedPhotos.size) {
+                    saveNoteToFirestore(photoUrls)
+                }
+            }
         }
     }
 
@@ -423,6 +479,7 @@ class AddFishingNoteActivity : AppCompatActivity() {
         if (userId == null) {
             Toast.makeText(this, "Ошибка авторизации, попробуйте войти заново", Toast.LENGTH_SHORT).show()
             binding.buttonSave.isEnabled = true
+            binding.progressBar.visibility = View.GONE
             return
         }
 
@@ -446,10 +503,12 @@ class AddFishingNoteActivity : AppCompatActivity() {
             .add(fishingNote)
             .addOnSuccessListener {
                 Toast.makeText(this, R.string.note_saved, Toast.LENGTH_SHORT).show()
-                finish()
+                binding.progressBar.visibility = View.GONE
+                AnimationHelper.finishWithAnimation(this)
             }
             .addOnFailureListener { e ->
                 binding.buttonSave.isEnabled = true
+                binding.progressBar.visibility = View.GONE
                 Toast.makeText(
                     this,
                     getString(R.string.error_saving, e.message),
@@ -511,5 +570,16 @@ class AddFishingNoteActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressedDispatcher.onBackPressed()
+        return true
+    }
+
+    // Замена устаревшего метода onBackPressed
+    @Deprecated("Используйте onBackPressedDispatcher вместо этого")
+    override fun onBackPressed() {
+        onBackPressedDispatcher.onBackPressed()
     }
 }
