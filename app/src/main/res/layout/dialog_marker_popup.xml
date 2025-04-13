@@ -54,8 +54,8 @@
 
             <ImageView
                 android:id="@+id/imageViewSelectedType"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:contentDescription="Выбранный тип маркера" />
 
             <TextView
@@ -67,7 +67,7 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- Секция выбора размера маркера -->
+        <!-- Секция выбора размера маркера - скрываем, но оставляем для совместимости с кодом -->
         <TextView
             android:id="@+id/textViewSizeTitle"
             android:layout_width="0dp"
@@ -75,6 +75,7 @@
             android:layout_marginTop="16dp"
             android:text="Размер маркера:"
             android:textStyle="bold"
+            android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/layoutSelectedType" />
@@ -84,6 +85,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textViewSizeTitle" />
@@ -98,7 +100,7 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/spinnerSize" />
+            app:layout_constraintTop_toBottomOf="@+id/layoutSelectedType" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewColors"
@@ -121,7 +123,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/recyclerViewColors" />
 
-        <!-- Заменяем слайдер на поле ввода для глубины -->
+        <!-- Поле ввода для глубины -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/textInputLayoutDepth"
             android:layout_width="0dp"

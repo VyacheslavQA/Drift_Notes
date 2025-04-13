@@ -23,12 +23,11 @@ enum class MarkerType(val iconResId: Int, val description: String) {
 }
 
 /**
- * Размеры маркеров
+ * Размеры маркеров - теперь у нас только один размер
+ * Оставляем класс для совместимости
  */
 enum class MarkerSize(val factor: Float, val description: String) {
-    SMALL(1.0f, "Маленький"),
-    MEDIUM(1.5f, "Средний"),
-    LARGE(2.0f, "Большой")
+    LARGE(4.0f, "Стандартный") // Увеличиваем в 2 раза от предыдущего LARGE (2.0f -> 4.0f)
 }
 
 /**
@@ -42,9 +41,9 @@ object MarkerColors {
     val CYAN = Color.CYAN
     val MAGENTA = Color.MAGENTA
     val WHITE = Color.WHITE
-    val BLACK = Color.BLACK
+    val ORANGE = Color.rgb(255, 165, 0) // Добавляем оранжевый цвет вместо черного
 
-    val allColors = listOf(RED, GREEN, BLUE, YELLOW, CYAN, MAGENTA, WHITE, BLACK)
+    val allColors = listOf(RED, GREEN, BLUE, YELLOW, CYAN, MAGENTA, WHITE, ORANGE)
 
     fun getColorName(color: Int): String {
         return when (color) {
@@ -55,7 +54,7 @@ object MarkerColors {
             CYAN -> "Голубой"
             MAGENTA -> "Фиолетовый"
             WHITE -> "Белый"
-            BLACK -> "Черный"
+            ORANGE -> "Оранжевый"
             else -> "Неизвестный"
         }
     }
@@ -71,7 +70,7 @@ data class Marker(
     var type: MarkerType,
     var depth: Float,
     var color: Int = MarkerColors.RED,
-    var size: MarkerSize = MarkerSize.SMALL,
+    var size: MarkerSize = MarkerSize.LARGE, // Используем только один размер
     var notes: String = ""
 )
 

@@ -213,8 +213,6 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
      * Загружает маркеры для карты
      */
     private fun loadMarkers() {
-        // Код загрузки маркеров остаётся без изменений
-        // ...
         try {
             firestore.collection("marker_maps")
                 .document(mapId)
@@ -232,7 +230,7 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
                             val depth = doc.getDouble("depth")?.toFloat() ?: 0f
                             val notes = doc.getString("notes") ?: ""
                             val colorInt = doc.getLong("color")?.toInt() ?: MarkerColors.RED
-                            val sizeStr = doc.getString("size") ?: MarkerSize.SMALL.name
+                            val sizeStr = doc.getString("size") ?: MarkerSize.LARGE.name  // Изменено SMALL на LARGE
 
                             // Преобразуем строку в тип маркера
                             val type = try {
@@ -245,7 +243,7 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
                             val size = try {
                                 MarkerSize.valueOf(sizeStr)
                             } catch (e: Exception) {
-                                MarkerSize.SMALL
+                                MarkerSize.LARGE  // Изменено SMALL на LARGE
                             }
 
                             markers.add(Marker(id, x, y, type, depth, colorInt, size, notes))
@@ -366,15 +364,16 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
                     showLoading(false)
                     Toast.makeText(
                         this,
-                        getString(R.string.error_saving_map, e.message),
+                        getString(R.string.error_saving_map) + ": " + e.message,
                         Toast.LENGTH_SHORT
                     ).show()
+
                 }
         } catch (e: Exception) {
             showLoading(false)
             Toast.makeText(
                 this,
-                getString(R.string.error_saving_map, e.message),
+                getString(R.string.error_saving_map) + ": " + e.message,
                 Toast.LENGTH_SHORT
             ).show()
         }

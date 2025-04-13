@@ -104,21 +104,21 @@ class MarkerMapView @JvmOverloads constructor(
 
     private val markerStrokePaint = Paint().apply {
         color = Color.BLACK
-        strokeWidth = 2f
+        strokeWidth = 4f // Увеличиваем ширину контура
         style = Paint.Style.STROKE
         isAntiAlias = true
     }
 
     private val connectionPaint = Paint().apply {
         color = Color.RED
-        strokeWidth = 3f
+        strokeWidth = 5f // Увеличиваем ширину линии соединения
         style = Paint.Style.STROKE
         isAntiAlias = true
     }
 
     private val infoTextPaint = Paint().apply {
         color = Color.BLACK
-        textSize = 24f
+        textSize = 30f // Увеличиваем размер текста для информации
         isAntiAlias = true
     }
 
@@ -128,21 +128,22 @@ class MarkerMapView @JvmOverloads constructor(
         style = Paint.Style.FILL
     }
 
-    // Новая кисть для отображения названия типа маркера
+    // Обновленная кисть для отображения названия типа маркера
     private val typeTextPaint = Paint().apply {
         color = Color.BLACK
-        textSize = 16f
+        textSize = 36f // Увеличиваем размер текста с 24f до 36f
         isAntiAlias = true
-        textAlign = Paint.Align.LEFT
+        textAlign = Paint.Align.CENTER // Центрируем текст
+        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD) // Делаем шрифт жирным
     }
 
-    // Обновленная кисть для отображения глубины с увеличенным шрифтом и жирностью
+    // Обновленная кисть для отображения глубины
     private val depthTextPaint = Paint().apply {
         color = Color.BLUE
-        textSize = 22f  // Увеличиваем размер с 16f до 22f
+        textSize = 56f  // Увеличиваем размер текста для глубины в два раза (с 28f до 56f)
         isAntiAlias = true
-        textAlign = Paint.Align.RIGHT
-        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD) // Делаем шрифт жирным
+        textAlign = Paint.Align.CENTER // Центрируем текст
+        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD) // Жирный шрифт
     }
 
     init {
@@ -207,7 +208,7 @@ class MarkerMapView @JvmOverloads constructor(
         MarkerType.values().forEach { type ->
             try {
                 val drawable = ContextCompat.getDrawable(context, type.iconResId)
-                val bitmap = drawable?.toBitmap(width = 48, height = 48)
+                val bitmap = drawable?.toBitmap(width = 72, height = 72) // Увеличиваем размер иконок с 48x48 до 72x72
                 if (bitmap != null) {
                     markerIcons[type] = bitmap
                 }
@@ -402,12 +403,8 @@ class MarkerMapView @JvmOverloads constructor(
             // Определяем цвет маркера
             markerPaint.color = marker.color
 
-            // Размер маркера
-            val markerSize = when (marker.size) {
-                MarkerSize.SMALL -> 20f
-                MarkerSize.MEDIUM -> 30f
-                MarkerSize.LARGE -> 40f
-            } * (if (marker == selectedMarker || marker == firstConnectionMarker) 1.2f else 1.0f)
+            // Размер маркера - теперь всегда большой
+            val markerSize = 80f * (if (marker == selectedMarker || marker == firstConnectionMarker) 1.2f else 1.0f)
 
             // Рисуем круг маркера
             canvas.drawCircle(marker.x, marker.y, markerSize, markerPaint)
@@ -427,45 +424,49 @@ class MarkerMapView @JvmOverloads constructor(
                 canvas.drawBitmap(iconBitmap, null, rectF, null)
             }
 
-            // Рисуем тип маркера слева от точки
+            // Рисуем тип маркера в центре круга
             val typeText = marker.type.description
-            val typeTextWidth = typeTextPaint.measureText(typeText)
 
-            // Фон для текста типа маркера
+            // Фон для текста типа маркера (над маркером)
+            val typeBgWidth = typeTextPaint.measureText(typeText) + 30f
+            val typeBgHeight = typeTextPaint.textSize + 20f
+
             canvas.drawRect(
-                marker.x - markerSize - typeTextWidth - 10,
-                marker.y - 10,
-                marker.x - markerSize - 5,
-                marker.y + 20,
+                marker.x - typeBgWidth / 2,
+                marker.y - markerSize - typeBgHeight,
+                marker.x + typeBgWidth / 2,
+                marker.y - markerSize,
                 infoBgPaint
             )
 
-            // Текст типа маркера
+            // Текст типа маркера (над маркером)
             canvas.drawText(
                 typeText,
-                marker.x - markerSize - typeTextWidth - 5,
-                marker.y + 15,
+                marker.x,
+                marker.y - markerSize - 15f,
                 typeTextPaint
             )
 
-            // Рисуем глубину справа от точки
+            // Рисуем глубину под маркером
             val depthText = String.format("%.1f м", marker.depth)
-            val depthTextWidth = depthTextPaint.measureText(depthText)
 
-            // Фон для текста глубины - увеличиваем поле для большего шрифта
+            // Фон для текста глубины (под маркером)
+            val depthBgWidth = depthTextPaint.measureText(depthText) + 40f
+            val depthBgHeight = depthTextPaint.textSize + 20f
+
             canvas.drawRect(
-                marker.x + markerSize + 5,
-                marker.y - 15, // увеличили размер фона вверх
-                marker.x + markerSize + depthTextWidth + 10,
-                marker.y + 25, // увеличили размер фона вниз
+                marker.x - depthBgWidth / 2,
+                marker.y + markerSize,
+                marker.x + depthBgWidth / 2,
+                marker.y + markerSize + depthBgHeight,
                 infoBgPaint
             )
 
-            // Текст глубины - немного скорректировали позицию для нового размера шрифта
+            // Текст глубины (под маркером)
             canvas.drawText(
                 depthText,
-                marker.x + markerSize + 8,
-                marker.y + 18, // адаптировали положение для более крупного шрифта
+                marker.x,
+                marker.y + markerSize + depthTextPaint.textSize - 10f,
                 depthTextPaint
             )
 
@@ -484,16 +485,16 @@ class MarkerMapView @JvmOverloads constructor(
                 val infoText = "$distanceText\n$angleText"
                 val lines = infoText.split("\n")
 
-                // Фон для информации - отображаем над маркером
+                // Фон для информации - отображаем над подписью типа
                 val maxTextWidth = lines.maxOf { infoTextPaint.measureText(it) }
                 val textHeight = infoTextPaint.textSize
-                val padding = 10f
+                val padding = 15f // Увеличиваем отступы
 
                 canvas.drawRect(
                     marker.x - maxTextWidth / 2 - padding,
-                    marker.y - textHeight * lines.size - padding * 2,
+                    marker.y - markerSize - typeBgHeight - textHeight * lines.size - padding * 2,
                     marker.x + maxTextWidth / 2 + padding,
-                    marker.y - padding,
+                    marker.y - markerSize - typeBgHeight - padding,
                     infoBgPaint
                 )
 
@@ -501,8 +502,8 @@ class MarkerMapView @JvmOverloads constructor(
                 for (i in lines.indices) {
                     canvas.drawText(
                         lines[i],
-                        marker.x - maxTextWidth / 2 + padding,
-                        marker.y - padding * 2 - textHeight * (lines.size - i - 1),
+                        marker.x - maxTextWidth / 2 + maxTextWidth / 2,
+                        marker.y - markerSize - typeBgHeight - padding * 2 - textHeight * (lines.size - i - 1) + textHeight / 2,
                         infoTextPaint
                     )
                 }
@@ -521,12 +522,8 @@ class MarkerMapView @JvmOverloads constructor(
         for (marker in markers) {
             val distance = hypot(marker.x - mappedPoint.x, marker.y - mappedPoint.y)
 
-            // Размер зоны касания зависит от размера маркера
-            val touchZone = when (marker.size) {
-                MarkerSize.SMALL -> 25f
-                MarkerSize.MEDIUM -> 35f
-                MarkerSize.LARGE -> 45f
-            }
+            // Увеличиваем зону касания для больших маркеров
+            val touchZone = 80f // Теперь у нас только один стандартный размер
 
             if (distance <= touchZone) {
                 return marker
@@ -687,7 +684,7 @@ class MarkerMapView @JvmOverloads constructor(
         type: MarkerType,
         depth: Float = 0f,
         color: Int = MarkerColors.RED,
-        size: MarkerSize = MarkerSize.SMALL,
+        size: MarkerSize = MarkerSize.LARGE, // Теперь всегда LARGE
         notes: String = ""
     ): Marker {
         val marker = Marker(
@@ -696,7 +693,7 @@ class MarkerMapView @JvmOverloads constructor(
             type = type,
             depth = depth,
             color = color,
-            size = size,
+            size = MarkerSize.LARGE, // Всегда используем стандартный размер
             notes = notes
         )
 

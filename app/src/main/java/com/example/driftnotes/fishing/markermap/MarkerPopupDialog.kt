@@ -39,7 +39,6 @@ class MarkerPopupDialog(
     // Выбранные значения
     private var selectedType = marker?.type ?: MarkerType.ROCK
     private var selectedColor = marker?.color ?: MarkerColors.RED
-    private var selectedSize = marker?.size ?: MarkerSize.SMALL
     private var selectedDepth = marker?.depth ?: 0f
     private var notes = marker?.notes ?: ""
 
@@ -58,11 +57,12 @@ class MarkerPopupDialog(
         // Скрываем заголовок диалогового окна
         binding.textViewTitle.visibility = View.GONE
 
+        // Скрываем выбор размера маркера - он теперь всегда стандартный
+        binding.textViewSizeTitle.visibility = View.GONE
+        binding.spinnerSize.visibility = View.GONE
+
         // Настраиваем адаптеры для типов маркеров
         setupMarkerTypeGrid()
-
-        // Настраиваем выбор размера маркера
-        setupSizeSelection()
 
         // Настраиваем выбор цвета
         setupColorGrid()
@@ -123,29 +123,6 @@ class MarkerPopupDialog(
     }
 
     /**
-     * Настраивает выбор размера маркера
-     */
-    private fun setupSizeSelection() {
-        val sizes = MarkerSize.values().map { it.description }
-        val adapter = ArrayAdapter(context, android.R.layout.simple_spinner_item, sizes)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-
-        binding.spinnerSize.adapter = adapter
-
-        // Устанавливаем выбранный размер
-        binding.spinnerSize.setSelection(selectedSize.ordinal)
-
-        // Обработчик изменения размера
-        binding.spinnerSize.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                selectedSize = MarkerSize.values()[position]
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
-        }
-    }
-
-    /**
      * Настраивает сетку выбора цвета
      */
     private fun setupColorGrid() {
@@ -184,7 +161,7 @@ class MarkerPopupDialog(
                     type = selectedType,
                     depth = selectedDepth,
                     color = selectedColor,
-                    size = selectedSize,
+                    size = MarkerSize.LARGE, // Всегда используем стандартный размер
                     notes = notes
                 )
                 onMarkerUpdated(updatedMarker)
@@ -196,7 +173,7 @@ class MarkerPopupDialog(
                     type = selectedType,
                     depth = selectedDepth,
                     color = selectedColor,
-                    size = selectedSize,
+                    size = MarkerSize.LARGE, // Всегда используем стандартный размер
                     notes = notes
                 )
                 onMarkerCreated(newMarker)
@@ -242,10 +219,13 @@ class MarkerPopupDialog(
             val container: View = itemView.findViewById(R.id.containerMarkerType)
 
             fun bind(type: MarkerType) {
-                // Устанавливаем изображение
+                // Устанавливаем изображение с увеличенным размером
+                imageView.layoutParams.width = 48 // увеличиваем размер иконки
+                imageView.layoutParams.height = 48 // увеличиваем размер иконки
                 imageView.setImageResource(type.iconResId)
 
-                // Устанавливаем текст
+                // Устанавливаем текст с увеличенным размером
+                textView.textSize = 16f // увеличиваем размер текста с 12f до 16f
                 textView.text = type.description
 
                 // Выделяем выбранный тип
