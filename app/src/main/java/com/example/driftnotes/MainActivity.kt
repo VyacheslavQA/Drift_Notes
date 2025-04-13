@@ -9,6 +9,7 @@ import com.example.driftnotes.databinding.ActivityMainBinding
 import com.example.driftnotes.utils.FirebaseManager
 import com.example.driftnotes.auth.LoginActivity
 import com.example.driftnotes.fishing.AddFishingNoteActivity
+import com.example.driftnotes.utils.AnimationHelper
 
 class MainActivity : AppCompatActivity() {
 
@@ -25,7 +26,8 @@ class MainActivity : AppCompatActivity() {
         // Проверяем, авторизован ли пользователь
         if (!FirebaseManager.isUserLoggedIn()) {
             // Если нет, перенаправляем на экран входа
-            startActivity(Intent(this, LoginActivity::class.java))
+            val intent = Intent(this, LoginActivity::class.java)
+            startActivity(intent)
             finish()
             return
         }
@@ -38,7 +40,8 @@ class MainActivity : AppCompatActivity() {
         // Добавляем плавающую кнопку для быстрого добавления заметки
         val fabAddNote = binding.root.findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabAddNote)
         fabAddNote?.setOnClickListener {
-            startActivity(Intent(this, AddFishingNoteActivity::class.java))
+            val intent = Intent(this, AddFishingNoteActivity::class.java)
+            AnimationHelper.startActivityWithAnimation(this, intent)
         }
 
         // Если нужна кнопка для перехода к списку заметок, но в разметке её нет,
@@ -47,7 +50,8 @@ class MainActivity : AppCompatActivity() {
         /*
         val buttonMyNotes = binding.root.findViewById<android.widget.Button>(R.id.buttonMyNotes)
         buttonMyNotes?.setOnClickListener {
-            startActivity(Intent(this, NotesActivity::class.java))
+            val intent = Intent(this, NotesActivity::class.java)
+            AnimationHelper.startActivityWithAnimation(this, intent)
         }
         */
     }
@@ -62,16 +66,24 @@ class MainActivity : AppCompatActivity() {
             // Проверьте, что в вашем main_menu.xml есть пункт с id="menu_my_notes"
             // Если нет, то замените на правильный id или добавьте его в меню
             R.id.menu_my_notes -> {
-                startActivity(Intent(this, NotesActivity::class.java))
+                val intent = Intent(this, NotesActivity::class.java)
+                AnimationHelper.startActivityWithAnimation(this, intent)
                 true
             }
             R.id.menu_logout -> {
                 FirebaseManager.auth.signOut()
-                startActivity(Intent(this, LoginActivity::class.java))
+                val intent = Intent(this, LoginActivity::class.java)
+                startActivity(intent)
                 finish()
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        // Добавляем анимацию при выходе по кнопке "Назад"
+        overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
     }
 }

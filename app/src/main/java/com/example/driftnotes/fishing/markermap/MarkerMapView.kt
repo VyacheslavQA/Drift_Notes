@@ -9,6 +9,7 @@ import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.PointF
 import android.graphics.RectF
+import android.graphics.Typeface
 import android.util.AttributeSet
 import android.util.Log
 import android.view.GestureDetector
@@ -50,7 +51,7 @@ class MarkerMapView @JvmOverloads constructor(
     // Слушатель событий
     var listener: MarkerMapListener? = null
 
-    // Текущий режим редактирования
+    // Текущий режим редактирования - всегда VIEW_ONLY, так как кнопки режимов удалены
     var editMode = EditMode.VIEW_ONLY
 
     // Выбранный маркер
@@ -135,12 +136,13 @@ class MarkerMapView @JvmOverloads constructor(
         textAlign = Paint.Align.LEFT
     }
 
-    // Новая кисть для отображения глубины
+    // Обновленная кисть для отображения глубины с увеличенным шрифтом и жирностью
     private val depthTextPaint = Paint().apply {
         color = Color.BLUE
-        textSize = 16f
+        textSize = 22f  // Увеличиваем размер с 16f до 22f
         isAntiAlias = true
         textAlign = Paint.Align.RIGHT
+        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD) // Делаем шрифт жирным
     }
 
     init {
@@ -270,30 +272,6 @@ class MarkerMapView @JvmOverloads constructor(
                 if (marker != null) {
                     selectedMarker = marker
                     invalidate()
-
-                    if (editMode == EditMode.CONNECT_MARKERS) {
-                        if (firstConnectionMarker == null) {
-                            firstConnectionMarker = marker
-                        } else if (firstConnectionMarker != marker) {
-                            // Создаем соединение между маркерами
-                            val connection = MarkerConnection(
-                                marker1Id = firstConnectionMarker!!.id,
-                                marker2Id = marker.id
-                            )
-
-                            // Добавляем соединение
-                            connections.add(connection)
-
-                            // Уведомляем слушателя
-                            listener?.onConnectionCreated(connection)
-
-                            // Сбрасываем выбранные маркеры
-                            firstConnectionMarker = null
-                            selectedMarker = null
-
-                            invalidate()
-                        }
-                    }
                 }
 
                 // Устанавливаем планировщик длительного нажатия (700 мс)
@@ -314,21 +292,7 @@ class MarkerMapView @JvmOverloads constructor(
                     removeCallbacks(longPressRunnable)
                 }
 
-                // Если в режиме перемещения маркера и маркер выбран
-                if (editMode == EditMode.MOVE_MARKER && selectedMarker != null && !isLongPressActive) {
-                    // Перемещаем выбранный маркер
-                    val mappedPoint = mapTouchPointToMapCoordinates(event.x, event.y)
-                    selectedMarker?.let {
-                        it.x = mappedPoint.x
-                        it.y = mappedPoint.y
-
-                        // Обновляем глубину на основе расстояния от центра
-                        it.depth = calculateDepthForPoint(mappedPoint.x, mappedPoint.y)
-
-                        invalidate()
-                        listener?.onMarkerMoved(it)
-                    }
-                } else if (!scaleHandled && hasMovedWhileDown) {
+                if (!scaleHandled && hasMovedWhileDown) {
                     // Перемещение карты
                     val dx = event.x - lastTouchX
                     val dy = event.y - lastTouchY
@@ -488,20 +452,20 @@ class MarkerMapView @JvmOverloads constructor(
             val depthText = String.format("%.1f м", marker.depth)
             val depthTextWidth = depthTextPaint.measureText(depthText)
 
-            // Фон для текста глубины
+            // Фон для текста глубины - увеличиваем поле для большего шрифта
             canvas.drawRect(
                 marker.x + markerSize + 5,
-                marker.y - 10,
+                marker.y - 15, // увеличили размер фона вверх
                 marker.x + markerSize + depthTextWidth + 10,
-                marker.y + 20,
+                marker.y + 25, // увеличили размер фона вниз
                 infoBgPaint
             )
 
-            // Текст глубины
+            // Текст глубины - немного скорректировали позицию для нового размера шрифта
             canvas.drawText(
                 depthText,
                 marker.x + markerSize + 8,
-                marker.y + 15,
+                marker.y + 18, // адаптировали положение для более крупного шрифта
                 depthTextPaint
             )
 

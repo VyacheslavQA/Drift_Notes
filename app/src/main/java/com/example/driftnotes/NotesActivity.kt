@@ -13,6 +13,7 @@ import com.example.driftnotes.fishing.AddFishingNoteActivity
 import com.example.driftnotes.fishing.FishingNoteAdapter
 import com.example.driftnotes.fishing.FishingNoteDetailActivity
 import com.example.driftnotes.models.FishingNote
+import com.example.driftnotes.utils.AnimationHelper
 import com.example.driftnotes.utils.FirebaseManager
 import com.google.firebase.firestore.Query
 
@@ -35,7 +36,7 @@ class NotesActivity : AppCompatActivity() {
         adapter = FishingNoteAdapter(fishingNotes) { note ->
             val intent = Intent(this, FishingNoteDetailActivity::class.java)
             intent.putExtra("note_id", note.id)
-            startActivity(intent)
+            AnimationHelper.startActivityWithAnimation(this, intent)
         }
 
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
@@ -43,7 +44,8 @@ class NotesActivity : AppCompatActivity() {
 
         // Настраиваем FAB для добавления новой записи
         binding.fabAddNote.setOnClickListener {
-            startActivity(Intent(this, AddFishingNoteActivity::class.java))
+            val intent = Intent(this, AddFishingNoteActivity::class.java)
+            AnimationHelper.startActivityWithAnimation(this, intent)
         }
 
         // Загружаем записи из Firestore
@@ -103,10 +105,16 @@ class NotesActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             android.R.id.home -> {
-                finish()
+                // Вместо простого finish() используем AnimationHelper
+                AnimationHelper.finishWithAnimation(this)
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    override fun onBackPressed() {
+        // Вместо стандартного поведения используем анимированное завершение
+        AnimationHelper.finishWithAnimation(this)
     }
 }

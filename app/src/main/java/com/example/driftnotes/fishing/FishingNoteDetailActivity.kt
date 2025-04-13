@@ -13,6 +13,7 @@ import com.example.driftnotes.databinding.ActivityFishingNoteDetailBinding
 import com.example.driftnotes.fishing.markermap.MarkerMapActivity
 import com.example.driftnotes.maps.MapActivity
 import com.example.driftnotes.models.FishingNote
+import com.example.driftnotes.utils.AnimationHelper
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
@@ -41,7 +42,7 @@ class FishingNoteDetailActivity : AppCompatActivity() {
 
         if (noteId == null) {
             Toast.makeText(this, "Ошибка: запись не найдена", Toast.LENGTH_SHORT).show()
-            finish()
+            AnimationHelper.finishWithAnimation(this)
             return
         }
 
@@ -71,7 +72,7 @@ class FishingNoteDetailActivity : AppCompatActivity() {
                 intent.putExtra("latitude", note.latitude)
                 intent.putExtra("longitude", note.longitude)
                 intent.putExtra("title", note.location)
-                startActivity(intent)
+                AnimationHelper.startActivityWithAnimation(this, intent)
             } else {
                 Toast.makeText(this, R.string.no_location_data, Toast.LENGTH_SHORT).show()
             }
@@ -89,12 +90,12 @@ class FishingNoteDetailActivity : AppCompatActivity() {
                         displayNoteData()
                     } else {
                         Toast.makeText(this, "Запись не найдена", Toast.LENGTH_SHORT).show()
-                        finish()
+                        AnimationHelper.finishWithAnimation(this)
                     }
                 }
                 .addOnFailureListener { e ->
                     Toast.makeText(this, "Ошибка загрузки: ${e.message}", Toast.LENGTH_SHORT).show()
-                    finish()
+                    AnimationHelper.finishWithAnimation(this)
                 }
         }
     }
@@ -150,7 +151,7 @@ class FishingNoteDetailActivity : AppCompatActivity() {
                     val intent = Intent(this, MarkerMapActivity::class.java)
                     intent.putExtra(MarkerMapActivity.EXTRA_MAP_ID, note.markerMapId)
                     intent.putExtra(MarkerMapActivity.EXTRA_MAP_NAME, note.location)
-                    startActivity(intent)
+                    AnimationHelper.startActivityWithAnimation(this, intent)
                 }
             } else {
                 binding.buttonViewMarkerMap.visibility = View.GONE
@@ -166,7 +167,7 @@ class FishingNoteDetailActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             android.R.id.home -> {
-                finish()
+                AnimationHelper.finishWithAnimation(this)
                 true
             }
             R.id.menu_delete -> {
@@ -203,7 +204,7 @@ class FishingNoteDetailActivity : AppCompatActivity() {
                         showDeleteMarkerMapDialog(markerMapId)
                     } else {
                         Toast.makeText(this, R.string.note_deleted, Toast.LENGTH_SHORT).show()
-                        finish()
+                        AnimationHelper.finishWithAnimation(this)
                     }
                 }
                 .addOnFailureListener { e ->
@@ -228,7 +229,7 @@ class FishingNoteDetailActivity : AppCompatActivity() {
             }
             .setNegativeButton("Нет") { _, _ ->
                 Toast.makeText(this, R.string.note_deleted, Toast.LENGTH_SHORT).show()
-                finish()
+                AnimationHelper.finishWithAnimation(this)
             }
             .show()
     }
@@ -269,7 +270,7 @@ class FishingNoteDetailActivity : AppCompatActivity() {
                             batch.commit()
                                 .addOnSuccessListener {
                                     Toast.makeText(this, "Запись и карта удалены", Toast.LENGTH_SHORT).show()
-                                    finish()
+                                    AnimationHelper.finishWithAnimation(this)
                                 }
                                 .addOnFailureListener { e ->
                                     Toast.makeText(
@@ -277,7 +278,7 @@ class FishingNoteDetailActivity : AppCompatActivity() {
                                         "Ошибка при удалении карты: ${e.message}",
                                         Toast.LENGTH_SHORT
                                     ).show()
-                                    finish()
+                                    AnimationHelper.finishWithAnimation(this)
                                 }
                         }
                         .addOnFailureListener { e ->
@@ -286,7 +287,7 @@ class FishingNoteDetailActivity : AppCompatActivity() {
                                 "Ошибка при удалении соединений: ${e.message}",
                                 Toast.LENGTH_SHORT
                             ).show()
-                            finish()
+                            AnimationHelper.finishWithAnimation(this)
                         }
                 }
                 .addOnFailureListener { e ->
@@ -295,7 +296,7 @@ class FishingNoteDetailActivity : AppCompatActivity() {
                         "Ошибка при удалении маркеров: ${e.message}",
                         Toast.LENGTH_SHORT
                     ).show()
-                    finish()
+                    AnimationHelper.finishWithAnimation(this)
                 }
         } catch (e: Exception) {
             Toast.makeText(
@@ -303,7 +304,11 @@ class FishingNoteDetailActivity : AppCompatActivity() {
                 "Ошибка при удалении карты: ${e.message}",
                 Toast.LENGTH_SHORT
             ).show()
-            finish()
+            AnimationHelper.finishWithAnimation(this)
         }
+    }
+
+    override fun onBackPressed() {
+        AnimationHelper.finishWithAnimation(this)
     }
 }

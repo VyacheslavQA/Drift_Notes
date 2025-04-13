@@ -10,6 +10,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.driftnotes.R
 import com.example.driftnotes.databinding.ActivityMarkerMapBinding
+import com.example.driftnotes.utils.AnimationHelper
 import com.example.driftnotes.utils.FirebaseManager
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -54,8 +55,8 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
         // Настраиваем обработчик нажатия кнопки "Назад"
         setupBackPressedCallback()
 
-        // Настраиваем кнопки режимов редактирования
-        setupEditButtons()
+        // По умолчанию - режим просмотра
+        binding.markerMapView.editMode = EditMode.VIEW_ONLY
 
         // Если передан ID карты, загружаем её данные
         if (intent.hasExtra(EXTRA_MAP_ID)) {
@@ -64,29 +65,10 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
 
         // Настраиваем кнопки сохранения и настроек
         setupActionButtons()
-
-        // Настраиваем кнопку подтверждения
-        binding.buttonConfirmMap.setOnClickListener {
-            saveAndConfirm()
-        }
     }
 
     /**
-     * Сохраняет карту и возвращает результат в вызвавшую активность
-     */
-    private fun saveAndConfirm() {
-        // Показываем индикатор загрузки
-        showLoading(true)
-
-        // Сохраняем данные карты
-        saveMapData()
-
-        // Результат будет возвращен в методе saveConnections() после успешного сохранения
-        Toast.makeText(this, R.string.map_saved, Toast.LENGTH_SHORT).show()
-    }
-
-    /**
-     * Настраивает обработчик нажатия кнопки "Назад"
+     * Настраиваем обработчик нажатия кнопки "Назад"
      */
     private fun setupBackPressedCallback() {
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
@@ -98,64 +80,11 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
                     // Разрешаем стандартную обработку нажатия кнопки "Назад"
                     isEnabled = false
                     onBackPressedDispatcher.onBackPressed()
+                    // Добавляем анимацию
+                    overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
                 }
             }
         })
-    }
-
-    /**
-     * Настраивает кнопки режимов редактирования
-     */
-    private fun setupEditButtons() {
-        // Кнопка режима просмотра
-        binding.buttonViewMode.setOnClickListener {
-            setEditMode(EditMode.VIEW_ONLY)
-        }
-
-        // Кнопка перемещения маркеров
-        binding.buttonMoveMarker.setOnClickListener {
-            setEditMode(EditMode.MOVE_MARKER)
-            Toast.makeText(
-                this,
-                "Нажмите на маркер, чтобы начать перемещение",
-                Toast.LENGTH_SHORT
-            ).show()
-        }
-
-        // Кнопка соединения маркеров
-        binding.buttonConnectMarkers.setOnClickListener {
-            setEditMode(EditMode.CONNECT_MARKERS)
-            Toast.makeText(
-                this,
-                getString(R.string.connect_markers_hint),
-                Toast.LENGTH_SHORT
-            ).show()
-        }
-    }
-
-    /**
-     * Устанавливает режим редактирования карты
-     */
-    private fun setEditMode(mode: EditMode) {
-        binding.markerMapView.editMode = mode
-        updateButtonsState()
-    }
-
-    /**
-     * Обновляет состояние кнопок в зависимости от текущего режима
-     */
-    private fun updateButtonsState() {
-        // Сначала сбрасываем стиль всех кнопок
-        binding.buttonViewMode.setStrokeColorResource(R.color.button_stroke_default)
-        binding.buttonMoveMarker.setStrokeColorResource(R.color.button_stroke_default)
-        binding.buttonConnectMarkers.setStrokeColorResource(R.color.button_stroke_default)
-
-        // Выделяем активную кнопку
-        when (binding.markerMapView.editMode) {
-            EditMode.VIEW_ONLY -> binding.buttonViewMode.setStrokeColorResource(R.color.button_stroke_active)
-            EditMode.MOVE_MARKER -> binding.buttonMoveMarker.setStrokeColorResource(R.color.button_stroke_active)
-            EditMode.CONNECT_MARKERS -> binding.buttonConnectMarkers.setStrokeColorResource(R.color.button_stroke_active)
-        }
     }
 
     /**
@@ -284,6 +213,8 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
      * Загружает маркеры для карты
      */
     private fun loadMarkers() {
+        // Код загрузки маркеров остаётся без изменений
+        // ...
         try {
             firestore.collection("marker_maps")
                 .document(mapId)
@@ -724,7 +655,7 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
             }
             .setNegativeButton(getString(R.string.discard_and_exit)) { _, _ ->
                 // Выходим без сохранения
-                finish()
+                AnimationHelper.finishWithAnimation(this)
             }
             .setNeutralButton(getString(R.string.stay), null)
             .show()

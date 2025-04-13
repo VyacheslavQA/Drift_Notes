@@ -15,6 +15,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.driftnotes.R
 import com.example.driftnotes.databinding.ActivityMapBinding
+import com.example.driftnotes.utils.AnimationHelper
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -298,7 +299,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         resultIntent.putExtra("location_name", selectedLocationName)
 
         setResult(RESULT_OK, resultIntent)
-        finish()
+        AnimationHelper.finishWithAnimation(this)
     }
 
     override fun onRequestPermissionsResult(
@@ -319,5 +320,16 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
                 ).show()
             }
         }
+    }
+
+    // Переопределяем метод нажатия кнопки "Назад" для добавления анимации
+    override fun onBackPressed() {
+        AnimationHelper.finishWithAnimation(this)
+    }
+
+    // Переопределяем метод для обработки нажатия кнопки "Назад" в ActionBar
+    override fun onSupportNavigateUp(): Boolean {
+        AnimationHelper.finishWithAnimation(this)
+        return true
     }
 }
