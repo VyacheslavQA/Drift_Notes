@@ -8,15 +8,24 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.driftnotes.R
 import com.example.driftnotes.databinding.ActivityFishingNoteDetailBinding
 import com.example.driftnotes.fishing.markermap.MarkerMapActivity
 import com.example.driftnotes.maps.MapActivity
+import com.example.driftnotes.models.BiteRecord
 import com.example.driftnotes.models.FishingNote
 import com.example.driftnotes.utils.AnimationHelper
+import com.github.mikephil.charting.charts.BarChart
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.data.BarData
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.formatter.ValueFormatter
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Locale
 
 class FishingNoteDetailActivity : AppCompatActivity() {
@@ -25,10 +34,16 @@ class FishingNoteDetailActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private val firestore = FirebaseFirestore.getInstance()
     private val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+    private val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
 
     private var noteId: String? = null
     private var currentNote: FishingNote? = null
     private lateinit var photoAdapter: PhotoPagerAdapter
+
+    // Для работы с поклевками
+    private val biteRecords = mutableListOf<BiteRecord>()
+    private lateinit var biteAdapter: BiteRecordAdapter
+    private lateinit var biteChart: BarChart
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,6 +73,23 @@ class FishingNoteDetailActivity : AppCompatActivity() {
         // Устанавливаем обработчик для кнопки просмотра на карте
         binding.buttonViewOnMap.setOnClickListener {
             openLocationOnMap()
+        }
+
+        // Инициализация RecyclerView для поклевок
+        biteAdapter = BiteRecordAdapter(biteRecords) { bite ->
+            showDeleteBiteConfirmation(bite)
+        }
+        binding.recyclerViewBites.layoutManager = LinearLayoutManager(this)
+        binding.recyclerViewBites.adapter = biteAdapter
+
+        // Получаем ссылку на BarChart
+        biteChart = binding.biteChart
+
+        // Обработчик кнопки добавления поклевки
+        binding.buttonAddBite.setOnClickListener {
+            currentNote?.let { note ->
+                showAddBiteDialog(note.date)
+            }
         }
 
         // Загружаем данные записи
@@ -123,7 +155,6 @@ class FishingNoteDetailActivity : AppCompatActivity() {
             // Отображаем погоду, если она доступна
             if (note.weather != null) {
                 binding.textViewWeatherLabel.visibility = View.VISIBLE
-                binding.textViewWeather.visibility = View.VISIBLE
                 binding.textViewWeather.text = note.weather.weatherDescription
             } else {
                 binding.textViewWeatherLabel.visibility = View.GONE
@@ -156,7 +187,202 @@ class FishingNoteDetailActivity : AppCompatActivity() {
             } else {
                 binding.buttonViewMarkerMap.visibility = View.GONE
             }
+
+            // Отображаем секцию поклевок только для карповой рыбалки
+            if (note.fishingType == getString(R.string.fishing_type_carp)) {
+                binding.textViewBitesLabel.visibility = View.VISIBLE
+                binding.buttonAddBite.visibility = View.VISIBLE
+
+                // Загружаем поклевки
+                biteRecords.clear()
+                biteRecords.addAll(note.biteRecords)
+
+                if (biteRecords.isEmpty()) {
+                    binding.textViewNoBites.visibility = View.VISIBLE
+                    binding.biteChart.visibility = View.GONE
+                    binding.recyclerViewBites.visibility = View.GONE
+                } else {
+                    binding.textViewNoBites.visibility = View.GONE
+                    binding.biteChart.visibility = View.VISIBLE
+                    binding.recyclerViewBites.visibility = View.VISIBLE
+
+                    // Обновляем адаптер
+                    biteAdapter.updateBites(biteRecords)
+
+                    // Отображаем график поклевок
+                    updateBiteChart()
+                }
+            } else {
+                binding.textViewBitesLabel.visibility = View.GONE
+                binding.buttonAddBite.visibility = View.GONE
+                binding.textViewNoBites.visibility = View.GONE
+                binding.biteChart.visibility = View.GONE
+                binding.recyclerViewBites.visibility = View.GONE
+            }
         }
+    }
+
+    /**
+     * Показывает диалог добавления поклевки
+     */
+    private fun showAddBiteDialog(date: java.util.Date) {
+        BiteDialog(this, date) { newBite ->
+            // Добавляем новую поклевку
+            addBiteRecord(newBite)
+        }.show()
+    }
+
+    /**
+     * Показывает подтверждение удаления поклевки
+     */
+    private fun showDeleteBiteConfirmation(bite: BiteRecord) {
+        AlertDialog.Builder(this)
+            .setTitle("Удаление поклевки")
+            .setMessage("Вы уверены, что хотите удалить эту запись о поклевке?")
+            .setPositiveButton("Удалить") { _, _ ->
+                deleteBiteRecord(bite)
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+
+    /**
+     * Добавляет новую запись о поклевке
+     */
+    private fun addBiteRecord(bite: BiteRecord) {
+        currentNote?.let { note ->
+            // Добавляем поклевку в текущий список
+            biteRecords.add(bite)
+
+            // Сортируем по времени
+            biteRecords.sortBy { it.time }
+
+            // Обновляем адаптер
+            biteAdapter.updateBites(biteRecords)
+
+            // Обновляем график
+            updateBiteChart()
+
+            // Обновляем интерфейс
+            binding.textViewNoBites.visibility = View.GONE
+            binding.biteChart.visibility = View.VISIBLE
+            binding.recyclerViewBites.visibility = View.VISIBLE
+
+            // Сохраняем изменения в Firestore
+            saveBitesToFirestore()
+        }
+    }
+
+    /**
+     * Удаляет запись о поклевке
+     */
+    private fun deleteBiteRecord(bite: BiteRecord) {
+        // Удаляем поклевку из списка
+        biteRecords.removeAll { it.id == bite.id }
+
+        // Обновляем адаптер
+        biteAdapter.updateBites(biteRecords)
+
+        // Обновляем график
+        updateBiteChart()
+
+        // Обновляем интерфейс, если список пуст
+        if (biteRecords.isEmpty()) {
+            binding.textViewNoBites.visibility = View.VISIBLE
+            binding.biteChart.visibility = View.GONE
+            binding.recyclerViewBites.visibility = View.GONE
+        }
+
+        // Сохраняем изменения в Firestore
+        saveBitesToFirestore()
+    }
+
+    /**
+     * Сохраняет список поклевок в Firestore
+     */
+    private fun saveBitesToFirestore() {
+        noteId?.let { id ->
+            // Подготавливаем данные для обновления
+            val updateData = mapOf(
+                "biteRecords" to biteRecords
+            )
+
+            // Обновляем документ
+            firestore.collection("fishing_notes")
+                .document(id)
+                .update(updateData)
+                .addOnSuccessListener {
+                    // Обновляем локальный объект заметки
+                    currentNote = currentNote?.copy(biteRecords = biteRecords)
+                }
+                .addOnFailureListener { e ->
+                    Toast.makeText(
+                        this,
+                        "Ошибка при сохранении поклевок: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+        }
+    }
+
+    /**
+     * Обновляет график поклевок
+     */
+    private fun updateBiteChart() {
+        if (biteRecords.isEmpty()) return
+
+        // Подготавливаем данные для графика
+        val entries = ArrayList<BarEntry>()
+
+        // Группируем поклевки по часам
+        val bitesByHour = mutableMapOf<Int, Int>()
+
+        // Инициализируем все часы нулями (0-23)
+        for (hour in 0..23) {
+            bitesByHour[hour] = 0
+        }
+
+        // Считаем поклевки по часам
+        for (bite in biteRecords) {
+            val calendar = Calendar.getInstance().apply { time = bite.time }
+            val hour = calendar.get(Calendar.HOUR_OF_DAY)
+            bitesByHour[hour] = (bitesByHour[hour] ?: 0) + 1
+        }
+
+        // Создаем записи для графика
+        bitesByHour.forEach { (hour, count) ->
+            entries.add(BarEntry(hour.toFloat(), count.toFloat()))
+        }
+
+        // Создаем датасет
+        val dataSet = BarDataSet(entries, "Поклевки")
+        dataSet.color = resources.getColor(R.color.purple_500, null)
+
+        // Создаем данные графика
+        val barData = BarData(dataSet)
+
+        // Настраиваем форматер для оси X (чтобы отображать часы)
+        val xAxis = biteChart.xAxis
+        xAxis.position = XAxis.XAxisPosition.BOTTOM
+        xAxis.granularity = 1f
+        xAxis.labelCount = 12 // Показываем каждый 2-й час
+        xAxis.valueFormatter = object : ValueFormatter() {
+            override fun getFormattedValue(value: Float): String {
+                return "${value.toInt()}:00"
+            }
+        }
+
+        // Настраиваем внешний вид графика
+        biteChart.data = barData
+        biteChart.description.isEnabled = false
+        biteChart.legend.isEnabled = false
+        biteChart.axisRight.isEnabled = false
+
+        // Анимация
+        biteChart.animateY(500)
+
+        // Обновляем график
+        biteChart.invalidate()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

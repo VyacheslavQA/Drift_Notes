@@ -14,5 +14,6 @@ data class FishingNote(
     val photoUrls: List<String> = listOf(),
     val fishingType: String = "",  // Тип рыбалки
     val weather: FishingWeather? = null, // Информация о погоде
-    val markerMapId: String = "" // ID маркерной карты
+    val markerMapId: String = "", // ID маркерной карты
+    val biteRecords: List<BiteRecord> = listOf() // Список поклевок
 )

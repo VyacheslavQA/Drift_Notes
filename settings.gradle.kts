@@ -19,5 +19,15 @@ dependencyResolutionManagement {
     }
 }
 
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        // Добавить это:
+        maven { url = uri("https://jitpack.io") }
+    }
+}
+
 rootProject.name = "Drift Notes"
 include(":app")

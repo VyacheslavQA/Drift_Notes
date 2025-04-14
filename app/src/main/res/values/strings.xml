@@ -256,5 +256,19 @@
     <string name="marker_type_hill">Бугор</string>
     <string name="marker_type_feeding_spot">Точка кормления</string>
 
+    <!-- Строки для поклевок -->
+    <string name="bites">Поклёвки</string>
+    <string name="add_bite">Добавить поклёвку</string>
+    <string name="no_bites">Нет данных о поклёвках</string>
+    <string name="bite_time">Время поклёвки</string>
+    <string name="bite_fish_type">Тип рыбы</string>
+    <string name="bite_weight">Вес (кг)</string>
+    <string name="bite_notes">Примечания</string>
+    <string name="bite_added">Поклевка добавлена</string>
+    <string name="bite_deleted">Поклевка удалена</string>
+    <string name="bite_chart_title">График активности поклевок</string>
+    <string name="bite_confirm_delete">Вы уверены, что хотите удалить эту запись о поклевке?</string>
+    <string name="bite_delete_title">Удаление поклевки</string>
+
 
 </resources>
