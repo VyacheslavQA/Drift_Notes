@@ -155,6 +155,7 @@
             app:layout_constraintTop_toBottomOf="@+id/textViewWeatherLabel"
             tools:text="Ясно, +25°C, ветер: Ю 2 м/с" />
 
+        <!-- Снасти с кнопкой редактирования -->
         <TextView
             android:id="@+id/textViewTackleLabel"
             android:layout_width="wrap_content"
@@ -165,6 +166,19 @@
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textViewWeather" />
+
+        <ImageButton
+            android:id="@+id/buttonEditTackle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Редактировать снасти"
+            android:src="@android:drawable/ic_menu_edit"
+            app:layout_constraintBottom_toBottomOf="@+id/textViewTackleLabel"
+            app:layout_constraintStart_toEndOf="@+id/textViewTackleLabel"
+            app:layout_constraintTop_toTopOf="@+id/textViewTackleLabel"
+            app:tint="@color/purple_500" />
 
         <TextView
             android:id="@+id/textViewTackle"
@@ -179,6 +193,7 @@
             app:layout_constraintTop_toBottomOf="@+id/textViewTackleLabel"
             tools:text="Спиннинг Favorite Arena 702M, катушка Daiwa Legalis LT 3000, плетенка PE 1.2" />
 
+        <!-- Заметки с кнопкой редактирования -->
         <TextView
             android:id="@+id/textViewNotesLabel"
             android:layout_width="wrap_content"
@@ -190,6 +205,19 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textViewTackle" />
 
+        <ImageButton
+            android:id="@+id/buttonEditNotes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Редактировать заметки"
+            android:src="@android:drawable/ic_menu_edit"
+            app:layout_constraintBottom_toBottomOf="@+id/textViewNotesLabel"
+            app:layout_constraintStart_toEndOf="@+id/textViewNotesLabel"
+            app:layout_constraintTop_toTopOf="@+id/textViewNotesLabel"
+            app:tint="@color/purple_500" />
+
         <TextView
             android:id="@+id/textViewNotes"
             android:layout_width="0dp"
@@ -197,21 +225,19 @@
             android:layout_marginStart="16dp"
             android:layout_marginTop="4dp"
             android:layout_marginEnd="16dp"
-            android:layout_marginBottom="24dp"
             android:textSize="16sp"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textViewNotesLabel"
             tools:text="Поймал 5 щук на воблеры. Погода была солнечная, температура воздуха +25°C. Клев начался около 7 утра и продолжался до 10." />
 
-        <!-- Секция поклевок (только для карповой рыбалки) -->
+        <!-- Секция поклевок ближе к заметкам -->
         <TextView
             android:id="@+id/textViewBitesLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="16dp"
             android:text="Поклёвки"
             android:textStyle="bold"
             android:visibility="gone"
@@ -242,20 +268,29 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/buttonAddBite" />
 
-        <!-- График поклевок -->
-        <com.github.mikephil.charting.charts.BarChart
-            android:id="@+id/biteChart"
-            android:layout_width="0dp"
-            android:layout_height="200dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="24dp"
+        <!-- Горизонтальный скроллируемый контейнер для графика -->
+        <HorizontalScrollView
+            android:id="@+id/chartScrollView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:scrollbars="none"
             android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/buttonAddBite" />
+            app:layout_constraintTop_toBottomOf="@+id/buttonAddBite">
+
+            <!-- Увеличиваем ширину графика, чтобы он был 24-часовой и скроллируемый -->
+            <com.github.mikephil.charting.charts.BarChart
+                android:id="@+id/biteChart"
+                android:layout_width="800dp"
+                android:layout_height="200dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="4dp"
+                android:visibility="visible" />
+        </HorizontalScrollView>
 
         <!-- RecyclerView для отображения списка поклевок -->
         <androidx.recyclerview.widget.RecyclerView
@@ -263,14 +298,14 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="8dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="24dp"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/biteChart"
+            app:layout_constraintTop_toBottomOf="@+id/chartScrollView"
             app:layout_constraintVertical_bias="0.0" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

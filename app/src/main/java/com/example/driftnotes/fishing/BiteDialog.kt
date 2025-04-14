@@ -15,18 +15,17 @@ import java.util.Locale
 import java.util.UUID
 
 /**
- * Диалог для добавления новой поклевки
+ * Диалог для добавления/редактирования поклевки
  */
 class BiteDialog(
     context: Context,
     private val date: Date, // Дата рыбалки
+    private val existingBite: BiteRecord? = null, // Существующая поклевка для редактирования
     private val onBiteAdded: (BiteRecord) -> Unit
 ) : Dialog(context) {
 
     private lateinit var binding: DialogAddBiteBinding
-    private val calendar = Calendar.getInstance().apply {
-        time = Date() // Текущее время по умолчанию
-    }
+    private val calendar = Calendar.getInstance()
     private val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,7 +44,30 @@ class BiteDialog(
             WindowManager.LayoutParams.WRAP_CONTENT
         )
 
-        // Изначально устанавливаем текущее время
+        // Меняем заголовок в зависимости от режима (добавление/редактирование)
+        binding.textViewDialogTitle.text = if (existingBite != null)
+            "Редактировать поклёвку" else "Добавить поклёвку"
+
+        // Если редактируем существующую поклевку, заполняем поля
+        if (existingBite != null) {
+            // Устанавливаем время из существующей поклевки
+            calendar.time = existingBite.time
+
+            // Заполняем все поля
+            binding.editTextFishType.setText(existingBite.fishType)
+            if (existingBite.weight > 0) {
+                binding.editTextWeight.setText(existingBite.weight.toString())
+            }
+            binding.editTextNotes.setText(existingBite.notes)
+
+            // Меняем текст кнопки
+            binding.buttonSaveBite.text = "Сохранить изменения"
+        } else {
+            // В режиме добавления используем текущее время
+            calendar.time = Date()
+        }
+
+        // Обновляем отображение времени
         updateTimeDisplay()
 
         // Обработчик клика на поле времени
@@ -100,7 +122,6 @@ class BiteDialog(
         }
 
         // Устанавливаем дату рыбалки, но сохраняем выбранное время
-        val biteTime = calendar.time
         val fishingDate = Calendar.getInstance().apply {
             time = date
             set(Calendar.HOUR_OF_DAY, calendar.get(Calendar.HOUR_OF_DAY))
@@ -108,14 +129,25 @@ class BiteDialog(
             set(Calendar.SECOND, 0)
         }.time
 
-        // Создаем объект поклевки
-        val biteRecord = BiteRecord(
-            id = UUID.randomUUID().toString(),
-            time = fishingDate,
-            fishType = fishType,
-            weight = weight,
-            notes = notes
-        )
+        // Создаем или обновляем объект поклевки
+        val biteRecord = if (existingBite != null) {
+            // Обновляем существующую, сохраняя ID
+            existingBite.copy(
+                time = fishingDate,
+                fishType = fishType,
+                weight = weight,
+                notes = notes
+            )
+        } else {
+            // Создаем новую
+            BiteRecord(
+                id = UUID.randomUUID().toString(),
+                time = fishingDate,
+                fishType = fishType,
+                weight = weight,
+                notes = notes
+            )
+        }
 
         // Вызываем callback
         onBiteAdded(biteRecord)

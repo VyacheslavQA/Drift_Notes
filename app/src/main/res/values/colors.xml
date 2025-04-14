@@ -8,7 +8,7 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <!-- Добавьте эти цвета в ваш файл colors.xml -->
+    <!-- Дополнительные цвета -->
     <color name="button_stroke_default">#AAAAAA</color>
     <color name="button_stroke_active">#FF6200EE</color>
 </resources>

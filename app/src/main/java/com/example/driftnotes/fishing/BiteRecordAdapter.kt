@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.example.driftnotes.R
 import com.example.driftnotes.models.BiteRecord
@@ -13,12 +14,14 @@ import java.util.Locale
 
 class BiteRecordAdapter(
     private var bites: List<BiteRecord>,
+    private val onBiteClick: (BiteRecord) -> Unit, // Добавляем обработчик нажатия
     private val onBiteDeleteClick: (BiteRecord) -> Unit
 ) : RecyclerView.Adapter<BiteRecordAdapter.BiteViewHolder>() {
 
     private val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
 
     class BiteViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val container: ConstraintLayout = view.findViewById(R.id.biteContainer)
         val textTime: TextView = view.findViewById(R.id.textViewBiteTime)
         val textFishType: TextView = view.findViewById(R.id.textViewBiteFishType)
         val textWeight: TextView = view.findViewById(R.id.textViewBiteWeight)
@@ -60,6 +63,11 @@ class BiteRecordAdapter(
             holder.textNotes.visibility = View.VISIBLE
         } else {
             holder.textNotes.visibility = View.GONE
+        }
+
+        // Обработчик клика для редактирования
+        holder.container.setOnClickListener {
+            onBiteClick(bite)
         }
 
         // Обработчик удаления

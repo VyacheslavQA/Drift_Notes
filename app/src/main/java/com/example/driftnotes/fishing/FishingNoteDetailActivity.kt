@@ -1,6 +1,8 @@
 package com.example.driftnotes.fishing
 
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -8,6 +10,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.driftnotes.R
 import com.example.driftnotes.databinding.ActivityFishingNoteDetailBinding
@@ -76,9 +79,11 @@ class FishingNoteDetailActivity : AppCompatActivity() {
         }
 
         // Инициализация RecyclerView для поклевок
-        biteAdapter = BiteRecordAdapter(biteRecords) { bite ->
-            showDeleteBiteConfirmation(bite)
-        }
+        biteAdapter = BiteRecordAdapter(
+            bites = biteRecords,
+            onBiteClick = { bite -> showEditBiteDialog(bite) }, // Добавляем обработчик редактирования
+            onBiteDeleteClick = { bite -> showDeleteBiteConfirmation(bite) }
+        )
         binding.recyclerViewBites.layoutManager = LinearLayoutManager(this)
         binding.recyclerViewBites.adapter = biteAdapter
 
@@ -92,8 +97,100 @@ class FishingNoteDetailActivity : AppCompatActivity() {
             }
         }
 
+        // Обработчик редактирования снастей
+        binding.buttonEditTackle.setOnClickListener {
+            showEditTackleDialog()
+        }
+
+        // Обработчик редактирования заметок
+        binding.buttonEditNotes.setOnClickListener {
+            showEditNotesDialog()
+        }
+
         // Загружаем данные записи
         loadNoteData()
+    }
+
+    /**
+     * Показывает диалог редактирования снастей
+     */
+    private fun showEditTackleDialog() {
+        currentNote?.let { note ->
+            EditTextDialog(
+                context = this,
+                title = "Редактировать снасти",
+                hint = "Введите информацию о снастях",
+                initialText = note.tackle
+            ) { newText ->
+                // Обновляем текст снастей
+                updateTackle(newText)
+            }.show()
+        }
+    }
+
+    /**
+     * Показывает диалог редактирования заметок
+     */
+    private fun showEditNotesDialog() {
+        currentNote?.let { note ->
+            EditTextDialog(
+                context = this,
+                title = "Редактировать заметки",
+                hint = "Введите заметки",
+                initialText = note.notes
+            ) { newText ->
+                // Обновляем текст заметок
+                updateNotes(newText)
+            }.show()
+        }
+    }
+
+    /**
+     * Обновляет информацию о снастях
+     */
+    private fun updateTackle(newTackle: String) {
+        noteId?.let { id ->
+            // Обновляем отображение
+            binding.textViewTackle.text = newTackle
+
+            // Обновляем объект заметки
+            currentNote = currentNote?.copy(tackle = newTackle)
+
+            // Обновляем в Firestore
+            firestore.collection("fishing_notes")
+                .document(id)
+                .update("tackle", newTackle)
+                .addOnSuccessListener {
+                    Toast.makeText(this, "Информация о снастях обновлена", Toast.LENGTH_SHORT).show()
+                }
+                .addOnFailureListener { e ->
+                    Toast.makeText(this, "Ошибка при обновлении: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+        }
+    }
+
+    /**
+     * Обновляет заметки
+     */
+    private fun updateNotes(newNotes: String) {
+        noteId?.let { id ->
+            // Обновляем отображение
+            binding.textViewNotes.text = newNotes
+
+            // Обновляем объект заметки
+            currentNote = currentNote?.copy(notes = newNotes)
+
+            // Обновляем в Firestore
+            firestore.collection("fishing_notes")
+                .document(id)
+                .update("notes", newNotes)
+                .addOnSuccessListener {
+                    Toast.makeText(this, "Заметки обновлены", Toast.LENGTH_SHORT).show()
+                }
+                .addOnFailureListener { e ->
+                    Toast.makeText(this, "Ошибка при обновлении: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+        }
     }
 
     private fun openLocationOnMap() {
@@ -155,6 +252,7 @@ class FishingNoteDetailActivity : AppCompatActivity() {
             // Отображаем погоду, если она доступна
             if (note.weather != null) {
                 binding.textViewWeatherLabel.visibility = View.VISIBLE
+                binding.textViewWeather.visibility = View.VISIBLE
                 binding.textViewWeather.text = note.weather.weatherDescription
             } else {
                 binding.textViewWeatherLabel.visibility = View.GONE
@@ -199,11 +297,11 @@ class FishingNoteDetailActivity : AppCompatActivity() {
 
                 if (biteRecords.isEmpty()) {
                     binding.textViewNoBites.visibility = View.VISIBLE
-                    binding.biteChart.visibility = View.GONE
+                    binding.chartScrollView.visibility = View.GONE
                     binding.recyclerViewBites.visibility = View.GONE
                 } else {
                     binding.textViewNoBites.visibility = View.GONE
-                    binding.biteChart.visibility = View.VISIBLE
+                    binding.chartScrollView.visibility = View.VISIBLE
                     binding.recyclerViewBites.visibility = View.VISIBLE
 
                     // Обновляем адаптер
@@ -216,7 +314,7 @@ class FishingNoteDetailActivity : AppCompatActivity() {
                 binding.textViewBitesLabel.visibility = View.GONE
                 binding.buttonAddBite.visibility = View.GONE
                 binding.textViewNoBites.visibility = View.GONE
-                binding.biteChart.visibility = View.GONE
+                binding.chartScrollView.visibility = View.GONE
                 binding.recyclerViewBites.visibility = View.GONE
             }
         }
@@ -226,10 +324,22 @@ class FishingNoteDetailActivity : AppCompatActivity() {
      * Показывает диалог добавления поклевки
      */
     private fun showAddBiteDialog(date: java.util.Date) {
-        BiteDialog(this, date) { newBite ->
+        BiteDialog(this, date, null) { newBite ->
             // Добавляем новую поклевку
             addBiteRecord(newBite)
         }.show()
+    }
+
+    /**
+     * Показывает диалог редактирования поклевки
+     */
+    private fun showEditBiteDialog(bite: BiteRecord) {
+        currentNote?.let { note ->
+            BiteDialog(this, note.date, bite) { updatedBite ->
+                // Обновляем поклевку
+                updateBiteRecord(updatedBite)
+            }.show()
+        }
     }
 
     /**
@@ -265,11 +375,41 @@ class FishingNoteDetailActivity : AppCompatActivity() {
 
             // Обновляем интерфейс
             binding.textViewNoBites.visibility = View.GONE
-            binding.biteChart.visibility = View.VISIBLE
+            binding.chartScrollView.visibility = View.VISIBLE
             binding.recyclerViewBites.visibility = View.VISIBLE
 
             // Сохраняем изменения в Firestore
             saveBitesToFirestore()
+
+            // Показываем сообщение
+            Toast.makeText(this, "Поклевка добавлена", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    /**
+     * Обновляет существующую запись о поклевке
+     */
+    private fun updateBiteRecord(bite: BiteRecord) {
+        // Находим индекс обновляемой поклевки
+        val index = biteRecords.indexOfFirst { it.id == bite.id }
+        if (index != -1) {
+            // Обновляем поклевку в списке
+            biteRecords[index] = bite
+
+            // Сортируем по времени
+            biteRecords.sortBy { it.time }
+
+            // Обновляем адаптер
+            biteAdapter.updateBites(biteRecords)
+
+            // Обновляем график
+            updateBiteChart()
+
+            // Сохраняем изменения в Firestore
+            saveBitesToFirestore()
+
+            // Показываем сообщение
+            Toast.makeText(this, "Поклевка обновлена", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -289,12 +429,15 @@ class FishingNoteDetailActivity : AppCompatActivity() {
         // Обновляем интерфейс, если список пуст
         if (biteRecords.isEmpty()) {
             binding.textViewNoBites.visibility = View.VISIBLE
-            binding.biteChart.visibility = View.GONE
+            binding.chartScrollView.visibility = View.GONE
             binding.recyclerViewBites.visibility = View.GONE
         }
 
         // Сохраняем изменения в Firestore
         saveBitesToFirestore()
+
+        // Показываем сообщение
+        Toast.makeText(this, "Поклевка удалена", Toast.LENGTH_SHORT).show()
     }
 
     /**
@@ -331,6 +474,14 @@ class FishingNoteDetailActivity : AppCompatActivity() {
     private fun updateBiteChart() {
         if (biteRecords.isEmpty()) return
 
+        // Добавляем рамку для графика
+        val borderColor = ContextCompat.getColor(this, R.color.purple_500)
+        val border = GradientDrawable()
+        border.setColor(Color.WHITE)
+        border.setStroke(2, borderColor)
+        border.cornerRadius = 8f
+        binding.biteChart.setBackground(border)
+
         // Подготавливаем данные для графика
         val entries = ArrayList<BarEntry>()
 
@@ -349,40 +500,73 @@ class FishingNoteDetailActivity : AppCompatActivity() {
             bitesByHour[hour] = (bitesByHour[hour] ?: 0) + 1
         }
 
-        // Создаем записи для графика
+        // Создаем записи для графика - отображаем ВСЕ часы для полного 24-часового графика
         bitesByHour.forEach { (hour, count) ->
             entries.add(BarEntry(hour.toFloat(), count.toFloat()))
         }
 
+        // Цвет для столбцов графика - фирменный цвет приложения
+        val barColor = ContextCompat.getColor(this, R.color.purple_500)
+
         // Создаем датасет
         val dataSet = BarDataSet(entries, "Поклевки")
-        dataSet.color = resources.getColor(R.color.purple_500, null)
+        dataSet.color = barColor
+        dataSet.setDrawValues(true)  // Показываем значения над столбцами только для ненулевых значений
+        dataSet.valueFormatter = object : ValueFormatter() {
+            override fun getFormattedValue(value: Float): String {
+                return if (value > 0) value.toInt().toString() else ""
+            }
+        }
+
+        // Цвет текста значений
+        dataSet.valueTextColor = Color.BLACK
+        dataSet.valueTextSize = 12f
 
         // Создаем данные графика
         val barData = BarData(dataSet)
+        barData.barWidth = 0.5f  // Делаем столбцы потоньше
 
         // Настраиваем форматер для оси X (чтобы отображать часы)
         val xAxis = biteChart.xAxis
         xAxis.position = XAxis.XAxisPosition.BOTTOM
         xAxis.granularity = 1f
-        xAxis.labelCount = 12 // Показываем каждый 2-й час
+        xAxis.labelCount = 24  // Показываем все 24 часа
         xAxis.valueFormatter = object : ValueFormatter() {
             override fun getFormattedValue(value: Float): String {
                 return "${value.toInt()}:00"
             }
         }
 
+        // Убираем нулевые значения с оси Y слева
+        val leftAxis = biteChart.axisLeft
+        leftAxis.axisMinimum = 0f  // Минимальное значение 0
+        leftAxis.setDrawZeroLine(true)  // Рисуем линию нуля
+        leftAxis.setDrawLabels(false)  // Не показываем значения слева
+
         // Настраиваем внешний вид графика
         biteChart.data = barData
-        biteChart.description.isEnabled = false
-        biteChart.legend.isEnabled = false
-        biteChart.axisRight.isEnabled = false
+        biteChart.description.isEnabled = false  // Убираем описание
+        biteChart.legend.isEnabled = false  // Убираем легенду
+        biteChart.axisRight.isEnabled = false  // Убираем правую ось Y
+
+        // Отключаем масштабирование и скроллинг в самом графике
+        // (скроллинг будет через HorizontalScrollView)
+        biteChart.setScaleEnabled(false)
+        biteChart.setPinchZoom(false)
+        biteChart.setTouchEnabled(false)
 
         // Анимация
         biteChart.animateY(500)
 
         // Обновляем график
         biteChart.invalidate()
+
+        // Прокручиваем HorizontalScrollView к текущему времени
+        val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+        val scrollPosition = (currentHour * 33).toInt() // Примерно 33 пикселя на час
+        binding.chartScrollView.post {
+            binding.chartScrollView.smoothScrollTo(scrollPosition, 0)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
