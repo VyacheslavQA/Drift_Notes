@@ -481,36 +481,41 @@ class FishingNoteDetailActivity : AppCompatActivity() {
         border.cornerRadius = 8f
         binding.biteChart.setBackground(border)
 
-        // Важно: сначала устанавливаем фиксированную ширину графика
-        // Устанавливаем гораздо более широкую ширину, чтобы точно хватило на все 24 часа
+        // Уменьшаем ширину графика в два раза, как вы просили
         val layoutParams = binding.biteChart.layoutParams
-        layoutParams.width = 2400 // Увеличиваем в 2 раза для большего горизонтального пространства
+        layoutParams.width = 1200 // Уменьшено в 2 раза с 2400px до 1200px
         binding.biteChart.layoutParams = layoutParams
 
         // Подготавливаем данные для графика
         val entries = ArrayList<BarEntry>()
 
-        // Группируем поклевки по часам
-        val bitesByHour = mutableMapOf<Int, Int>()
+        // Группируем поклевки по получасам (30-минутным интервалам)
+        val bitesByHalfHour = mutableMapOf<Float, Int>()
 
-        // Инициализируем все часы нулями (0-23)
+        // Инициализируем все получасовые интервалы нулями (0.0, 0.5, 1.0, 1.5, ... 23.5)
         for (hour in 0..23) {
-            bitesByHour[hour] = 0
+            bitesByHalfHour[hour.toFloat()] = 0
+            bitesByHalfHour[hour.toFloat() + 0.5f] = 0
         }
 
-        // Считаем поклевки по часам
+        // Считаем поклевки по получасам
         for (bite in biteRecords) {
             val calendar = Calendar.getInstance().apply { time = bite.time }
             val hour = calendar.get(Calendar.HOUR_OF_DAY)
-            bitesByHour[hour] = (bitesByHour[hour] ?: 0) + 1
+            val minute = calendar.get(Calendar.MINUTE)
+
+            // Определяем, в какой получасовой интервал попадает время поклевки
+            val halfHour = if (minute < 30) hour.toFloat() else hour.toFloat() + 0.5f
+
+            bitesByHalfHour[halfHour] = (bitesByHalfHour[halfHour] ?: 0) + 1
         }
 
-        // Создаем записи для графика - отображаем ВСЕ часы для полного 24-часового графика
-        // Сортируем по времени, чтобы часы шли в правильном порядке
-        bitesByHour.entries
+        // Создаем записи для графика - отображаем все получасовые интервалы
+        // Сортируем по времени, чтобы интервалы шли в правильном порядке
+        bitesByHalfHour.entries
             .sortedBy { it.key }
-            .forEach { (hour, count) ->
-                entries.add(BarEntry(hour.toFloat(), count.toFloat()))
+            .forEach { (time, count) ->
+                entries.add(BarEntry(time, count.toFloat()))
             }
 
         // Цвет для столбцов графика - фирменный цвет приложения
@@ -532,18 +537,23 @@ class FishingNoteDetailActivity : AppCompatActivity() {
 
         // Создаем данные графика
         val barData = BarData(dataSet)
-        barData.barWidth = 0.7f  // Делаем столбцы шире для лучшей видимости
+        barData.barWidth = 0.4f  // Уменьшаем ширину столбцов для лучшей видимости
 
-        // Настраиваем форматер для оси X (чтобы отображать часы)
+        // Настраиваем форматер для оси X (чтобы отображать время вертикально)
         val xAxis = biteChart.xAxis
         xAxis.position = XAxis.XAxisPosition.BOTTOM
-        xAxis.granularity = 1f
-        xAxis.labelCount = 24  // Показываем все 24 часа
+        xAxis.granularity = 0.5f // Шаг для получасовых интервалов
+        xAxis.labelCount = 48  // 24 часа * 2 (получасовые интервалы)
         xAxis.valueFormatter = object : ValueFormatter() {
             override fun getFormattedValue(value: Float): String {
-                return "${value.toInt()}:00"
+                val hour = value.toInt()
+                val minute = if ((value - hour) >= 0.5f) "30" else "00"
+                return "${hour}:${minute}"
             }
         }
+
+        // Отображаем метки оси X вертикально
+        xAxis.labelRotationAngle = 90f
 
         // Увеличиваем отступы для осей X, чтобы значения по краям не обрезались
         xAxis.setDrawAxisLine(true)
@@ -552,11 +562,11 @@ class FishingNoteDetailActivity : AppCompatActivity() {
         xAxis.spaceMin = 0.5f
         xAxis.spaceMax = 0.5f
 
-        // Убираем нулевые значения с оси Y слева
+        // Убираем значения с оси Y слева
         val leftAxis = biteChart.axisLeft
         leftAxis.axisMinimum = 0f  // Минимальное значение 0
         leftAxis.setDrawZeroLine(true)  // Рисуем линию нуля
-        leftAxis.setDrawLabels(true)  // Показываем значения слева
+        leftAxis.setDrawLabels(false)  // Скрываем значения слева, как вы просили
 
         // Настраиваем внешний вид графика
         biteChart.data = barData
@@ -575,7 +585,7 @@ class FishingNoteDetailActivity : AppCompatActivity() {
         biteChart.setVisibleXRangeMaximum(24f)  // максимум 24 часа видимо
 
         // Устанавливаем отступы для графика внутри chart view
-        biteChart.setExtraOffsets(20f, 10f, 20f, 10f)
+        biteChart.setExtraOffsets(5f, 10f, 20f, 70f) // Увеличиваем нижний отступ для вертикальных меток времени
 
         // Анимация
         biteChart.animateY(500)
@@ -590,7 +600,7 @@ class FishingNoteDetailActivity : AppCompatActivity() {
             // Затем прокручиваем к текущему времени с небольшой задержкой
             binding.chartScrollView.postDelayed({
                 val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-                val scrollPosition = (currentHour * 100).toInt() // 100 пикселей на час, чтобы учесть увеличенную ширину
+                val scrollPosition = (currentHour * 50).toInt() // 50 пикселей на час, с учетом уменьшенной ширины
                 binding.chartScrollView.smoothScrollTo(scrollPosition, 0)
             }, 300)
         }
