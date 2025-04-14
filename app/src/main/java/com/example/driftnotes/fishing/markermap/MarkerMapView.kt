@@ -48,6 +48,9 @@ class MarkerMapView @JvmOverloads constructor(
     // Список соединений между маркерами
     private val connections = mutableListOf<MarkerConnection>()
 
+    // Для автоматического соединения маркеров лучами
+    private var lastAddedMarker: Marker? = null
+
     // Слушатель событий
     var listener: MarkerMapListener? = null
 
@@ -104,21 +107,30 @@ class MarkerMapView @JvmOverloads constructor(
 
     private val markerStrokePaint = Paint().apply {
         color = Color.BLACK
-        strokeWidth = 4f // Увеличиваем ширину контура
+        strokeWidth = 2f // Уменьшаем ширину контура
         style = Paint.Style.STROKE
         isAntiAlias = true
     }
 
     private val connectionPaint = Paint().apply {
         color = Color.RED
-        strokeWidth = 5f // Увеличиваем ширину линии соединения
+        strokeWidth = 3f // Уменьшаем ширину линии соединения
         style = Paint.Style.STROKE
         isAntiAlias = true
     }
 
+    // Новая кисть для автоматических соединений (лучей)
+    private val rayConnectionPaint = Paint().apply {
+        color = Color.DKGRAY
+        strokeWidth = 4f  // Увеличиваем толщину линии с 2f до 4f
+        style = Paint.Style.STROKE
+        isAntiAlias = true
+        pathEffect = android.graphics.DashPathEffect(floatArrayOf(10f, 5f), 0f) // Пунктирная линия
+    }
+
     private val infoTextPaint = Paint().apply {
         color = Color.BLACK
-        textSize = 30f // Увеличиваем размер текста для информации
+        textSize = 24f // Немного уменьшаем размер текста для информации
         isAntiAlias = true
     }
 
@@ -131,19 +143,21 @@ class MarkerMapView @JvmOverloads constructor(
     // Обновленная кисть для отображения названия типа маркера
     private val typeTextPaint = Paint().apply {
         color = Color.BLACK
-        textSize = 36f // Увеличиваем размер текста с 24f до 36f
+        textSize = 24f // Уменьшаем размер текста
         isAntiAlias = true
-        textAlign = Paint.Align.CENTER // Центрируем текст
-        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD) // Делаем шрифт жирным
+        textAlign =
+            Paint.Align.LEFT // Выравнивание по левому краю для отображения справа от маркера
+        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
     }
 
     // Обновленная кисть для отображения глубины
     private val depthTextPaint = Paint().apply {
         color = Color.BLUE
-        textSize = 56f  // Увеличиваем размер текста для глубины в два раза (с 28f до 56f)
+        textSize = 36f  // Уменьшаем размер текста для глубины
         isAntiAlias = true
-        textAlign = Paint.Align.CENTER // Центрируем текст
-        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD) // Жирный шрифт
+        textAlign =
+            Paint.Align.RIGHT // Выравнивание по правому краю для отображения слева от маркера
+        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
     }
 
     init {
@@ -208,7 +222,7 @@ class MarkerMapView @JvmOverloads constructor(
         MarkerType.values().forEach { type ->
             try {
                 val drawable = ContextCompat.getDrawable(context, type.iconResId)
-                val bitmap = drawable?.toBitmap(width = 72, height = 72) // Увеличиваем размер иконок с 48x48 до 72x72
+                val bitmap = drawable?.toBitmap(width = 48, height = 48) // Уменьшаем размер иконок
                 if (bitmap != null) {
                     markerIcons[type] = bitmap
                 }
@@ -345,7 +359,10 @@ class MarkerMapView @JvmOverloads constructor(
             canvas.drawBitmap(it, 0f, 0f, null)
         }
 
-        // Рисуем соединения между маркерами
+        // Рисуем автоматические соединения (лучи) маркеров по порядку добавления
+        drawRayConnections(canvas)
+
+        // Рисуем ручные соединения между маркерами
         drawConnections(canvas)
 
         // Рисуем маркеры
@@ -396,6 +413,24 @@ class MarkerMapView @JvmOverloads constructor(
     }
 
     /**
+     * Рисует автоматические соединения (лучи) между маркерами в порядке их добавления
+     */
+    private fun drawRayConnections(canvas: Canvas) {
+        if (markers.size < 2) return
+
+        // Сортируем маркеры по времени добавления (в нашем случае используем индекс в массиве)
+        for (i in 0 until markers.size - 1) {
+            val marker1 = markers[i]
+            val marker2 = markers[i + 1]
+
+            // Рисуем пунктирную линию между маркерами
+            canvas.drawLine(marker1.x, marker1.y, marker2.x, marker2.y, rayConnectionPaint)
+
+            // Убираем отображение расстояния между точками
+        }
+    }
+
+    /**
      * Рисует маркеры на карте
      */
     private fun drawMarkers(canvas: Canvas) {
@@ -403,8 +438,9 @@ class MarkerMapView @JvmOverloads constructor(
             // Определяем цвет маркера
             markerPaint.color = marker.color
 
-            // Размер маркера - теперь всегда большой
-            val markerSize = 80f * (if (marker == selectedMarker || marker == firstConnectionMarker) 1.2f else 1.0f)
+            // Размер маркера - уменьшаем в 2 раза
+            val markerSize =
+                40f * (if (marker == selectedMarker || marker == firstConnectionMarker) 1.2f else 1.0f)
 
             // Рисуем круг маркера
             canvas.drawCircle(marker.x, marker.y, markerSize, markerPaint)
@@ -424,53 +460,55 @@ class MarkerMapView @JvmOverloads constructor(
                 canvas.drawBitmap(iconBitmap, null, rectF, null)
             }
 
-            // Рисуем тип маркера в центре круга
+            // Рисуем тип маркера справа от круга
             val typeText = marker.type.description
+            val typeOffset = markerSize + 10f  // Отступ от края маркера
 
-            // Фон для текста типа маркера (над маркером)
-            val typeBgWidth = typeTextPaint.measureText(typeText) + 30f
-            val typeBgHeight = typeTextPaint.textSize + 20f
+            // Фон для текста типа маркера
+            val typeBgWidth = typeTextPaint.measureText(typeText) + 20f
+            val typeBgHeight = typeTextPaint.textSize + 10f
 
             canvas.drawRect(
-                marker.x - typeBgWidth / 2,
-                marker.y - markerSize - typeBgHeight,
-                marker.x + typeBgWidth / 2,
-                marker.y - markerSize,
+                marker.x + typeOffset,
+                marker.y - typeBgHeight / 2,
+                marker.x + typeOffset + typeBgWidth,
+                marker.y + typeBgHeight / 2,
                 infoBgPaint
             )
 
-            // Текст типа маркера (над маркером)
+            // Текст типа маркера (справа от маркера)
             canvas.drawText(
                 typeText,
-                marker.x,
-                marker.y - markerSize - 15f,
+                marker.x + typeOffset + 10f,  // Добавляем отступ внутри фона
+                marker.y + typeTextPaint.textSize / 3,
                 typeTextPaint
             )
 
-            // Рисуем глубину под маркером
+            // Рисуем глубину слева от маркера
             val depthText = String.format("%.1f м", marker.depth)
+            val depthOffset = markerSize + 10f  // Отступ от края маркера
 
-            // Фон для текста глубины (под маркером)
-            val depthBgWidth = depthTextPaint.measureText(depthText) + 40f
-            val depthBgHeight = depthTextPaint.textSize + 20f
+            // Фон для текста глубины
+            val depthBgWidth = depthTextPaint.measureText(depthText) + 20f
+            val depthBgHeight = depthTextPaint.textSize + 10f
 
             canvas.drawRect(
-                marker.x - depthBgWidth / 2,
-                marker.y + markerSize,
-                marker.x + depthBgWidth / 2,
-                marker.y + markerSize + depthBgHeight,
+                marker.x - depthOffset - depthBgWidth,
+                marker.y - depthBgHeight / 2,
+                marker.x - depthOffset,
+                marker.y + depthBgHeight / 2,
                 infoBgPaint
             )
 
-            // Текст глубины (под маркером)
+            // Текст глубины (слева от маркера)
             canvas.drawText(
                 depthText,
-                marker.x,
-                marker.y + markerSize + depthTextPaint.textSize - 10f,
+                marker.x - depthOffset - 10f,  // Отступ внутри фона
+                marker.y + depthTextPaint.textSize / 3,
                 depthTextPaint
             )
 
-            // Если маркер выбран, показываем информацию о нем
+            // Если маркер выбран, показываем дополнительную информацию о нем
             if (marker == selectedMarker || marker == firstConnectionMarker) {
                 // Информационный текст
                 val distanceText = String.format(
@@ -485,16 +523,16 @@ class MarkerMapView @JvmOverloads constructor(
                 val infoText = "$distanceText\n$angleText"
                 val lines = infoText.split("\n")
 
-                // Фон для информации - отображаем над подписью типа
+                // Фон для информации - отображаем над маркером
                 val maxTextWidth = lines.maxOf { infoTextPaint.measureText(it) }
                 val textHeight = infoTextPaint.textSize
-                val padding = 15f // Увеличиваем отступы
+                val padding = 10f
 
                 canvas.drawRect(
                     marker.x - maxTextWidth / 2 - padding,
-                    marker.y - markerSize - typeBgHeight - textHeight * lines.size - padding * 2,
+                    marker.y - markerSize - textHeight * lines.size - padding * 2,
                     marker.x + maxTextWidth / 2 + padding,
-                    marker.y - markerSize - typeBgHeight - padding,
+                    marker.y - markerSize,
                     infoBgPaint
                 )
 
@@ -503,7 +541,7 @@ class MarkerMapView @JvmOverloads constructor(
                     canvas.drawText(
                         lines[i],
                         marker.x - maxTextWidth / 2 + maxTextWidth / 2,
-                        marker.y - markerSize - typeBgHeight - padding * 2 - textHeight * (lines.size - i - 1) + textHeight / 2,
+                        marker.y - markerSize - padding - textHeight * (lines.size - i - 1) + textHeight / 2,
                         infoTextPaint
                     )
                 }
@@ -522,8 +560,8 @@ class MarkerMapView @JvmOverloads constructor(
         for (marker in markers) {
             val distance = hypot(marker.x - mappedPoint.x, marker.y - mappedPoint.y)
 
-            // Увеличиваем зону касания для больших маркеров
-            val touchZone = 80f // Теперь у нас только один стандартный размер
+            // Уменьшаем зону касания для уменьшенных маркеров
+            val touchZone = 40f // Уменьшаем зону касания
 
             if (distance <= touchZone) {
                 return marker
@@ -684,7 +722,7 @@ class MarkerMapView @JvmOverloads constructor(
         type: MarkerType,
         depth: Float = 0f,
         color: Int = MarkerColors.RED,
-        size: MarkerSize = MarkerSize.LARGE, // Теперь всегда LARGE
+        size: MarkerSize = MarkerSize.LARGE,
         notes: String = ""
     ): Marker {
         val marker = Marker(
@@ -697,7 +735,22 @@ class MarkerMapView @JvmOverloads constructor(
             notes = notes
         )
 
+        // Добавляем маркер в список
         markers.add(marker)
+
+        // Создаем соединение с предыдущим маркером автоматически
+        lastAddedMarker?.let { prevMarker ->
+            // Создаем объект соединения
+            val connection = MarkerConnection(
+                marker1Id = prevMarker.id,
+                marker2Id = marker.id
+            )
+            // Не добавляем в список connections, чтобы не дублировать с автоматической прорисовкой
+        }
+
+        // Запоминаем текущий маркер как последний добавленный
+        lastAddedMarker = marker
+
         invalidate()
         listener?.onMarkerAdded(marker)
         return marker
@@ -721,6 +774,12 @@ class MarkerMapView @JvmOverloads constructor(
             firstConnectionMarker = null
         }
 
+        // Если это был последний добавленный маркер, сбрасываем его
+        if (lastAddedMarker == marker) {
+            // Находим предыдущий маркер в списке (последний оставшийся)
+            lastAddedMarker = if (markers.isNotEmpty()) markers.last() else null
+        }
+
         invalidate()
         listener?.onMarkerDeleted(marker)
     }
@@ -733,6 +792,7 @@ class MarkerMapView @JvmOverloads constructor(
         connections.clear()
         selectedMarker = null
         firstConnectionMarker = null
+        lastAddedMarker = null
         invalidate()
     }
 
@@ -748,6 +808,7 @@ class MarkerMapView @JvmOverloads constructor(
 
         selectedMarker = null
         firstConnectionMarker = null
+        lastAddedMarker = if (markers.isNotEmpty()) markers.last() else null
 
         invalidate()
     }

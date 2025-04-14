@@ -219,13 +219,13 @@ class MarkerPopupDialog(
             val container: View = itemView.findViewById(R.id.containerMarkerType)
 
             fun bind(type: MarkerType) {
-                // Устанавливаем изображение с увеличенным размером
-                imageView.layoutParams.width = 48 // увеличиваем размер иконки
-                imageView.layoutParams.height = 48 // увеличиваем размер иконки
+                // Устанавливаем изображение с уменьшенным размером
+                imageView.layoutParams.width = 40 // уменьшаем размер иконки
+                imageView.layoutParams.height = 40 // уменьшаем размер иконки
                 imageView.setImageResource(type.iconResId)
 
-                // Устанавливаем текст с увеличенным размером
-                textView.textSize = 16f // увеличиваем размер текста с 12f до 16f
+                // Устанавливаем текст
+                textView.textSize = 14f // уменьшаем размер текста
                 textView.text = type.description
 
                 // Выделяем выбранный тип

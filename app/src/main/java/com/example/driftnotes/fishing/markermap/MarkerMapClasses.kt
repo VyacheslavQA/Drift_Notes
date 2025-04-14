@@ -27,7 +27,7 @@ enum class MarkerType(val iconResId: Int, val description: String) {
  * Оставляем класс для совместимости
  */
 enum class MarkerSize(val factor: Float, val description: String) {
-    LARGE(4.0f, "Стандартный") // Увеличиваем в 2 раза от предыдущего LARGE (2.0f -> 4.0f)
+    LARGE(2.0f, "Стандартный") // Уменьшаем в 2 раза фактор размера
 }
 
 /**
