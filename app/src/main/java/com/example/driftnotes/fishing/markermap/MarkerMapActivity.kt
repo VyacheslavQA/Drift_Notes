@@ -100,6 +100,35 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
         binding.fabSettings.setOnClickListener {
             showSettingsDialog()
         }
+
+        // Новая кнопка для остановки рисования лучей
+        binding.fabStopRays.setOnClickListener {
+            stopDrawingRays()
+        }
+    }
+
+    /**
+     * Останавливает рисование лучей
+     */
+    private fun stopDrawingRays() {
+        binding.markerMapView.stopDrawingRays()
+        Toast.makeText(
+            this,
+            "Рисование лучей остановлено. Следующий маркер начнет новый луч.",
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+
+    /**
+     * Возобновляет рисование лучей
+     */
+    private fun resumeDrawingRays() {
+        binding.markerMapView.resumeDrawingRays()
+        Toast.makeText(
+            this,
+            "Рисование лучей возобновлено",
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
     /**
@@ -109,7 +138,8 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
         val options = arrayOf(
             getString(R.string.rename_map),
             getString(R.string.clear_markers),
-            getString(R.string.reset_view)
+            getString(R.string.reset_view),
+            "Возобновить рисование лучей" // Добавляем опцию для возобновления рисования лучей
         )
 
         AlertDialog.Builder(this)
@@ -119,6 +149,7 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
                     0 -> showRenameMapDialog()
                     1 -> showClearMarkersConfirmation()
                     2 -> binding.markerMapView.resetView()
+                    3 -> resumeDrawingRays()
                 }
             }
             .show()

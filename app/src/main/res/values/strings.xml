@@ -270,5 +270,10 @@
     <string name="bite_confirm_delete">Вы уверены, что хотите удалить эту запись о поклевке?</string>
     <string name="bite_delete_title">Удаление поклевки</string>
 
+    <string name="stop_rays">Остановить рисование лучей</string>
+    <string name="resume_rays">Возобновить рисование лучей</string>
+    <string name="rays_stopped">Рисование лучей остановлено</string>
+    <string name="rays_resumed">Рисование лучей возобновлено</string>
+
 
 </resources>

@@ -372,8 +372,7 @@ class FishingNoteDetailActivity : AppCompatActivity() {
 
             // Обновляем график
             updateBiteChart()
-
-            // Обновляем интерфейс
+// Обновляем интерфейс
             binding.textViewNoBites.visibility = View.GONE
             binding.chartScrollView.visibility = View.VISIBLE
             binding.recyclerViewBites.visibility = View.VISIBLE
@@ -482,6 +481,12 @@ class FishingNoteDetailActivity : AppCompatActivity() {
         border.cornerRadius = 8f
         binding.biteChart.setBackground(border)
 
+        // Важно: сначала устанавливаем фиксированную ширину графика
+        // Устанавливаем гораздо более широкую ширину, чтобы точно хватило на все 24 часа
+        val layoutParams = binding.biteChart.layoutParams
+        layoutParams.width = 2400 // Увеличиваем в 2 раза для большего горизонтального пространства
+        binding.biteChart.layoutParams = layoutParams
+
         // Подготавливаем данные для графика
         val entries = ArrayList<BarEntry>()
 
@@ -501,9 +506,12 @@ class FishingNoteDetailActivity : AppCompatActivity() {
         }
 
         // Создаем записи для графика - отображаем ВСЕ часы для полного 24-часового графика
-        bitesByHour.forEach { (hour, count) ->
-            entries.add(BarEntry(hour.toFloat(), count.toFloat()))
-        }
+        // Сортируем по времени, чтобы часы шли в правильном порядке
+        bitesByHour.entries
+            .sortedBy { it.key }
+            .forEach { (hour, count) ->
+                entries.add(BarEntry(hour.toFloat(), count.toFloat()))
+            }
 
         // Цвет для столбцов графика - фирменный цвет приложения
         val barColor = ContextCompat.getColor(this, R.color.purple_500)
@@ -524,7 +532,7 @@ class FishingNoteDetailActivity : AppCompatActivity() {
 
         // Создаем данные графика
         val barData = BarData(dataSet)
-        barData.barWidth = 0.5f  // Делаем столбцы потоньше
+        barData.barWidth = 0.7f  // Делаем столбцы шире для лучшей видимости
 
         // Настраиваем форматер для оси X (чтобы отображать часы)
         val xAxis = biteChart.xAxis
@@ -537,11 +545,18 @@ class FishingNoteDetailActivity : AppCompatActivity() {
             }
         }
 
+        // Увеличиваем отступы для осей X, чтобы значения по краям не обрезались
+        xAxis.setDrawAxisLine(true)
+        xAxis.setDrawGridLines(false)
+        xAxis.setAvoidFirstLastClipping(true)
+        xAxis.spaceMin = 0.5f
+        xAxis.spaceMax = 0.5f
+
         // Убираем нулевые значения с оси Y слева
         val leftAxis = biteChart.axisLeft
         leftAxis.axisMinimum = 0f  // Минимальное значение 0
         leftAxis.setDrawZeroLine(true)  // Рисуем линию нуля
-        leftAxis.setDrawLabels(false)  // Не показываем значения слева
+        leftAxis.setDrawLabels(true)  // Показываем значения слева
 
         // Настраиваем внешний вид графика
         biteChart.data = barData
@@ -555,17 +570,29 @@ class FishingNoteDetailActivity : AppCompatActivity() {
         biteChart.setPinchZoom(false)
         biteChart.setTouchEnabled(false)
 
+        // Устанавливаем видимую область графика
+        biteChart.setVisibleXRangeMinimum(5f)   // минимум 5 часов видимо
+        biteChart.setVisibleXRangeMaximum(24f)  // максимум 24 часа видимо
+
+        // Устанавливаем отступы для графика внутри chart view
+        biteChart.setExtraOffsets(20f, 10f, 20f, 10f)
+
         // Анимация
         biteChart.animateY(500)
 
         // Обновляем график
         biteChart.invalidate()
 
-        // Прокручиваем HorizontalScrollView к текущему времени
-        val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-        val scrollPosition = (currentHour * 33).toInt() // Примерно 33 пикселя на час
+        // Прокручиваем HorizontalScrollView к началу
         binding.chartScrollView.post {
-            binding.chartScrollView.smoothScrollTo(scrollPosition, 0)
+            binding.chartScrollView.fullScroll(View.FOCUS_LEFT)
+
+            // Затем прокручиваем к текущему времени с небольшой задержкой
+            binding.chartScrollView.postDelayed({
+                val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+                val scrollPosition = (currentHour * 100).toInt() // 100 пикселей на час, чтобы учесть увеличенную ширину
+                binding.chartScrollView.smoothScrollTo(scrollPosition, 0)
+            }, 300)
         }
     }
 

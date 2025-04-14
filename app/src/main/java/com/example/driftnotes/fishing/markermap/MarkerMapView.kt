@@ -16,6 +16,7 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import com.example.driftnotes.R
@@ -50,6 +51,9 @@ class MarkerMapView @JvmOverloads constructor(
 
     // Для автоматического соединения маркеров лучами
     private var lastAddedMarker: Marker? = null
+
+    // Флаг, указывающий, следует ли продолжать рисование лучей
+    private var continueDrawingRays = true
 
     // Слушатель событий
     var listener: MarkerMapListener? = null
@@ -264,6 +268,9 @@ class MarkerMapView @JvmOverloads constructor(
         }
     }
 
+    // Переменная для отслеживания времени последнего нажатия (для определения двойного нажатия)
+    private var lastTapTime: Long = 0
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         // Проверяем, не обрабатывает ли масштабирование
@@ -333,7 +340,16 @@ class MarkerMapView @JvmOverloads constructor(
                     // Обработка нажатия на маркер
                     val marker = findMarkerAtPoint(event.x, event.y)
                     if (marker != null) {
-                        listener?.onMarkerSelected(marker)
+                        // Если двойное нажатие на маркер, останавливаем рисование лучей
+                        if (marker == lastAddedMarker && System.currentTimeMillis() - lastTapTime < 500) {
+                            // Останавливаем рисование лучей
+                            stopDrawingRays()
+                            Toast.makeText(context, "Рисование лучей остановлено", Toast.LENGTH_SHORT).show()
+                        } else {
+                            // Одиночное нажатие - обычная обработка
+                            listener?.onMarkerSelected(marker)
+                        }
+                        lastTapTime = System.currentTimeMillis()
                     }
                 }
 
@@ -342,6 +358,23 @@ class MarkerMapView @JvmOverloads constructor(
         }
 
         return scaleHandled || gestureHandled || true
+    }
+
+    /**
+     * Останавливает рисование лучей, сбрасывая lastAddedMarker
+     */
+    fun stopDrawingRays() {
+        lastAddedMarker = null
+        continueDrawingRays = false
+        invalidate()
+    }
+
+    /**
+     * Возобновляет рисование лучей
+     */
+    fun resumeDrawingRays() {
+        continueDrawingRays = true
+        // lastAddedMarker установится при добавлении нового маркера
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -416,17 +449,22 @@ class MarkerMapView @JvmOverloads constructor(
      * Рисует автоматические соединения (лучи) между маркерами в порядке их добавления
      */
     private fun drawRayConnections(canvas: Canvas) {
-        if (markers.size < 2) return
+        if (markers.size < 2 || !continueDrawingRays) return
 
-        // Сортируем маркеры по времени добавления (в нашем случае используем индекс в массиве)
-        for (i in 0 until markers.size - 1) {
-            val marker1 = markers[i]
-            val marker2 = markers[i + 1]
+        // Рисуем лучи только между последовательно добавленными маркерами
+        var prevMarker: Marker? = null
 
-            // Рисуем пунктирную линию между маркерами
-            canvas.drawLine(marker1.x, marker1.y, marker2.x, marker2.y, rayConnectionPaint)
+        for (marker in markers) {
+            if (prevMarker != null) {
+                // Рисуем пунктирную линию между текущим и предыдущим маркером
+                canvas.drawLine(prevMarker.x, prevMarker.y, marker.x, marker.y, rayConnectionPaint)
+            }
+            prevMarker = marker
 
-            // Убираем отображение расстояния между точками
+            // Если последний добавленный маркер равен null, останавливаем рисование
+            if (lastAddedMarker == null && prevMarker == markers.last()) {
+                break
+            }
         }
     }
 
@@ -738,14 +776,9 @@ class MarkerMapView @JvmOverloads constructor(
         // Добавляем маркер в список
         markers.add(marker)
 
-        // Создаем соединение с предыдущим маркером автоматически
-        lastAddedMarker?.let { prevMarker ->
-            // Создаем объект соединения
-            val connection = MarkerConnection(
-                marker1Id = prevMarker.id,
-                marker2Id = marker.id
-            )
-            // Не добавляем в список connections, чтобы не дублировать с автоматической прорисовкой
+        // Если режим рисования лучей активен, создаем соединение с предыдущим маркером
+        if (continueDrawingRays && lastAddedMarker != null) {
+            // Не создаем объект соединения, т.к. лучи рисуются автоматически
         }
 
         // Запоминаем текущий маркер как последний добавленный
@@ -793,6 +826,7 @@ class MarkerMapView @JvmOverloads constructor(
         selectedMarker = null
         firstConnectionMarker = null
         lastAddedMarker = null
+        continueDrawingRays = true // Сбрасываем флаг при очистке
         invalidate()
     }
 
@@ -809,6 +843,7 @@ class MarkerMapView @JvmOverloads constructor(
         selectedMarker = null
         firstConnectionMarker = null
         lastAddedMarker = if (markers.isNotEmpty()) markers.last() else null
+        continueDrawingRays = true // Сбрасываем флаг при загрузке новых данных
 
         invalidate()
     }
