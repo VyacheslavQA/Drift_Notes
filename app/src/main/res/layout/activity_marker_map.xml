@@ -24,11 +24,11 @@
 
         <!-- Плавающие кнопки -->
         <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fabStopRays"
+            android:id="@+id/fabRayToggle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
-            android:contentDescription="Остановить рисование лучей"
+            android:contentDescription="@string/stop_rays"
             app:layout_constraintBottom_toTopOf="@+id/fabSave"
             app:layout_constraintEnd_toEndOf="parent"
             app:srcCompat="@android:drawable/ic_media_pause" />
@@ -64,6 +64,16 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabStopRays"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:contentDescription="Остановить рисование лучей"
+            app:layout_constraintBottom_toTopOf="@+id/fabSave"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:srcCompat="@android:drawable/ic_media_pause" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

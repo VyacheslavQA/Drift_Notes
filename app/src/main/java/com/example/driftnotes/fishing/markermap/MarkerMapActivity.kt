@@ -33,6 +33,9 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
     // Флаг для отслеживания изменений
     private var hasChanges = false
 
+    // Флаг для отслеживания состояния рисования лучей
+    private var isDrawingPaused = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMarkerMapBinding.inflate(layoutInflater)
@@ -63,7 +66,7 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
             loadMapData()
         }
 
-        // Настраиваем кнопки сохранения и настроек
+        // Настраиваем кнопки
         setupActionButtons()
     }
 
@@ -101,34 +104,55 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
             showSettingsDialog()
         }
 
-        // Новая кнопка для остановки рисования лучей
+        // Обновленная кнопка для остановки/возобновления рисования лучей
+        updatePauseButtonIcon()
         binding.fabStopRays.setOnClickListener {
-            stopDrawingRays()
+            toggleDrawingRays()
         }
     }
 
     /**
-     * Останавливает рисование лучей
+     * Обновляет иконку кнопки паузы/возобновления
      */
-    private fun stopDrawingRays() {
-        binding.markerMapView.stopDrawingRays()
-        Toast.makeText(
-            this,
-            "Рисование лучей остановлено. Следующий маркер начнет новый луч.",
-            Toast.LENGTH_SHORT
-        ).show()
+    private fun updatePauseButtonIcon() {
+        if (isDrawingPaused) {
+            binding.fabStopRays.setImageResource(android.R.drawable.ic_media_play)
+            binding.fabStopRays.contentDescription = getString(R.string.resume_rays)
+        } else {
+            binding.fabStopRays.setImageResource(android.R.drawable.ic_media_pause)
+            binding.fabStopRays.contentDescription = getString(R.string.stop_rays)
+        }
     }
 
     /**
-     * Возобновляет рисование лучей
+     * Переключает режим рисования лучей
      */
-    private fun resumeDrawingRays() {
-        binding.markerMapView.resumeDrawingRays()
-        Toast.makeText(
-            this,
-            "Рисование лучей возобновлено",
-            Toast.LENGTH_SHORT
-        ).show()
+    private fun toggleDrawingRays() {
+        if (isDrawingPaused) {
+            // Возобновляем рисование лучей
+            binding.markerMapView.resumeDrawingRays()
+            isDrawingPaused = false
+            Toast.makeText(
+                this,
+                getString(R.string.rays_resumed),
+                Toast.LENGTH_SHORT
+            ).show()
+        } else {
+            // Останавливаем рисование лучей
+            binding.markerMapView.stopDrawingRays()
+            isDrawingPaused = true
+            Toast.makeText(
+                this,
+                getString(R.string.rays_stopped),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+
+        // Обновляем иконку
+        updatePauseButtonIcon()
+
+        // Отмечаем, что есть изменения
+        hasChanges = true
     }
 
     /**
@@ -138,8 +162,7 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
         val options = arrayOf(
             getString(R.string.rename_map),
             getString(R.string.clear_markers),
-            getString(R.string.reset_view),
-            "Возобновить рисование лучей" // Добавляем опцию для возобновления рисования лучей
+            getString(R.string.reset_view)
         )
 
         AlertDialog.Builder(this)
@@ -149,7 +172,6 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
                     0 -> showRenameMapDialog()
                     1 -> showClearMarkersConfirmation()
                     2 -> binding.markerMapView.resetView()
-                    3 -> resumeDrawingRays()
                 }
             }
             .show()
@@ -188,6 +210,8 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
             .setPositiveButton(getString(R.string.yes)) { _, _ ->
                 binding.markerMapView.clearAllMarkers()
                 hasChanges = true
+                isDrawingPaused = false
+                updatePauseButtonIcon()
             }
             .setNegativeButton(getString(R.string.no), null)
             .show()
@@ -261,7 +285,7 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
                             val depth = doc.getDouble("depth")?.toFloat() ?: 0f
                             val notes = doc.getString("notes") ?: ""
                             val colorInt = doc.getLong("color")?.toInt() ?: MarkerColors.RED
-                            val sizeStr = doc.getString("size") ?: MarkerSize.LARGE.name  // Изменено SMALL на LARGE
+                            val sizeStr = doc.getString("size") ?: MarkerSize.LARGE.name
 
                             // Преобразуем строку в тип маркера
                             val type = try {
@@ -274,7 +298,7 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
                             val size = try {
                                 MarkerSize.valueOf(sizeStr)
                             } catch (e: Exception) {
-                                MarkerSize.LARGE  // Изменено SMALL на LARGE
+                                MarkerSize.LARGE
                             }
 
                             markers.add(Marker(id, x, y, type, depth, colorInt, size, notes))
@@ -331,6 +355,10 @@ class MarkerMapActivity : AppCompatActivity(), MarkerMapListener {
 
                     // Устанавливаем данные на карту
                     binding.markerMapView.setMapData(markers, connections)
+
+                    // По умолчанию после загрузки данных режим рисования не приостановлен
+                    isDrawingPaused = false
+                    updatePauseButtonIcon()
 
                     // Скрываем индикатор загрузки
                     showLoading(false)

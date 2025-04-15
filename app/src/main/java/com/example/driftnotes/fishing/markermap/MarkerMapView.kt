@@ -49,6 +49,10 @@ class MarkerMapView @JvmOverloads constructor(
     // Список соединений между маркерами
     private val connections = mutableListOf<MarkerConnection>()
 
+    // Список групп маркеров (для отдельных сегментов лучей)
+    private val markerGroups = mutableListOf<MutableList<Marker>>()
+    private var currentGroupIndex = -1 // Индекс текущей активной группы
+
     // Для автоматического соединения маркеров лучами
     private var lastAddedMarker: Marker? = null
 
@@ -125,11 +129,11 @@ class MarkerMapView @JvmOverloads constructor(
 
     // Новая кисть для автоматических соединений (лучей)
     private val rayConnectionPaint = Paint().apply {
-        color = Color.DKGRAY
-        strokeWidth = 4f  // Увеличиваем толщину линии с 2f до 4f
+        color = Color.RED  // Изменили цвет на красный
+        strokeWidth = 8f   // Увеличили толщину в два раза (было 4f)
         style = Paint.Style.STROKE
         isAntiAlias = true
-        pathEffect = android.graphics.DashPathEffect(floatArrayOf(10f, 5f), 0f) // Пунктирная линия
+        pathEffect = android.graphics.DashPathEffect(floatArrayOf(20f, 10f), 0f) // Более редкий пунктир
     }
 
     private val infoTextPaint = Paint().apply {
@@ -174,6 +178,9 @@ class MarkerMapView @JvmOverloads constructor(
         // Инициализируем детекторы жестов
         scaleGestureDetector = ScaleGestureDetector(context, ScaleListener())
         gestureDetector = GestureDetector(context, GestureListener())
+
+        // Инициализируем первую группу маркеров
+        startNewGroup()
     }
 
     /**
@@ -361,11 +368,22 @@ class MarkerMapView @JvmOverloads constructor(
     }
 
     /**
+     * Создает новую группу маркеров
+     */
+    fun startNewGroup() {
+        markerGroups.add(mutableListOf())
+        currentGroupIndex = markerGroups.size - 1
+        lastAddedMarker = null
+    }
+
+    /**
      * Останавливает рисование лучей, сбрасывая lastAddedMarker
      */
     fun stopDrawingRays() {
         lastAddedMarker = null
         continueDrawingRays = false
+        // Завершаем текущую группу и создаем новую
+        startNewGroup()
         invalidate()
     }
 
@@ -374,6 +392,7 @@ class MarkerMapView @JvmOverloads constructor(
      */
     fun resumeDrawingRays() {
         continueDrawingRays = true
+        startNewGroup() // Создаем новую группу для новых лучей
         // lastAddedMarker установится при добавлении нового маркера
     }
 
@@ -392,7 +411,7 @@ class MarkerMapView @JvmOverloads constructor(
             canvas.drawBitmap(it, 0f, 0f, null)
         }
 
-        // Рисуем автоматические соединения (лучи) маркеров по порядку добавления
+        // Рисуем автоматические соединения (лучи) маркеров по группам
         drawRayConnections(canvas)
 
         // Рисуем ручные соединения между маркерами
@@ -446,24 +465,20 @@ class MarkerMapView @JvmOverloads constructor(
     }
 
     /**
-     * Рисует автоматические соединения (лучи) между маркерами в порядке их добавления
+     * Рисует автоматические соединения (лучи) между маркерами в группах
      */
     private fun drawRayConnections(canvas: Canvas) {
-        if (markers.size < 2 || !continueDrawingRays) return
+        if (!continueDrawingRays && markerGroups.isEmpty()) return
 
-        // Рисуем лучи только между последовательно добавленными маркерами
-        var prevMarker: Marker? = null
+        // Рисуем лучи для каждой группы маркеров
+        for (group in markerGroups) {
+            if (group.size < 2) continue
 
-        for (marker in markers) {
-            if (prevMarker != null) {
-                // Рисуем пунктирную линию между текущим и предыдущим маркером
-                canvas.drawLine(prevMarker.x, prevMarker.y, marker.x, marker.y, rayConnectionPaint)
-            }
-            prevMarker = marker
-
-            // Если последний добавленный маркер равен null, останавливаем рисование
-            if (lastAddedMarker == null && prevMarker == markers.last()) {
-                break
+            // Рисуем линии между последовательными маркерами в группе
+            for (i in 0 until group.size - 1) {
+                val marker1 = group[i]
+                val marker2 = group[i + 1]
+                canvas.drawLine(marker1.x, marker1.y, marker2.x, marker2.y, rayConnectionPaint)
             }
         }
     }
@@ -722,7 +737,6 @@ class MarkerMapView @JvmOverloads constructor(
             return true
         }
     }
-
     /**
      * Сбрасывает вид карты к исходному положению и масштабу
      */
@@ -776,13 +790,15 @@ class MarkerMapView @JvmOverloads constructor(
         // Добавляем маркер в список
         markers.add(marker)
 
-        // Если режим рисования лучей активен, создаем соединение с предыдущим маркером
-        if (continueDrawingRays && lastAddedMarker != null) {
-            // Не создаем объект соединения, т.к. лучи рисуются автоматически
+        // Добавляем маркер в текущую группу, если она существует
+        if (currentGroupIndex >= 0 && currentGroupIndex < markerGroups.size) {
+            markerGroups[currentGroupIndex].add(marker)
         }
 
-        // Запоминаем текущий маркер как последний добавленный
-        lastAddedMarker = marker
+        // Если режим рисования лучей активен, устанавливаем текущий маркер как последний добавленный
+        if (continueDrawingRays) {
+            lastAddedMarker = marker
+        }
 
         invalidate()
         listener?.onMarkerAdded(marker)
@@ -799,6 +815,11 @@ class MarkerMapView @JvmOverloads constructor(
         // Удаляем сам маркер
         markers.remove(marker)
 
+        // Удаляем маркер из всех групп
+        for (group in markerGroups) {
+            group.remove(marker)
+        }
+
         if (selectedMarker == marker) {
             selectedMarker = null
         }
@@ -809,8 +830,7 @@ class MarkerMapView @JvmOverloads constructor(
 
         // Если это был последний добавленный маркер, сбрасываем его
         if (lastAddedMarker == marker) {
-            // Находим предыдущий маркер в списке (последний оставшийся)
-            lastAddedMarker = if (markers.isNotEmpty()) markers.last() else null
+            lastAddedMarker = null
         }
 
         invalidate()
@@ -823,10 +843,12 @@ class MarkerMapView @JvmOverloads constructor(
     fun clearAllMarkers() {
         markers.clear()
         connections.clear()
+        markerGroups.clear()
         selectedMarker = null
         firstConnectionMarker = null
         lastAddedMarker = null
         continueDrawingRays = true // Сбрасываем флаг при очистке
+        startNewGroup() // Создаем новую пустую группу
         invalidate()
     }
 
@@ -842,8 +864,22 @@ class MarkerMapView @JvmOverloads constructor(
 
         selectedMarker = null
         firstConnectionMarker = null
-        lastAddedMarker = if (markers.isNotEmpty()) markers.last() else null
-        continueDrawingRays = true // Сбрасываем флаг при загрузке новых данных
+        lastAddedMarker = null
+
+        // Очищаем имеющиеся группы
+        markerGroups.clear()
+
+        // Добавляем все маркеры в одну группу (исторические данные)
+        if (markers.isNotEmpty()) {
+            val initialGroup = mutableListOf<Marker>()
+            initialGroup.addAll(markers)
+            markerGroups.add(initialGroup)
+        }
+
+        // Создаем новую пустую группу для новых маркеров
+        startNewGroup()
+
+        continueDrawingRays = true
 
         invalidate()
     }
