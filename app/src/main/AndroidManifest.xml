@@ -32,7 +32,7 @@
 
         <!-- Активность приветствия -->
         <activity
-            android:name="com.example.driftnotes.WelcomeActivity"
+            android:name=".WelcomeActivity"
             android:exported="true"
             android:theme="@style/Theme.DriftNotes.NoActionBar">
             <intent-filter>

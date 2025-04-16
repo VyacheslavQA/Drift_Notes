@@ -71,10 +71,6 @@ class AuthMethodsActivity : AppCompatActivity() {
             signInWithGoogle()
         }
 
-        binding.buttonAnonymousLogin.setOnClickListener {
-            signInAnonymously()
-        }
-
         binding.textViewCreateAccount.setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
         }
@@ -87,27 +83,6 @@ class AuthMethodsActivity : AppCompatActivity() {
     private fun signInWithGoogle() {
         val signInIntent = googleSignInClient.signInIntent
         googleSignInLauncher.launch(signInIntent)
-    }
-
-    private fun signInAnonymously() {
-        auth.signInAnonymously()
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    // Вход успешен
-                    Log.d(TAG, "signInAnonymously:success")
-                    Toast.makeText(this, R.string.anonymous_login_success, Toast.LENGTH_SHORT).show()
-                    startActivity(Intent(this, MainActivity::class.java))
-                    finish()
-                } else {
-                    // Ошибка входа
-                    Log.w(TAG, "signInAnonymously:failure", task.exception)
-                    Toast.makeText(
-                        this,
-                        getString(R.string.social_auth_error, task.exception?.message),
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            }
     }
 
     private fun firebaseAuthWithGoogle(idToken: String) {

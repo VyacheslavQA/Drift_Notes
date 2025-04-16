@@ -275,5 +275,8 @@
     <string name="rays_stopped">Рисование лучей остановлено</string>
     <string name="rays_resumed">Рисование лучей возобновлено</string>
 
+    <string name="navigation_drawer_open">Открыть навигационное меню</string>
+    <string name="navigation_drawer_close">Закрыть навигационное меню</string>
+
 
 </resources>
