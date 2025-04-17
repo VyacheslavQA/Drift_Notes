@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.example.driftnotes.auth.AuthMethodsActivity
-import com.example.driftnotes.auth.RegisterActivity
 import com.example.driftnotes.databinding.ActivityWelcomeBinding
 import com.example.driftnotes.utils.FirebaseManager
 
@@ -31,20 +30,9 @@ class WelcomeActivity : AppCompatActivity() {
             return
         }
 
-        // Настраиваем обработчики нажатий
+        // Настраиваем обработчик нажатия на кнопку "Войти"
         binding.buttonLogin.setOnClickListener {
             startActivity(Intent(this, AuthMethodsActivity::class.java))
-        }
-
-        binding.buttonRegister.setOnClickListener {
-            startActivity(Intent(this, RegisterActivity::class.java))
-        }
-
-        // Прямая кнопка для входа по телефону
-        binding.buttonPhoneLogin.setOnClickListener {
-            val intent = Intent(this, AuthMethodsActivity::class.java)
-            intent.putExtra("START_PHONE_AUTH", true)
-            startActivity(intent)
         }
     }
 }

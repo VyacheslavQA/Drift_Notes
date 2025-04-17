@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="176dp"
-    android:background="@color/purple_500"
+    android:background="#667256"
     android:gravity="bottom"
     android:orientation="vertical"
     android:padding="16dp"
@@ -24,12 +24,14 @@
         android:text="@string/app_name"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
         android:textSize="18sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:textColor="#F5F5DC" />
 
     <TextView
         android:id="@+id/textViewUserEmail"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Журнал рыбалки"
-        android:textSize="14sp" />
+        android:textSize="14sp"
+        android:textColor="#F5F5DC" />
 </LinearLayout>
