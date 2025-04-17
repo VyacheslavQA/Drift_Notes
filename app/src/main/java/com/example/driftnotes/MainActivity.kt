@@ -25,8 +25,8 @@ class MainActivity : AppCompatActivity() {
 
         // Проверяем, авторизован ли пользователь
         if (!FirebaseManager.isUserLoggedIn()) {
-            // Если нет, перенаправляем на экран входа
-            val intent = Intent(this, LoginActivity::class.java)
+            // Если нет, перенаправляем на экран приветствия
+            val intent = Intent(this, WelcomeActivity::class.java)
             startActivity(intent)
             finish()
             return
@@ -43,17 +43,6 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, AddFishingNoteActivity::class.java)
             AnimationHelper.startActivityWithAnimation(this, intent)
         }
-
-        // Если нужна кнопка для перехода к списку заметок, но в разметке её нет,
-        // можете добавить её в activity_main.xml и раскомментировать эти строки:
-
-        /*
-        val buttonMyNotes = binding.root.findViewById<android.widget.Button>(R.id.buttonMyNotes)
-        buttonMyNotes?.setOnClickListener {
-            val intent = Intent(this, NotesActivity::class.java)
-            AnimationHelper.startActivityWithAnimation(this, intent)
-        }
-        */
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -63,8 +52,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            // Проверьте, что в вашем main_menu.xml есть пункт с id="menu_my_notes"
-            // Если нет, то замените на правильный id или добавьте его в меню
             R.id.menu_my_notes -> {
                 val intent = Intent(this, NotesActivity::class.java)
                 AnimationHelper.startActivityWithAnimation(this, intent)
@@ -72,7 +59,7 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.menu_logout -> {
                 FirebaseManager.auth.signOut()
-                val intent = Intent(this, LoginActivity::class.java)
+                val intent = Intent(this, WelcomeActivity::class.java)
                 startActivity(intent)
                 finish()
                 true

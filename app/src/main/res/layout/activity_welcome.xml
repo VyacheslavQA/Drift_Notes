@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".WelcomeActivity_old">
+    tools:context=".WelcomeActivity">
 
     <!-- Фоновое изображение -->
     <ImageView
@@ -83,19 +83,58 @@
         android:autoSizeMaxTextSize="20sp"
         android:autoSizeStepGranularity="1sp" />
 
-    <!-- Единственная кнопка входа, поднятая на ~1см (40dp) -->
+    <!-- Кнопка входа -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonLogin"
         android:layout_width="0dp"
         android:layout_height="56dp"
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
-        android:layout_marginBottom="88dp"
+        android:layout_marginBottom="16dp"
         android:text="@string/login"
         android:textColor="#FFFFFF"
         android:textSize="16sp"
         app:cornerRadius="28dp"
         app:backgroundTint="#AA1E3C4B"
+        app:layout_constraintBottom_toTopOf="@+id/buttonRegister"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- Кнопка регистрации -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/buttonRegister"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="16dp"
+        android:text="@string/register"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        app:cornerRadius="28dp"
+        app:backgroundTint="#881E3C4B"
+        app:strokeColor="@color/white"
+        app:strokeWidth="1dp"
+        app:layout_constraintBottom_toTopOf="@+id/buttonPhoneLogin"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- Кнопка входа по телефону -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/buttonPhoneLogin"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="48dp"
+        android:text="@string/login_with_phone"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        app:cornerRadius="28dp"
+        app:backgroundTint="#881E3C4B"
+        app:strokeColor="@color/white"
+        app:strokeWidth="1dp"
+        app:icon="@android:drawable/ic_menu_call"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

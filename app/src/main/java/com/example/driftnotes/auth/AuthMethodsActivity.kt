@@ -78,6 +78,11 @@ class AuthMethodsActivity : AppCompatActivity() {
         binding.textViewBack.setOnClickListener {
             finish()
         }
+
+        // Проверяем, нужно ли сразу открыть экран входа по телефону
+        if (intent.getBooleanExtra("START_PHONE_AUTH", false)) {
+            startActivity(Intent(this, PhoneAuthActivity::class.java))
+        }
     }
 
     private fun signInWithGoogle() {

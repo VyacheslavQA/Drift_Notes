@@ -40,7 +40,7 @@ class WelcomeActivity : AppCompatActivity() {
             startActivity(Intent(this, RegisterActivity::class.java))
         }
 
-        // Прямая кнопка для входа по телефону (можем оставить для удобства)
+        // Прямая кнопка для входа по телефону
         binding.buttonPhoneLogin.setOnClickListener {
             val intent = Intent(this, AuthMethodsActivity::class.java)
             intent.putExtra("START_PHONE_AUTH", true)

@@ -60,7 +60,7 @@
             android:exported="false"
             android:label="@string/my_notes" />
 
-        <!-- Активность маркерной карты (удалил дубликат) -->
+        <!-- Активность маркерной карты -->
         <activity
             android:name=".fishing.markermap.MarkerMapActivity"
             android:exported="false"
