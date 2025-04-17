@@ -30,20 +30,14 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/maps_api_key" />
 
-        <!-- Активность приветствия -->
+        <!-- Основная активность -->
         <activity
-            android:name="com.example.driftnotes.WelcomeActivity"
-            android:exported="true"
-            android:theme="@style/Theme.DriftNotes.NoActionBar">
+            android:name="com.example.driftnotes.MainActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-
-        <activity
-            android:name="com.example.driftnotes.MainActivity"
-            android:exported="false">
         </activity>
 
         <!-- Активность для выбора метода входа -->
@@ -60,7 +54,7 @@
             android:exported="false"
             android:label="@string/my_notes" />
 
-        <!-- Активность маркерной карты (удалил дубликат) -->
+        <!-- Активность маркерной карты -->
         <activity
             android:name=".fishing.markermap.MarkerMapActivity"
             android:exported="false"
