@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/navigation_timer"
+        android:icon="@drawable/ic_bottom_timer"
+        android:title="Таймер" />
+    <item
+        android:id="@+id/navigation_weather"
+        android:icon="@drawable/ic_bottom_weather"
+        android:title="Погода" />
+    <item
+        android:id="@+id/navigation_add"
+        android:icon="@drawable/ic_bottom_hook"
+        android:title="" /> <!-- Пустой заголовок для центральной кнопки -->
+    <item
+        android:id="@+id/navigation_calendar"
+        android:icon="@drawable/ic_bottom_calendar"
+        android:title="Календарь" />
+    <item
+        android:id="@+id/navigation_notifications"
+        android:icon="@drawable/ic_bottom_notifications"
+        android:title="Уведомления" />
+</menu>

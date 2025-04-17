@@ -22,6 +22,16 @@ object AnimationHelper {
     }
 
     /**
+     * Запуск активности с анимацией слайда снизу
+     */
+    fun startActivityWithUpAnimation(activity: Activity, intent: Intent) {
+        activity.startActivity(intent)
+        // Используем новые анимации для перехода снизу вверх
+        @Suppress("DEPRECATION")
+        activity.overridePendingTransition(R.anim.slide_in_bottom, R.anim.slide_out_top)
+    }
+
+    /**
      * Завершение активности с анимацией слайда влево (как назад)
      */
     fun finishWithAnimation(activity: Activity) {
@@ -29,5 +39,14 @@ object AnimationHelper {
         // Хотя метод устарел, мы продолжаем его использовать для поддержки старых версий Android
         @Suppress("DEPRECATION")
         activity.overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
+    }
+
+    /**
+     * Завершение активности с анимацией слайда вниз
+     */
+    fun finishWithDownAnimation(activity: Activity) {
+        activity.finish()
+        @Suppress("DEPRECATION")
+        activity.overridePendingTransition(R.anim.slide_in_top, R.anim.slide_out_bottom)
     }
 }

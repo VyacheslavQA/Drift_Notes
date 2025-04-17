@@ -181,11 +181,13 @@ class AddFishingNoteActivity : AppCompatActivity() {
 
         // Обработчик отмены (обе кнопки отмены)
         buttonCancel.setOnClickListener {
-            AnimationHelper.finishWithAnimation(this)
+            finish()
+            overridePendingTransition(R.anim.slide_in_top, R.anim.slide_out_bottom)
         }
 
         buttonInitialCancel.setOnClickListener {
-            AnimationHelper.finishWithAnimation(this)
+            finish()
+            overridePendingTransition(R.anim.slide_in_top, R.anim.slide_out_bottom)
         }
 
         // Обработчик нажатия на кнопку открытия карты
@@ -304,7 +306,8 @@ class AddFishingNoteActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
         if (requestCode == PERMISSIONS_REQUEST_CODE) {
-            val allPermissionsGranted = grantResults.all { it == android.content.pm.PackageManager.PERMISSION_GRANTED }
+            val allPermissionsGranted =
+                grantResults.all { it == android.content.pm.PackageManager.PERMISSION_GRANTED }
 
             if (!allPermissionsGranted) {
                 Toast.makeText(
@@ -400,14 +403,20 @@ class AddFishingNoteActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                val weather = weatherRepository.getWeatherForLocation(selectedLatitude, selectedLongitude)
+                val weather =
+                    weatherRepository.getWeatherForLocation(selectedLatitude, selectedLongitude)
 
                 if (weather != null) {
                     weatherData = weather
                     textViewWeatherStatus.text = weather.weatherDescription
-                    Toast.makeText(this@AddFishingNoteActivity, R.string.weather_success, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@AddFishingNoteActivity,
+                        R.string.weather_success,
+                        Toast.LENGTH_SHORT
+                    ).show()
                 } else {
-                    textViewWeatherStatus.text = getString(R.string.weather_error, "Не удалось получить данные")
+                    textViewWeatherStatus.text =
+                        getString(R.string.weather_error, "Не удалось получить данные")
                 }
             } catch (e: Exception) {
                 textViewWeatherStatus.text = getString(R.string.weather_error, e.message)
@@ -430,7 +439,8 @@ class AddFishingNoteActivity : AppCompatActivity() {
         val notes = editTextNotes.text.toString().trim()
 
         if (location.isEmpty() || tackle.isEmpty()) {
-            Toast.makeText(this, "Пожалуйста, заполните обязательные поля", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Пожалуйста, заполните обязательные поля", Toast.LENGTH_SHORT)
+                .show()
             return
         }
 
@@ -488,7 +498,11 @@ class AddFishingNoteActivity : AppCompatActivity() {
                                 saveNoteToFirestore(photoUrls)
                             }
                         }.addOnFailureListener { e ->
-                            Log.e("AddFishingNote", "Ошибка получения URL для фото $i: ${e.message}", e)
+                            Log.e(
+                                "AddFishingNote",
+                                "Ошибка получения URL для фото $i: ${e.message}",
+                                e
+                            )
                             errorCount++
 
                             if (uploadedCount + errorCount == selectedPhotos.size) {
@@ -529,7 +543,8 @@ class AddFishingNoteActivity : AppCompatActivity() {
         val userId = auth.currentUser?.uid
 
         if (userId == null) {
-            Toast.makeText(this, "Ошибка авторизации, попробуйте войти заново", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Ошибка авторизации, попробуйте войти заново", Toast.LENGTH_SHORT)
+                .show()
             buttonSave.isEnabled = true
             mainProgressBar.visibility = View.GONE
             return
@@ -550,13 +565,14 @@ class AddFishingNoteActivity : AppCompatActivity() {
             markerMapId = markerMapId // Добавляем ID маркерной карты
         )
 
-        // Сохраняем запись в Firestore
+        /// Сохраняем запись в Firestore
         firestore.collection("fishing_notes")
             .add(fishingNote)
             .addOnSuccessListener {
                 Toast.makeText(this, R.string.note_saved, Toast.LENGTH_SHORT).show()
                 mainProgressBar.visibility = View.GONE
-                AnimationHelper.finishWithAnimation(this)
+                finish()
+                overridePendingTransition(R.anim.slide_in_top, R.anim.slide_out_bottom)
             }
             .addOnFailureListener { e ->
                 buttonSave.isEnabled = true
@@ -603,6 +619,7 @@ class AddFishingNoteActivity : AppCompatActivity() {
                     }
                 }
             }
+
             MARKER_MAP_REQUEST_CODE -> {
                 if (resultCode == RESULT_OK && data != null) {
                     // Получаем ID маркерной карты и сохраняем его
@@ -626,13 +643,15 @@ class AddFishingNoteActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == android.R.id.home) {
-            AnimationHelper.finishWithAnimation(this)
+            finish()
+            overridePendingTransition(R.anim.slide_in_top, R.anim.slide_out_bottom)
             return true
         }
         return super.onOptionsItemSelected(item)
     }
 
     override fun onBackPressed() {
-        AnimationHelper.finishWithAnimation(this)
+        finish()
+        overridePendingTransition(R.anim.slide_in_top, R.anim.slide_out_bottom)
     }
 }

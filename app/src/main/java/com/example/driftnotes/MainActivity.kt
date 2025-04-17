@@ -4,14 +4,16 @@ import androidx.appcompat.app.AppCompatActivity
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
+import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.GravityCompat
 import com.example.driftnotes.databinding.ActivityMainBinding
 import com.example.driftnotes.utils.FirebaseManager
-import com.example.driftnotes.auth.LoginActivity
 import com.example.driftnotes.fishing.AddFishingNoteActivity
 import com.example.driftnotes.utils.AnimationHelper
 import com.google.android.material.navigation.NavigationView
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
@@ -40,6 +42,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         // Настраиваем основной экран приложения
         setupUI()
+
+        // Настраиваем Bottom Navigation
+        setupBottomNavigation()
     }
 
     private fun setupDrawerMenu() {
@@ -72,11 +77,54 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun setupUI() {
-        // Добавляем плавающую кнопку для быстрого добавления заметки
-        binding.fabAddNote.setOnClickListener {
+        // Находим кнопку добавления заметки напрямую
+        val fabAddNote = findViewById<FloatingActionButton>(R.id.fabAddNote)
+
+        // Устанавливаем обработчик клика с новой анимацией снизу вверх
+        fabAddNote.setOnClickListener {
+            // Открываем экран добавления заметки
             val intent = Intent(this, AddFishingNoteActivity::class.java)
-            AnimationHelper.startActivityWithAnimation(this, intent)
+            // Используем анимацию снизу-вверх для открытия экрана создания заметки
+            startActivity(intent)
+            overridePendingTransition(R.anim.slide_in_bottom, R.anim.slide_out_top)
         }
+    }
+
+    private fun setupBottomNavigation() {
+        // Используем безопасный вызов
+        val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNavView)
+        bottomNav?.setOnNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.navigation_timer -> {
+                    // Обработка нажатия на "Таймер"
+                    Toast.makeText(this, "Таймер заброса удилищ", Toast.LENGTH_SHORT).show()
+                    true
+                }
+                R.id.navigation_weather -> {
+                    // Обработка нажатия на "Погода"
+                    Toast.makeText(this, "Погода", Toast.LENGTH_SHORT).show()
+                    true
+                }
+                R.id.navigation_add -> {
+                    // Этот пункт не должен быть выбираемым
+                    false
+                }
+                R.id.navigation_calendar -> {
+                    // Обработка нажатия на "Календарь"
+                    Toast.makeText(this, "Календарь", Toast.LENGTH_SHORT).show()
+                    true
+                }
+                R.id.navigation_notifications -> {
+                    // Обработка нажатия на "Уведомления"
+                    Toast.makeText(this, "Уведомления", Toast.LENGTH_SHORT).show()
+                    true
+                }
+                else -> false
+            }
+        }
+
+        // Отключаем центральный элемент меню с проверкой на null
+        bottomNav?.menu?.getItem(2)?.isEnabled = false
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {

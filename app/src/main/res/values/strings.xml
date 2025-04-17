@@ -278,5 +278,12 @@
     <string name="navigation_drawer_open">Открыть навигационное меню</string>
     <string name="navigation_drawer_close">Закрыть навигационное меню</string>
 
+    <!-- Строки для нижней навигации -->
+    <string name="bottom_nav_timer">Таймер</string>
+    <string name="bottom_nav_weather">Погода</string>
+    <string name="bottom_nav_add">Добавить</string>
+    <string name="bottom_nav_calendar">Календарь</string>
+    <string name="bottom_nav_notifications">Уведомления</string>
+
 
 </resources>
