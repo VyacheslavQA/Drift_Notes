@@ -81,7 +81,7 @@ class FishingNoteDetailActivity : AppCompatActivity() {
         // Инициализация RecyclerView для поклевок
         biteAdapter = BiteRecordAdapter(
             bites = biteRecords,
-            onBiteClick = { bite -> showEditBiteDialog(bite) }, // Добавляем обработчик редактирования
+            onBiteClick = { bite -> showEditBiteDialog(bite) },
             onBiteDeleteClick = { bite -> showDeleteBiteConfirmation(bite) }
         )
         binding.recyclerViewBites.layoutManager = LinearLayoutManager(this)
@@ -372,7 +372,8 @@ class FishingNoteDetailActivity : AppCompatActivity() {
 
             // Обновляем график
             updateBiteChart()
-// Обновляем интерфейс
+
+            // Обновляем интерфейс
             binding.textViewNoBites.visibility = View.GONE
             binding.chartScrollView.visibility = View.VISIBLE
             binding.recyclerViewBites.visibility = View.VISIBLE
@@ -474,14 +475,14 @@ class FishingNoteDetailActivity : AppCompatActivity() {
         if (biteRecords.isEmpty()) return
 
         // Добавляем рамку для графика
-        val borderColor = ContextCompat.getColor(this, R.color.purple_500)
+        val borderColor = ContextCompat.getColor(this, R.color.primary)
         val border = GradientDrawable()
         border.setColor(Color.WHITE)
         border.setStroke(2, borderColor)
         border.cornerRadius = 8f
         binding.biteChart.setBackground(border)
 
-        // Уменьшаем ширину графика в два раза, как вы просили
+        // Уменьшаем ширину графика в два раза
         val layoutParams = binding.biteChart.layoutParams
         layoutParams.width = 1200 // Уменьшено в 2 раза с 2400px до 1200px
         binding.biteChart.layoutParams = layoutParams
@@ -519,7 +520,7 @@ class FishingNoteDetailActivity : AppCompatActivity() {
             }
 
         // Цвет для столбцов графика - фирменный цвет приложения
-        val barColor = ContextCompat.getColor(this, R.color.purple_500)
+        val barColor = ContextCompat.getColor(this, R.color.primary)
 
         // Создаем датасет
         val dataSet = BarDataSet(entries, "Поклевки")
@@ -566,7 +567,7 @@ class FishingNoteDetailActivity : AppCompatActivity() {
         val leftAxis = biteChart.axisLeft
         leftAxis.axisMinimum = 0f  // Минимальное значение 0
         leftAxis.setDrawZeroLine(true)  // Рисуем линию нуля
-        leftAxis.setDrawLabels(false)  // Скрываем значения слева, как вы просили
+        leftAxis.setDrawLabels(false)  // Скрываем значения слева
 
         // Настраиваем внешний вид графика
         biteChart.data = barData

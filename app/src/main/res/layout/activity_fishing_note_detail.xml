@@ -250,8 +250,91 @@
             app:layout_constraintTop_toBottomOf="@+id/textViewNotesLabel"
             tools:text="Поймал 5 щук на воблеры. Погода была солнечная, температура воздуха +25°C. Клев начался около 7 утра и продолжался до 10." />
 
-        <!-- Остальные элементы сохраняем как есть, но с обновленными цветами -->
-        <!-- ... -->
+        <!-- Секция поклевок (добавленная) -->
+        <TextView
+            android:id="@+id/textViewBitesLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="24dp"
+            android:text="@string/bites"
+            android:textStyle="bold"
+            android:textColor="#4CAF50"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textViewNotes" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonAddBite"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="@string/add_bite"
+            android:textColor="#FFFFFF"
+            app:backgroundTint="#2E7D32"
+            app:cornerRadius="24dp"
+            app:icon="@android:drawable/ic_menu_add"
+            app:layout_constraintStart_toStartOf="@+id/textViewBitesLabel"
+            app:layout_constraintTop_toBottomOf="@+id/textViewBitesLabel" />
+
+        <TextView
+            android:id="@+id/textViewNoBites"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            android:text="@string/no_bites"
+            android:textSize="16sp"
+            android:textColor="#CCCCCC"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/buttonAddBite" />
+
+        <!-- График поклевок -->
+        <HorizontalScrollView
+            android:id="@+id/chartScrollView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="#1E2B23"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/buttonAddBite">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="8dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/bite_chart_title"
+                    android:textStyle="bold"
+                    android:textColor="#4CAF50"
+                    android:textSize="16sp" />
+
+                <com.github.mikephil.charting.charts.BarChart
+                    android:id="@+id/biteChart"
+                    android:layout_width="2400dp"
+                    android:layout_height="200dp"
+                    android:layout_marginTop="8dp" />
+            </LinearLayout>
+        </HorizontalScrollView>
+
+        <!-- Список поклевок -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewBites"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="24dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/chartScrollView" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
