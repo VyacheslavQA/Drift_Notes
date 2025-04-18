@@ -43,28 +43,52 @@
 
         <activity
             android:name="com.example.driftnotes.MainActivity"
-            android:exported="false">
+            android:exported="false"
+            android:theme="@style/Theme.DriftNotes">
         </activity>
 
         <!-- Активность для выбора метода входа -->
-        <activity android:name="com.example.driftnotes.auth.AuthMethodsActivity" />
+        <activity
+            android:name="com.example.driftnotes.auth.AuthMethodsActivity"
+            android:theme="@style/Theme.DriftNotes.NoActionBar" />
 
-        <activity android:name="com.example.driftnotes.auth.LoginActivity" />
-        <activity android:name="com.example.driftnotes.auth.RegisterActivity" />
-        <activity android:name="com.example.driftnotes.auth.PhoneAuthActivity" />
-        <activity android:name="com.example.driftnotes.fishing.AddFishingNoteActivity" />
-        <activity android:name="com.example.driftnotes.fishing.FishingNoteDetailActivity" />
-        <activity android:name="com.example.driftnotes.maps.MapActivity" android:label="@string/select_location" />
+        <activity
+            android:name="com.example.driftnotes.auth.LoginActivity"
+            android:theme="@style/Theme.DriftNotes" />
+
+        <activity
+            android:name="com.example.driftnotes.auth.RegisterActivity"
+            android:theme="@style/Theme.DriftNotes" />
+
+        <activity
+            android:name="com.example.driftnotes.auth.PhoneAuthActivity"
+            android:theme="@style/Theme.DriftNotes" />
+
+        <activity
+            android:name="com.example.driftnotes.fishing.AddFishingNoteActivity"
+            android:theme="@style/Theme.DriftNotes" />
+
+        <activity
+            android:name="com.example.driftnotes.fishing.FishingNoteDetailActivity"
+            android:theme="@style/Theme.DriftNotes" />
+
+        <activity
+            android:name="com.example.driftnotes.maps.MapActivity"
+            android:label="@string/select_location"
+            android:theme="@style/Theme.DriftNotes" />
+
         <activity
             android:name=".NotesActivity"
             android:exported="false"
-            android:label="@string/my_notes" />
+            android:label="@string/my_notes"
+            android:theme="@style/Theme.DriftNotes" />
 
         <!-- Активность маркерной карты -->
         <activity
             android:name=".fishing.markermap.MarkerMapActivity"
             android:exported="false"
-            android:label="@string/marker_map_title" />
+            android:label="@string/marker_map_title"
+            android:theme="@style/Theme.DriftNotes" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -77,10 +101,17 @@
         </provider>
 
         <!-- Активности для восстановления пароля -->
-        <activity android:name="com.example.driftnotes.auth.PasswordRecoveryActivity" />
-        <activity android:name="com.example.driftnotes.auth.EmailRecoveryActivity" />
-        <activity android:name="com.example.driftnotes.auth.PhoneRecoveryActivity" />
+        <activity
+            android:name="com.example.driftnotes.auth.PasswordRecoveryActivity"
+            android:theme="@style/Theme.DriftNotes" />
+
+        <activity
+            android:name="com.example.driftnotes.auth.EmailRecoveryActivity"
+            android:theme="@style/Theme.DriftNotes" />
+
+        <activity
+            android:name="com.example.driftnotes.auth.PhoneRecoveryActivity"
+            android:theme="@style/Theme.DriftNotes" />
 
     </application>
-
 </manifest>

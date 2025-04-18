@@ -1,14 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <!-- Базовые цвета для темной темы -->
+    <color name="primary">#4CAF50</color>
+    <color name="primary_variant">#388E3C</color>
+    <color name="primary_dark">#2E7D32</color>
+    <color name="secondary">#A5D6A7</color>
+    <color name="secondary_variant">#81C784</color>
+
+    <!-- Цвета фона -->
+    <color name="background">#121212</color>
+    <color name="surface">#1E1E1E</color>
+    <color name="error">#CF6679</color>
+
+    <!-- Текстовые цвета -->
+    <color name="on_primary">#FFFFFF</color>
+    <color name="on_secondary">#121212</color>
+    <color name="on_background">#FFFFFF</color>
+    <color name="on_surface">#CCCCCC</color>
+    <color name="on_error">#000000</color>
 
     <!-- Дополнительные цвета -->
-    <color name="button_stroke_default">#AAAAAA</color>
-    <color name="button_stroke_active">#FF6200EE</color>
+    <color name="accent">#4CAF50</color>
+    <color name="sand">#D7CCA1</color>
+    <color name="light_sand">#E6DDC4</color>
+    <color name="dark_sand">#A59D7B</color>
+
+    <!-- Стандартные цвета (оставляем для совместимости) -->
+    <color name="purple_200">#A5D6A7</color>
+    <color name="purple_500">#4CAF50</color>
+    <color name="purple_700">#388E3C</color>
+    <color name="teal_200">#D7CCA1</color>
+    <color name="teal_700">#A59D7B</color>
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+
+    <!-- Цвета для кнопок и элементов управления -->
+    <color name="button_stroke_default">#4CAF50</color>
+    <color name="button_stroke_active">#81C784</color>
+    <color name="disabled_text">#757575</color>
 </resources>

@@ -4,7 +4,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="@color/surface">
 
     <TextView
         android:id="@+id/textViewDialogTitle"
@@ -13,6 +14,7 @@
         android:text="Редактировать"
         android:textSize="18sp"
         android:textStyle="bold"
+        android:textColor="@color/primary"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -22,6 +24,10 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
+        app:boxBackgroundColor="#1A1A1A"
+        app:boxStrokeColor="@color/primary"
+        android:textColorHint="#AAAAAA"
+        app:hintTextColor="@color/primary"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewDialogTitle">
@@ -32,27 +38,34 @@
             android:layout_height="wrap_content"
             android:gravity="top|start"
             android:hint="Текст"
+            android:textColor="@color/on_surface"
             android:inputType="textMultiLine"
             android:minLines="3" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonSave"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:text="Сохранить"
+        android:textColor="#FFFFFF"
+        app:backgroundTint="@color/primary"
+        app:cornerRadius="24dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textInputLayout" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonCancel"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:text="Отмена"
-        android:backgroundTint="@android:color/darker_gray"
+        android:textColor="#FFFFFF"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        app:strokeColor="@color/primary"
+        app:cornerRadius="24dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/buttonSave" />

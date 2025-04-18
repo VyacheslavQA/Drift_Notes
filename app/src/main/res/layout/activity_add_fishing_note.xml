@@ -5,6 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background"
     tools:context=".fishing.AddFishingNoteActivity">
 
     <ScrollView
@@ -25,6 +26,7 @@
                 android:text="@string/select_fishing_type_first"
                 android:textSize="18sp"
                 android:textStyle="bold"
+                android:textColor="#4CAF50"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -35,6 +37,10 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                app:boxBackgroundColor="#1A1A1A"
+                app:boxStrokeColor="#4CAF50"
+                android:textColorHint="#AAAAAA"
+                app:hintTextColor="#4CAF50"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textViewFishingTypeLabel">
@@ -44,15 +50,19 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="none"
+                    android:textColor="#FFFFFF"
                     android:hint="@string/fishing_type" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonInitialCancel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="@string/cancel"
+                android:textColor="#FFFFFF"
+                app:backgroundTint="#2E7D32"
+                app:cornerRadius="24dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/dropdownFishingTypeLayout" />
@@ -75,6 +85,7 @@
                     android:text="@string/fishing_details_for"
                     android:textSize="18sp"
                     android:textStyle="bold"
+                    android:textColor="#4CAF50"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -85,6 +96,10 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
+                    app:boxBackgroundColor="#1A1A1A"
+                    app:boxStrokeColor="#4CAF50"
+                    android:textColorHint="#AAAAAA"
+                    app:hintTextColor="#4CAF50"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/formContentTitle">
@@ -93,16 +108,20 @@
                         android:id="@+id/editTextLocation"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:textColor="#FFFFFF"
                         android:hint="@string/location" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <!-- Кнопка выбора места на карте -->
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/buttonOpenMap"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="@string/open_map"
+                    android:textColor="#FFFFFF"
+                    app:backgroundTint="#2E7D32"
+                    app:cornerRadius="24dp"
                     app:icon="@android:drawable/ic_dialog_map"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -115,18 +134,22 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:textStyle="italic"
+                    android:textColor="#D7CCA1"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/buttonOpenMap"
                     tools:text="Координаты: 55.755826, 37.617300" />
 
                 <!-- Кнопка маркерной карты (только для карповой рыбалки) -->
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/buttonOpenMarkerMap"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="@string/open_marker_map"
+                    android:textColor="#FFFFFF"
+                    app:backgroundTint="#2E7D32"
+                    app:cornerRadius="24dp"
                     app:icon="@android:drawable/ic_menu_edit"
                     android:visibility="gone"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -139,6 +162,10 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
+                    app:boxBackgroundColor="#1A1A1A"
+                    app:boxStrokeColor="#4CAF50"
+                    android:textColorHint="#AAAAAA"
+                    app:hintTextColor="#4CAF50"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/buttonOpenMarkerMap">
@@ -148,6 +175,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="@string/date"
+                        android:textColor="#FFFFFF"
                         android:focusable="false"
                         android:clickable="true" />
                 </com.google.android.material.textfield.TextInputLayout>
@@ -158,6 +186,8 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
+                    android:background="#1E2B23"
+                    android:padding="8dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/layoutDate">
@@ -168,6 +198,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/weather_data"
                         android:textStyle="bold"
+                        android:textColor="#4CAF50"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
@@ -178,16 +209,20 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:text="@string/weather_not_loaded"
+                        android:textColor="#CCCCCC"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/textViewWeatherTitle" />
 
-                    <Button
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/buttonLoadWeather"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:text="@string/load_weather"
+                        android:textColor="#FFFFFF"
+                        app:backgroundTint="#2E7D32"
+                        app:cornerRadius="24dp"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/textViewWeatherStatus" />
@@ -198,6 +233,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:visibility="gone"
+                        android:indeterminateTint="#4CAF50"
                         app:layout_constraintBottom_toBottomOf="@+id/buttonLoadWeather"
                         app:layout_constraintStart_toEndOf="@+id/buttonLoadWeather"
                         app:layout_constraintTop_toTopOf="@+id/buttonLoadWeather" />
@@ -209,6 +245,10 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
+                    app:boxBackgroundColor="#1A1A1A"
+                    app:boxStrokeColor="#4CAF50"
+                    android:textColorHint="#AAAAAA"
+                    app:hintTextColor="#4CAF50"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/weatherBlock">
@@ -217,6 +257,7 @@
                         android:id="@+id/editTextTackle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:textColor="#FFFFFF"
                         android:hint="@string/tackle" />
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -226,6 +267,10 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
+                    app:boxBackgroundColor="#1A1A1A"
+                    app:boxStrokeColor="#4CAF50"
+                    android:textColorHint="#AAAAAA"
+                    app:hintTextColor="#4CAF50"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/layoutTackle">
@@ -235,18 +280,23 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="@string/notes"
+                        android:textColor="#FFFFFF"
                         android:inputType="textMultiLine"
                         android:minLines="3"
                         android:gravity="top" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <!-- Фотографии -->
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/buttonAddPhoto"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:text="@string/add_photo"
+                    android:textColor="#FFFFFF"
+                    app:backgroundTint="#2E7D32"
+                    app:cornerRadius="24dp"
+                    app:icon="@android:drawable/ic_menu_camera"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/layoutNotes" />
@@ -257,30 +307,36 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:textAlignment="center"
+                    android:textColor="#D7CCA1"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/buttonAddPhoto"
                     tools:text="Выбрано: 0 фото" />
 
                 <!-- Кнопки сохранения и отмены -->
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/buttonSave"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp"
                     android:text="@string/save"
+                    android:textColor="#FFFFFF"
+                    app:backgroundTint="#4CAF50"
+                    app:cornerRadius="24dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/textViewPhotoCount" />
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/buttonCancel"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:layout_marginBottom="24dp"
                     android:text="@string/cancel"
-                    android:backgroundTint="@android:color/darker_gray"
+                    android:textColor="#1E1E1E"
+                    android:backgroundTint="#AAAAAA"
+                    app:cornerRadius="24dp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -295,6 +351,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
+        android:indeterminateTint="#4CAF50"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

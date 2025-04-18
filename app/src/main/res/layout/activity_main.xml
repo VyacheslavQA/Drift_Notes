@@ -6,6 +6,7 @@
     android:id="@+id/drawerLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background"
     tools:context=".MainActivity">
 
     <!-- Основной контент -->
@@ -20,6 +21,7 @@
             android:layout_height="0dp"
             android:padding="8dp"
             android:clipToPadding="false"
+            android:background="@color/background"
             app:layout_constraintBottom_toTopOf="@+id/bottomNavView"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -31,6 +33,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/no_notes_yet"
+            android:textColor="#CCCCCC"
             android:gravity="center"
             android:visibility="gone"
             app:layout_constraintBottom_toTopOf="@+id/bottomNavView"
@@ -58,9 +61,9 @@
             app:layout_constraintRight_toRightOf="parent"
             app:menu="@menu/bottom_nav_menu"
             app:labelVisibilityMode="labeled"
-            android:background="@android:color/white"
-            app:itemIconTint="@color/purple_500"
-            app:itemTextColor="@color/purple_500" />
+            android:background="@color/surface"
+            app:itemIconTint="@color/bottom_nav_colors"
+            app:itemTextColor="@color/bottom_nav_text_colors" />
 
         <!-- Кнопка добавления заметки в центре Bottom Navigation -->
         <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -75,7 +78,7 @@
             app:layout_constraintTop_toTopOf="@+id/bottomNavView"
             app:layout_constraintVertical_bias="0.3"
             app:tint="@color/white"
-            app:backgroundTint="@color/purple_500"
+            app:backgroundTint="@color/primary"
             app:maxImageSize="36dp"
             app:elevation="8dp" />
 
@@ -87,6 +90,9 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
+        android:background="@color/surface"
+        app:itemTextColor="@color/on_surface"
+        app:itemIconTint="@color/primary"
         app:headerLayout="@layout/nav_header"
         app:menu="@menu/nav_menu" />
 
