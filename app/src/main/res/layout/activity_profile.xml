@@ -109,32 +109,9 @@
                     android:inputType="textEmailAddress" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Регион -->
+            <!-- Страна (выпадающий список) -->
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/layoutRegion"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:boxBackgroundColor="#1A1A1A"
-                app:boxStrokeColor="#4CAF50"
-                android:textColorHint="#AAAAAA"
-                app:hintTextColor="#4CAF50"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/layoutEmail">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/editTextRegion"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="Регион"
-                    android:textColor="#FFFFFF"
-                    android:inputType="text" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- Страна/город выпадающее меню -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/layoutCountryCity"
+                android:id="@+id/layoutCountry"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
@@ -145,13 +122,37 @@
                 app:hintTextColor="#4CAF50"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/layoutRegion">
+                app:layout_constraintTop_toBottomOf="@+id/layoutEmail">
 
                 <AutoCompleteTextView
-                    android:id="@+id/dropdownCountryCity"
+                    android:id="@+id/dropdownCountry"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Страна/Город"
+                    android:hint="Страна"
+                    android:textColor="#FFFFFF"
+                    android:inputType="none" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Город (выпадающий список) -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutCity"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                app:boxBackgroundColor="#1A1A1A"
+                app:boxStrokeColor="#4CAF50"
+                android:textColorHint="#AAAAAA"
+                app:hintTextColor="#4CAF50"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/layoutCountry">
+
+                <AutoCompleteTextView
+                    android:id="@+id/dropdownCity"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Город"
                     android:textColor="#FFFFFF"
                     android:inputType="none" />
             </com.google.android.material.textfield.TextInputLayout>
@@ -169,7 +170,7 @@
                 app:hintTextColor="#4CAF50"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/layoutCountryCity">
+                app:layout_constraintTop_toBottomOf="@+id/layoutCity">
 
                 <AutoCompleteTextView
                     android:id="@+id/dropdownExperience"
@@ -204,7 +205,6 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textViewFishingTypesTitle">
-
                 <CheckBox
                     android:id="@+id/checkboxCarp"
                     android:layout_width="match_parent"

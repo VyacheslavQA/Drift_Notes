@@ -39,13 +39,34 @@ class ProfileActivity : AppCompatActivity() {
     private var selectedAvatarUri: Uri? = null
     private var currentPhotoUri: Uri? = null
 
-    // Список стран/городов для выпадающего списка
-    private val countriesAndCities = listOf(
-        "Россия - Москва", "Россия - Санкт-Петербург", "Россия - Новосибирск",
-        "Россия - Екатеринбург", "Россия - Казань", "Россия - Нижний Новгород",
-        "Беларусь - Минск", "Беларусь - Гомель", "Беларусь - Витебск",
-        "Украина - Киев", "Украина - Харьков", "Украина - Одесса",
-        "Казахстан - Алматы", "Казахстан - Нур-Султан", "Узбекистан - Ташкент"
+    // Список стран для выпадающего списка
+    private val countries = listOf(
+        "Казахстан",
+        "Россия",
+        "Беларусь",
+        "Украина",
+        "Узбекистан",
+        "Кыргызстан",
+        "Таджикистан",
+        "Туркменистан",
+        "Азербайджан",
+        "Армения",
+        "Грузия"
+    )
+
+    // Города Казахстана для выпадающего списка
+    private val kazakhstanCities = listOf(
+        "Алматы", "Нур-Султан (Астана)", "Шымкент", "Караганда", "Актобе", "Тараз",
+        "Павлодар", "Усть-Каменогорск", "Семей", "Атырау", "Костанай", "Кызылорда",
+        "Уральск", "Петропавловск", "Актау", "Темиртау", "Кокшетау", "Туркестан",
+        "Экибастуз", "Рудный", "Жанаозен", "Жезказган", "Балхаш", "Талдыкорган",
+        "Аксу", "Сатпаев", "Атбасар", "Байконур", "Риддер", "Сарань", "Аркалык",
+        "Степногорск", "Капшагай", "Жаркент", "Каскелен", "Талгар", "Щучинск",
+        "Кентау", "Каратау", "Аральск", "Шардара", "Есик", "Житикара", "Акколь",
+        "Ленгер", "Шахтинск", "Хромтау", "Алга", "Булаево", "Державинск", "Ерейментау",
+        "Жанатас", "Зайсан", "Зыряновск", "Каражал", "Кандыагаш", "Макинск",
+        "Приозерск", "Сергеевка", "Текели", "Темир", "Форт-Шевченко", "Шалкар", "Шар",
+        "Шемонаиха", "Шу", "Алтай"
     )
 
     // Список уровней опыта
@@ -105,13 +126,41 @@ class ProfileActivity : AppCompatActivity() {
     }
 
     private fun setupDropdowns() {
-        // Настройка выпадающего списка стран/городов
-        val countryCityAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, countriesAndCities)
-        (binding.dropdownCountryCity as? AutoCompleteTextView)?.setAdapter(countryCityAdapter)
+        // Настройка выпадающего списка стран
+        val countriesAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, countries)
+        val countryView = binding.dropdownCountry as? AutoCompleteTextView
+        countryView?.setAdapter(countriesAdapter)
+
+        // Настройка выпадающего списка городов
+        val citiesAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, kazakhstanCities)
+        val cityView = binding.dropdownCity as? AutoCompleteTextView
+        cityView?.setAdapter(citiesAdapter)
+
+        // Обработчик изменения страны для изменения списка городов
+        countryView?.setOnItemClickListener { _, _, position, _ ->
+            val selectedCountry = countries[position]
+
+            // В этой версии приложения у нас есть только города Казахстана
+            // Если в будущем добавим города других стран, можно расширить эту логику
+            val cityAdapter = if (selectedCountry == "Казахстан") {
+                ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, kazakhstanCities)
+            } else {
+                // Для других стран пока пустой список
+                ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, emptyList<String>())
+                // Также можно показать сообщение
+                Toast.makeText(this, "Города пока доступны только для Казахстана", Toast.LENGTH_SHORT).show()
+            }
+
+            val cityAutoComplete = binding.dropdownCity as? AutoCompleteTextView
+            cityAutoComplete?.setAdapter(cityAdapter)
+            // Сбрасываем выбранный город
+            cityAutoComplete?.setText("", false)
+        }
 
         // Настройка выпадающего списка опыта
         val experienceAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, experienceLevels)
-        (binding.dropdownExperience as? AutoCompleteTextView)?.setAdapter(experienceAdapter)
+        val experienceView = binding.dropdownExperience as? AutoCompleteTextView
+        experienceView?.setAdapter(experienceAdapter)
     }
 
     private fun loadUserData() {
@@ -136,12 +185,13 @@ class ProfileActivity : AppCompatActivity() {
                 .get()
                 .addOnSuccessListener { document ->
                     if (document.exists()) {
-                        // Загрузка региона
-                        binding.editTextRegion.setText(document.getString("region") ?: "")
+                        // Загрузка страны
+                        val country = document.getString("country") ?: ""
+                        binding.dropdownCountry.setText(country, false)
 
-                        // Загрузка выбранной страны/города
-                        val countryCity = document.getString("countryCity") ?: ""
-                        binding.dropdownCountryCity.setText(countryCity, false)
+                        // Загрузка города
+                        val city = document.getString("city") ?: ""
+                        binding.dropdownCity.setText(city, false)
 
                         // Загрузка уровня опыта
                         val experience = document.getString("experience") ?: ""
@@ -332,8 +382,8 @@ class ProfileActivity : AppCompatActivity() {
         val userData = hashMapOf(
             "username" to binding.editTextUsername.text.toString().trim(),
             "email" to binding.editTextEmail.text.toString().trim(),
-            "region" to binding.editTextRegion.text.toString().trim(),
-            "countryCity" to binding.dropdownCountryCity.text.toString(),
+            "country" to binding.dropdownCountry.text.toString(),
+            "city" to binding.dropdownCity.text.toString(),
             "experience" to binding.dropdownExperience.text.toString(),
             "fishingTypes" to selectedFishingTypes
         )
