@@ -113,5 +113,11 @@
             android:name="com.example.driftnotes.auth.PhoneRecoveryActivity"
             android:theme="@style/Theme.DriftNotes" />
 
+        <activity
+            android:name=".profile.ProfileActivity"
+            android:exported="false"
+            android:label="Личный кабинет"
+            android:theme="@style/Theme.DriftNotes" />
+
     </application>
 </manifest>

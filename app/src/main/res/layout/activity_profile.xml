@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    tools:context=".profile.ProfileActivity">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp">
+
+            <!-- Заголовок -->
+            <TextView
+                android:id="@+id/textViewProfileTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Личный кабинет"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="#4CAF50"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- Блок аватара -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardViewAvatar"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_marginTop="24dp"
+                app:cardCornerRadius="60dp"
+                app:cardElevation="4dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textViewProfileTitle">
+
+                <ImageView
+                    android:id="@+id/imageViewAvatar"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_fishing_hook"
+                    android:background="#1E1E1E"
+                    android:contentDescription="Аватар пользователя" />
+            </androidx.cardview.widget.CardView>
+
+            <Button
+                android:id="@+id/buttonChangeAvatar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Изменить аватар"
+                android:textSize="14sp"
+                android:backgroundTint="#2E7D32"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/cardViewAvatar" />
+
+            <!-- Имя пользователя -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutUsername"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                app:boxBackgroundColor="#1A1A1A"
+                app:boxStrokeColor="#4CAF50"
+                android:textColorHint="#AAAAAA"
+                app:hintTextColor="#4CAF50"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/buttonChangeAvatar">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editTextUsername"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Имя/Никнейм"
+                    android:textColor="#FFFFFF"
+                    android:inputType="textPersonName" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Email пользователя -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutEmail"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:boxBackgroundColor="#1A1A1A"
+                app:boxStrokeColor="#4CAF50"
+                android:textColorHint="#AAAAAA"
+                app:hintTextColor="#4CAF50"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/layoutUsername">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editTextEmail"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Email"
+                    android:textColor="#FFFFFF"
+                    android:inputType="textEmailAddress" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Регион -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutRegion"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:boxBackgroundColor="#1A1A1A"
+                app:boxStrokeColor="#4CAF50"
+                android:textColorHint="#AAAAAA"
+                app:hintTextColor="#4CAF50"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/layoutEmail">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editTextRegion"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Регион"
+                    android:textColor="#FFFFFF"
+                    android:inputType="text" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Страна/город выпадающее меню -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutCountryCity"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                app:boxBackgroundColor="#1A1A1A"
+                app:boxStrokeColor="#4CAF50"
+                android:textColorHint="#AAAAAA"
+                app:hintTextColor="#4CAF50"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/layoutRegion">
+
+                <AutoCompleteTextView
+                    android:id="@+id/dropdownCountryCity"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Страна/Город"
+                    android:textColor="#FFFFFF"
+                    android:inputType="none" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Опыт рыбалки выпадающее меню -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutExperience"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                app:boxBackgroundColor="#1A1A1A"
+                app:boxStrokeColor="#4CAF50"
+                android:textColorHint="#AAAAAA"
+                app:hintTextColor="#4CAF50"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/layoutCountryCity">
+
+                <AutoCompleteTextView
+                    android:id="@+id/dropdownExperience"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Опыт рыбалки"
+                    android:textColor="#FFFFFF"
+                    android:inputType="none" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Заголовок для секции "Любимые виды рыбалки" -->
+            <TextView
+                android:id="@+id/textViewFishingTypesTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Любимые виды рыбалки:"
+                android:textColor="#D7CCA1"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/layoutExperience" />
+
+            <!-- Чекбоксы для выбора видов рыбалки -->
+            <LinearLayout
+                android:id="@+id/layoutFishingTypes"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="vertical"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textViewFishingTypesTitle">
+
+                <CheckBox
+                    android:id="@+id/checkboxCarp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Карповая"
+                    android:textColor="#CCCCCC"
+                    android:buttonTint="#4CAF50" />
+
+                <CheckBox
+                    android:id="@+id/checkboxSpinning"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Спиннинг"
+                    android:textColor="#CCCCCC"
+                    android:buttonTint="#4CAF50" />
+
+                <CheckBox
+                    android:id="@+id/checkboxFeeder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Фидер"
+                    android:textColor="#CCCCCC"
+                    android:buttonTint="#4CAF50" />
+
+                <CheckBox
+                    android:id="@+id/checkboxFloat"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Поплавочная"
+                    android:textColor="#CCCCCC"
+                    android:buttonTint="#4CAF50" />
+
+                <CheckBox
+                    android:id="@+id/checkboxWinter"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Зимняя рыбалка"
+                    android:textColor="#CCCCCC"
+                    android:buttonTint="#4CAF50" />
+
+                <CheckBox
+                    android:id="@+id/checkboxFlyFishing"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Нахлыст"
+                    android:textColor="#CCCCCC"
+                    android:buttonTint="#4CAF50" />
+            </LinearLayout>
+
+            <!-- Кнопка для смены пароля -->
+            <Button
+                android:id="@+id/buttonChangePassword"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Сменить пароль"
+                android:textColor="#FFFFFF"
+                app:backgroundTint="#4CAF50"
+                app:cornerRadius="24dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/layoutFishingTypes" />
+
+            <!-- Кнопка для сохранения изменений -->
+            <Button
+                android:id="@+id/buttonSaveProfile"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Сохранить изменения"
+                android:textColor="#FFFFFF"
+                app:backgroundTint="#4CAF50"
+                app:cornerRadius="24dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/buttonChangePassword"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_marginBottom="24dp" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -285,5 +285,21 @@
     <string name="bottom_nav_calendar">Календарь</string>
     <string name="bottom_nav_notifications">Уведомления</string>
 
+    <!-- Строки для профиля пользователя -->
+    <string name="profile_title">Личный кабинет</string>
+    <string name="profile_avatar">Аватар пользователя</string>
+    <string name="change_avatar">Изменить аватар</string>
+    <string name="profile_name">Имя/Никнейм</string>
+    <string name="profile_region">Регион</string>
+    <string name="profile_country_city">Страна/Город</string>
+    <string name="profile_experience">Опыт рыбалки</string>
+    <string name="profile_fishing_types">Любимые виды рыбалки</string>
+    <string name="change_password">Сменить пароль</string>
+    <string name="save_profile">Сохранить изменения</string>
+    <string name="forgot_password_question">Забыли пароль?</string>
+    <string name="current_password">Текущий пароль</string>
+    <string name="new_password">Новый пароль</string>
+    <string name="confirm_new_password">Подтвердите новый пароль</string>
+
 
 </resources>

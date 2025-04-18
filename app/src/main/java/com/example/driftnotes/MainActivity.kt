@@ -14,6 +14,7 @@ import com.example.driftnotes.utils.AnimationHelper
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.example.driftnotes.profile.ProfileActivity
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
@@ -134,8 +135,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 AnimationHelper.startActivityWithAnimation(this, intent)
             }
             R.id.nav_profile -> {
-                // Обработка нажатия на пункт "Личный кабинет"
-                // Здесь будет открываться экран профиля, когда он будет создан
+                val intent = Intent(this, ProfileActivity::class.java)
+                AnimationHelper.startActivityWithAnimation(this, intent)
             }
             R.id.nav_stats -> {
                 // Обработка нажатия на пункт "Статистика"
