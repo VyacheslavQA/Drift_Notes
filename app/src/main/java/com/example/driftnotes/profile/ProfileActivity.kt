@@ -15,7 +15,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import com.bumptech.glide.Glide
 import com.example.driftnotes.R
-import com.example.driftnotes.auth.PasswordRecoveryActivity
 import com.example.driftnotes.databinding.ActivityProfileBinding
 import com.example.driftnotes.utils.AnimationHelper
 import com.example.driftnotes.utils.FirebaseManager
@@ -39,34 +38,56 @@ class ProfileActivity : AppCompatActivity() {
     private var selectedAvatarUri: Uri? = null
     private var currentPhotoUri: Uri? = null
 
-    // Список стран для выпадающего списка
+    // Список стран для выпадающего списка (отсортированы по алфавиту)
     private val countries = listOf(
-        "Казахстан",
-        "Россия",
-        "Беларусь",
-        "Украина",
-        "Узбекистан",
-        "Кыргызстан",
-        "Таджикистан",
-        "Туркменистан",
         "Азербайджан",
         "Армения",
-        "Грузия"
+        "Беларусь",
+        "Грузия",
+        "Казахстан",
+        "Кыргызстан",
+        "Россия",
+        "Таджикистан",
+        "Туркменистан",
+        "Узбекистан",
+        "Украина"
     )
 
-    // Города Казахстана для выпадающего списка
+    // Города Казахстана для выпадающего списка (отсортированы по алфавиту)
     private val kazakhstanCities = listOf(
-        "Алматы", "Нур-Султан (Астана)", "Шымкент", "Караганда", "Актобе", "Тараз",
-        "Павлодар", "Усть-Каменогорск", "Семей", "Атырау", "Костанай", "Кызылорда",
-        "Уральск", "Петропавловск", "Актау", "Темиртау", "Кокшетау", "Туркестан",
-        "Экибастуз", "Рудный", "Жанаозен", "Жезказган", "Балхаш", "Талдыкорган",
-        "Аксу", "Сатпаев", "Атбасар", "Байконур", "Риддер", "Сарань", "Аркалык",
-        "Степногорск", "Капшагай", "Жаркент", "Каскелен", "Талгар", "Щучинск",
-        "Кентау", "Каратау", "Аральск", "Шардара", "Есик", "Житикара", "Акколь",
-        "Ленгер", "Шахтинск", "Хромтау", "Алга", "Булаево", "Державинск", "Ерейментау",
-        "Жанатас", "Зайсан", "Зыряновск", "Каражал", "Кандыагаш", "Макинск",
-        "Приозерск", "Сергеевка", "Текели", "Темир", "Форт-Шевченко", "Шалкар", "Шар",
-        "Шемонаиха", "Шу", "Алтай"
+        "Акколь", "Аксу", "Актау", "Актобе", "Алга", "Алматы", "Алтай", "Аральск", "Аркалык", "Астана", "Атбасар", "Атырау",
+        "Байконур", "Балхаш", "Булаево",
+        "Державинск",
+        "Ерейментау", "Есик",
+        "Жанаозен", "Жанатас", "Жаркент", "Жезказган", "Житикара",
+        "Зайсан", "Зыряновск",
+        "Кандыагаш", "Капшагай", "Караганда", "Каражал", "Каратау", "Каскелен", "Кентау", "Кокшетау", "Костанай", "Кызылорда",
+        "Ленгер",
+        "Макинск",
+        "Павлодар", "Петропавловск", "Приозерск",
+        "Риддер", "Рудный",
+        "Сарань", "Сатпаев", "Семей", "Сергеевка", "Степногорск",
+        "Талгар", "Талдыкорган", "Тараз", "Текели", "Темир", "Темиртау", "Туркестан",
+        "Уральск", "Усть-Каменогорск",
+        "Форт-Шевченко",
+        "Хромтау",
+        "Шалкар", "Шар", "Шардара", "Шахтинск", "Шемонаиха", "Шу", "Шымкент",
+        "Щучинск",
+        "Экибастуз"
+    )
+
+    // Города России для выпадающего списка (отсортированы по алфавиту)
+    private val russiaCities = listOf(
+        "Москва", "Санкт-Петербург", "Новосибирск", "Екатеринбург", "Казань",
+        "Нижний Новгород", "Челябинск", "Самара", "Омск", "Ростов-на-Дону",
+        "Уфа", "Красноярск", "Воронеж", "Пермь", "Волгоград"
+    )
+
+    // Карты, связывающие страны с их городами
+    private val citiesByCountry = mapOf(
+        "Казахстан" to kazakhstanCities,
+        "Россия" to russiaCities,
+        // Для остальных стран пока нет списков городов
     )
 
     // Список уровней опыта
@@ -128,39 +149,39 @@ class ProfileActivity : AppCompatActivity() {
     private fun setupDropdowns() {
         // Настройка выпадающего списка стран
         val countriesAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, countries)
-        val countryView = binding.dropdownCountry as? AutoCompleteTextView
-        countryView?.setAdapter(countriesAdapter)
+        (binding.dropdownCountry as? AutoCompleteTextView)?.setAdapter(countriesAdapter)
 
-        // Настройка выпадающего списка городов
-        val citiesAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, kazakhstanCities)
-        val cityView = binding.dropdownCity as? AutoCompleteTextView
-        cityView?.setAdapter(citiesAdapter)
+        // Делаем поле выбора города неактивным до выбора страны
+        (binding.dropdownCity as? AutoCompleteTextView)?.isEnabled = false
+        (binding.dropdownCity as? AutoCompleteTextView)?.hint = "Сначала выберите страну"
 
         // Обработчик изменения страны для изменения списка городов
-        countryView?.setOnItemClickListener { _, _, position, _ ->
+        (binding.dropdownCountry as? AutoCompleteTextView)?.setOnItemClickListener { _, _, position, _ ->
             val selectedCountry = countries[position]
+            val cityList = citiesByCountry[selectedCountry] ?: emptyList()
 
-            // В этой версии приложения у нас есть только города Казахстана
-            // Если в будущем добавим города других стран, можно расширить эту логику
-            val cityAdapter = if (selectedCountry == "Казахстан") {
-                ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, kazakhstanCities)
+            if (cityList.isNotEmpty()) {
+                // Включаем поле выбора города
+                (binding.dropdownCity as? AutoCompleteTextView)?.isEnabled = true
+                (binding.dropdownCity as? AutoCompleteTextView)?.hint = "Выберите город"
+
+                // Устанавливаем адаптер с городами выбранной страны
+                val cityAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, cityList)
+                (binding.dropdownCity as? AutoCompleteTextView)?.setAdapter(cityAdapter)
             } else {
-                // Для других стран пока пустой список
-                ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, emptyList<String>())
-                // Также можно показать сообщение
-                Toast.makeText(this, "Города пока доступны только для Казахстана", Toast.LENGTH_SHORT).show()
+                // Если для страны нет списка городов, отключаем поле
+                (binding.dropdownCity as? AutoCompleteTextView)?.isEnabled = false
+                (binding.dropdownCity as? AutoCompleteTextView)?.hint = "Для этой страны список городов отсутствует"
+                Toast.makeText(this, "Для ${selectedCountry} список городов пока не добавлен", Toast.LENGTH_SHORT).show()
             }
 
-            val cityAutoComplete = binding.dropdownCity as? AutoCompleteTextView
-            cityAutoComplete?.setAdapter(cityAdapter)
             // Сбрасываем выбранный город
-            cityAutoComplete?.setText("", false)
+            (binding.dropdownCity as? AutoCompleteTextView)?.setText("", false)
         }
 
         // Настройка выпадающего списка опыта
         val experienceAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, experienceLevels)
-        val experienceView = binding.dropdownExperience as? AutoCompleteTextView
-        experienceView?.setAdapter(experienceAdapter)
+        (binding.dropdownExperience as? AutoCompleteTextView)?.setAdapter(experienceAdapter)
     }
 
     private fun loadUserData() {
@@ -187,15 +208,29 @@ class ProfileActivity : AppCompatActivity() {
                     if (document.exists()) {
                         // Загрузка страны
                         val country = document.getString("country") ?: ""
-                        binding.dropdownCountry.setText(country, false)
+                        if (country.isNotEmpty()) {
+                            (binding.dropdownCountry as? AutoCompleteTextView)?.setText(country, false)
 
-                        // Загрузка города
-                        val city = document.getString("city") ?: ""
-                        binding.dropdownCity.setText(city, false)
+                            // Проверяем, есть ли города для этой страны
+                            val cityList = citiesByCountry[country] ?: emptyList()
+                            if (cityList.isNotEmpty()) {
+                                // Включаем поле выбора города
+                                (binding.dropdownCity as? AutoCompleteTextView)?.isEnabled = true
+                                (binding.dropdownCity as? AutoCompleteTextView)?.hint = "Выберите город"
+
+                                // Устанавливаем адаптер с городами
+                                val cityAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, cityList)
+                                (binding.dropdownCity as? AutoCompleteTextView)?.setAdapter(cityAdapter)
+
+                                // Загрузка города
+                                val city = document.getString("city") ?: ""
+                                (binding.dropdownCity as? AutoCompleteTextView)?.setText(city, false)
+                            }
+                        }
 
                         // Загрузка уровня опыта
                         val experience = document.getString("experience") ?: ""
-                        binding.dropdownExperience.setText(experience, false)
+                        (binding.dropdownExperience as? AutoCompleteTextView)?.setText(experience, false)
 
                         // Загрузка любимых видов рыбалки
                         val fishingTypes = document.get("fishingTypes") as? List<String> ?: listOf()
@@ -378,13 +413,18 @@ class ProfileActivity : AppCompatActivity() {
         if (binding.checkboxWinter.isChecked) selectedFishingTypes.add("Зимняя рыбалка")
         if (binding.checkboxFlyFishing.isChecked) selectedFishingTypes.add("Нахлыст")
 
+        // Получение значений из выпадающих списков
+        val countryText = (binding.dropdownCountry as? AutoCompleteTextView)?.text.toString()
+        val cityText = (binding.dropdownCity as? AutoCompleteTextView)?.text.toString()
+        val experienceText = (binding.dropdownExperience as? AutoCompleteTextView)?.text.toString()
+
         // Создаем документ с данными пользователя
         val userData = hashMapOf(
             "username" to binding.editTextUsername.text.toString().trim(),
             "email" to binding.editTextEmail.text.toString().trim(),
-            "country" to binding.dropdownCountry.text.toString(),
-            "city" to binding.dropdownCity.text.toString(),
-            "experience" to binding.dropdownExperience.text.toString(),
+            "country" to countryText,
+            "city" to cityText,
+            "experience" to experienceText,
             "fishingTypes" to selectedFishingTypes
         )
 
