@@ -1,41 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Базовые цвета для темной темы -->
-    <color name="primary">#4CAF50</color>
-    <color name="primary_variant">#388E3C</color>
-    <color name="primary_dark">#2E7D32</color>
-    <color name="secondary">#A5D6A7</color>
-    <color name="secondary_variant">#81C784</color>
+    <!-- Базовые цвета в соответствии с мокапом -->
+    <color name="primary">#D7CCA1</color> <!-- Песочный цвет для основных элементов -->
+    <color name="primary_variant">#A59D7B</color>
+    <color name="primary_dark">#837D62</color>
+    <color name="secondary">#1E2B23</color> <!-- Темно-зеленый для акцентов -->
+    <color name="secondary_variant">#16201A</color>
 
     <!-- Цвета фона -->
-    <color name="background">#121212</color>
-    <color name="surface">#1E1E1E</color>
+    <color name="background">#0A1710</color> <!-- Очень темный зеленый для фона -->
+    <color name="surface">#112218</color>
     <color name="error">#CF6679</color>
 
     <!-- Текстовые цвета -->
-    <color name="on_primary">#FFFFFF</color>
-    <color name="on_secondary">#121212</color>
-    <color name="on_background">#FFFFFF</color>
-    <color name="on_surface">#CCCCCC</color>
+    <color name="on_primary">#0A1710</color> <!-- Черный текст на светлом фоне -->
+    <color name="on_secondary">#FFFFFF</color> <!-- Белый текст на темном фоне -->
+    <color name="on_background">#D7CCA1</color> <!-- Песочный текст на темном фоне -->
+    <color name="on_surface">#D7CCA1</color> <!-- Песочный текст на темном фоне -->
     <color name="on_error">#000000</color>
 
     <!-- Дополнительные цвета -->
-    <color name="accent">#4CAF50</color>
-    <color name="sand">#D7CCA1</color>
-    <color name="light_sand">#E6DDC4</color>
-    <color name="dark_sand">#A59D7B</color>
+    <color name="accent">#D7CCA1</color> <!-- Песочный акцент -->
+    <color name="sand">#D7CCA1</color> <!-- Песочный -->
+    <color name="light_sand">#E6DDC4</color> <!-- Светло-песочный -->
+    <color name="dark_sand">#A59D7B</color> <!-- Темно-песочный -->
 
     <!-- Стандартные цвета (оставляем для совместимости) -->
-    <color name="purple_200">#A5D6A7</color>
-    <color name="purple_500">#4CAF50</color>
-    <color name="purple_700">#388E3C</color>
+    <color name="purple_200">#D7CCA1</color>
+    <color name="purple_500">#D7CCA1</color>
+    <color name="purple_700">#A59D7B</color>
     <color name="teal_200">#D7CCA1</color>
     <color name="teal_700">#A59D7B</color>
     <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>
 
     <!-- Цвета для кнопок и элементов управления -->
-    <color name="button_stroke_default">#4CAF50</color>
-    <color name="button_stroke_active">#81C784</color>
+    <color name="button_stroke_default">#D7CCA1</color>
+    <color name="button_stroke_active">#E6DDC4</color>
     <color name="disabled_text">#757575</color>
 </resources>

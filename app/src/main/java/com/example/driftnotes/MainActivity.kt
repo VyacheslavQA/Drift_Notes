@@ -15,6 +15,7 @@ import com.google.android.material.navigation.NavigationView
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.example.driftnotes.profile.ProfileActivity
+import com.example.driftnotes.timer.TimerActivity
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
@@ -97,8 +98,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         bottomNav?.setOnNavigationItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.navigation_timer -> {
-                    // Обработка нажатия на "Таймер"
-                    Toast.makeText(this, "Таймер заброса удилищ", Toast.LENGTH_SHORT).show()
+                    // Запускаем активность таймеров
+                    val intent = Intent(this, TimerActivity::class.java)
+                    AnimationHelper.startActivityWithAnimation(this, intent)
                     true
                 }
                 R.id.navigation_weather -> {

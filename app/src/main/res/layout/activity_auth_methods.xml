@@ -68,9 +68,9 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewDescription"
-        app:tint="#4CAF50" />
+        app:tint="#D7CCA1" />
 
-    <!-- Кнопка входа по email -->
+    <!-- Кнопка входа по email с новым стилем -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonEmailLogin"
         android:layout_width="0dp"
@@ -80,18 +80,21 @@
         android:layout_marginTop="40dp"
         android:text="@string/login_with_email"
         android:textSize="18sp"
-        android:textColor="#FFFFFF"
-        app:backgroundTint="#4CAF50"
+        android:textColor="#D7CCA1"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        app:strokeColor="#D7CCA1"
+        app:strokeWidth="1dp"
+        android:backgroundTint="#0A1710"
         app:cornerRadius="32dp"
         app:icon="@android:drawable/ic_dialog_email"
-        app:iconTint="#FFFFFF"
+        app:iconTint="#D7CCA1"
         app:iconGravity="textStart"
         app:iconPadding="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/logoImageView" />
 
-    <!-- Кнопка входа по телефону -->
+    <!-- Кнопка входа по телефону с новым стилем -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonPhoneLogin"
         android:layout_width="0dp"
@@ -101,18 +104,21 @@
         android:layout_marginTop="16dp"
         android:text="@string/login_with_phone"
         android:textSize="18sp"
-        android:textColor="#FFFFFF"
-        app:backgroundTint="#4CAF50"
+        android:textColor="#D7CCA1"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        app:strokeColor="#D7CCA1"
+        app:strokeWidth="1dp"
+        android:backgroundTint="#0A1710"
         app:cornerRadius="32dp"
         app:icon="@android:drawable/ic_menu_call"
-        app:iconTint="#FFFFFF"
+        app:iconTint="#D7CCA1"
         app:iconGravity="textStart"
         app:iconPadding="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/buttonEmailLogin" />
 
-    <!-- Кнопка входа через Google -->
+    <!-- Кнопка входа через Google сохраняем оригинальный вид -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonGoogleLogin"
         android:layout_width="0dp"
@@ -140,7 +146,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         android:text="@string/no_account"
-        android:textColor="#FFFFFF"
+        android:textColor="#D7CCA1"
         android:textSize="18sp"
         android:alpha="0.9"
         android:padding="8dp"
