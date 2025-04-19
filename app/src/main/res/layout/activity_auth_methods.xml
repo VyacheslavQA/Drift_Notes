@@ -30,7 +30,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:text="@string/choose_login_method"
-        android:textSize="32sp"
+        android:textSize="30sp"
         android:textStyle="bold"
         android:textColor="#FFFFFF"
         android:alpha="0.9"
@@ -62,39 +62,40 @@
         android:layout_width="120dp"
         android:layout_height="120dp"
         android:layout_marginTop="4dp"
-        android:src="@drawable/ic_fishing_hook"
-
         android:padding="5dp"
+
+        android:src="@drawable/ic_fishing_hook"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textViewDescription"
-        />
+        app:layout_constraintTop_toBottomOf="@+id/textViewDescription" />
 
     <!-- Кнопка входа по email с новым стилем -->
+
+    <!-- Кнопка входа по телефону с новым стилем -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonEmailLogin"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         android:layout_width="0dp"
         android:layout_height="64dp"
         android:layout_marginStart="32dp"
+        android:layout_marginTop="12dp"
         android:layout_marginEnd="32dp"
-        android:layout_marginTop="40dp"
-        android:text="@string/login_with_email"
-        android:textSize="18sp"
-        android:textColor="#D7CCA1"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        app:strokeColor="#D7CCA1"
-        app:strokeWidth="1dp"
         android:backgroundTint="#0A1710"
+        android:text="@string/login_with_email"
+        android:textColor="#D7CCA1"
+        android:textSize="18sp"
         app:cornerRadius="32dp"
         app:icon="@android:drawable/ic_dialog_email"
-        app:iconTint="#D7CCA1"
         app:iconGravity="textStart"
         app:iconPadding="16dp"
+        app:iconTint="#D7CCA1"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/logoImageView" />
+        app:layout_constraintTop_toBottomOf="@+id/logoImageView"
+        app:strokeColor="#D7CCA1"
+        app:strokeWidth="1dp" />
 
-    <!-- Кнопка входа по телефону с новым стилем -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonPhoneLogin"
         android:layout_width="0dp"
@@ -140,33 +141,37 @@
         app:layout_constraintTop_toBottomOf="@+id/buttonPhoneLogin" />
 
     <!-- Текст регистрации нового аккаунта -->
+
+    <!-- Кнопка назад -->
+
     <TextView
         android:id="@+id/textViewCreateAccount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="12dp"
+        android:alpha="0.9"
+        android:padding="8dp"
         android:text="@string/no_account"
         android:textColor="#D7CCA1"
         android:textSize="18sp"
-        android:alpha="0.9"
-        android:padding="8dp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.491"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/buttonGoogleLogin" />
 
-    <!-- Кнопка назад -->
     <TextView
         android:id="@+id/textViewBack"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
+        android:layout_marginBottom="60dp"
+        android:alpha="0.7"
+        android:padding="8dp"
         android:text="@string/back"
         android:textColor="#D7CCA1"
         android:textSize="16sp"
-        android:alpha="0.7"
-        android:padding="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

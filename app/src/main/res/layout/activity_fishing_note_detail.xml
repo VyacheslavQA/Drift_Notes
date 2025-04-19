@@ -95,7 +95,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="@string/view_on_map"
-            android:textColor="#FFFFFF"
+            android:textColor="#DAD5C3"
             app:backgroundTint="#2E7D32"
             app:cornerRadius="24dp"
             app:icon="@android:drawable/ic_dialog_map"
@@ -194,7 +194,7 @@
             app:layout_constraintBottom_toBottomOf="@+id/textViewTackleLabel"
             app:layout_constraintStart_toEndOf="@+id/textViewTackleLabel"
             app:layout_constraintTop_toTopOf="@+id/textViewTackleLabel"
-            app:tint="#4CAF50" />
+            app:tint="#DAD5C3" />
 
         <TextView
             android:id="@+id/textViewTackle"
@@ -234,7 +234,7 @@
             app:layout_constraintBottom_toBottomOf="@+id/textViewNotesLabel"
             app:layout_constraintStart_toEndOf="@+id/textViewNotesLabel"
             app:layout_constraintTop_toTopOf="@+id/textViewNotesLabel"
-            app:tint="#4CAF50" />
+            app:tint="#DAD5C3" />
 
         <TextView
             android:id="@+id/textViewNotes"
@@ -269,7 +269,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:text="@string/add_bite"
-            android:textColor="#FFFFFF"
+            android:textColor="#DAD5C3"
             app:backgroundTint="#2E7D32"
             app:cornerRadius="24dp"
             app:icon="@android:drawable/ic_menu_add"
