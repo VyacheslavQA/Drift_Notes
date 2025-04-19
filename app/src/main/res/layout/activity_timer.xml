@@ -114,7 +114,7 @@
                         android:layout_marginTop="8dp"
                         android:text="Настройки"
                         android:textColor="#FFFFFF"
-                        app:backgroundTint="#2E7D32"
+                        app:backgroundTint="#C5BE9C"
                         app:cornerRadius="12dp"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/progressTimer1" />
@@ -208,7 +208,7 @@
                         android:layout_marginTop="8dp"
                         android:text="Настройки"
                         android:textColor="#FFFFFF"
-                        app:backgroundTint="#2E7D32"
+                        app:backgroundTint="#C5BE9C"
                         app:cornerRadius="12dp"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/progressTimer2" />
@@ -302,7 +302,7 @@
                         android:layout_marginTop="8dp"
                         android:text="Настройки"
                         android:textColor="#FFFFFF"
-                        app:backgroundTint="#2E7D32"
+                        app:backgroundTint="#C5BE9C"
                         app:cornerRadius="12dp"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/progressTimer3" />
@@ -398,7 +398,7 @@
                         android:layout_marginTop="8dp"
                         android:text="Настройки"
                         android:textColor="#FFFFFF"
-                        app:backgroundTint="#2E7D32"
+                        app:backgroundTint="#C5BE9C"
                         app:cornerRadius="12dp"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/progressTimer4" />

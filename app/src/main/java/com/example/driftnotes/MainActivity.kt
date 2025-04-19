@@ -13,7 +13,6 @@ import com.example.driftnotes.fishing.AddFishingNoteActivity
 import com.example.driftnotes.utils.AnimationHelper
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.example.driftnotes.profile.ProfileActivity
 import com.example.driftnotes.timer.TimerActivity
 
@@ -79,55 +78,98 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun setupUI() {
-        // Находим кнопку добавления заметки напрямую
-        val fabAddNote = findViewById<FloatingActionButton>(R.id.fabAddNote)
+        // Для обработки RecyclerView и загрузки заметок
+        loadFishingNotes()
+    }
 
-        // Устанавливаем обработчик клика с новой анимацией снизу вверх
-        fabAddNote.setOnClickListener {
-            // Открываем экран добавления заметки
-            val intent = Intent(this, AddFishingNoteActivity::class.java)
-            // Используем анимацию снизу-вверх для открытия экрана создания заметки
-            startActivity(intent)
-            overridePendingTransition(R.anim.slide_in_bottom, R.anim.slide_out_top)
-        }
+    private fun loadFishingNotes() {
+        val userId = FirebaseManager.getCurrentUserId() ?: return
+
+        // Показываем индикатор загрузки
+        binding.progressBar?.visibility = android.view.View.VISIBLE
+        binding.textNoNotes?.visibility = android.view.View.GONE
+
+        FirebaseManager.firestore.collection("fishing_notes")
+            .whereEqualTo("userId", userId)
+            .orderBy("date", com.google.firebase.firestore.Query.Direction.DESCENDING)
+            .get()
+            .addOnSuccessListener { documents ->
+                // Скрываем индикатор загрузки
+                binding.progressBar?.visibility = android.view.View.GONE
+
+                val fishingNotes = mutableListOf<com.example.driftnotes.models.FishingNote>()
+                for (document in documents) {
+                    val note = document.toObject(com.example.driftnotes.models.FishingNote::class.java)
+                        .copy(id = document.id)
+                    fishingNotes.add(note)
+                }
+
+                // Создаем и настраиваем адаптер
+                val adapter = com.example.driftnotes.fishing.FishingNoteAdapter(fishingNotes) { note ->
+                    val intent = Intent(this, com.example.driftnotes.fishing.FishingNoteDetailActivity::class.java)
+                    intent.putExtra("note_id", note.id)
+                    AnimationHelper.startActivityWithAnimation(this, intent)
+                }
+                binding.recyclerView?.adapter = adapter
+
+                // Показываем сообщение, если нет записей
+                if (fishingNotes.isEmpty()) {
+                    binding.textNoNotes?.visibility = android.view.View.VISIBLE
+                } else {
+                    binding.textNoNotes?.visibility = android.view.View.GONE
+                }
+            }
+            .addOnFailureListener { e ->
+                // Скрываем индикатор загрузки
+                binding.progressBar?.visibility = android.view.View.GONE
+
+                // Обработка ошибки - показываем сообщение пользователю
+                Toast.makeText(
+                    this,
+                    getString(R.string.error_loading_notes, e.message),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
     }
 
     private fun setupBottomNavigation() {
-        // Используем безопасный вызов
-        val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNavView)
-        bottomNav?.setOnNavigationItemSelectedListener { item ->
+        binding.bottomNavView?.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.navigation_timer -> {
-                    // Запускаем активность таймеров
+                    // Кнопка "Таймер" - открываем TimerActivity
                     val intent = Intent(this, TimerActivity::class.java)
                     AnimationHelper.startActivityWithAnimation(this, intent)
                     true
                 }
                 R.id.navigation_weather -> {
                     // Обработка нажатия на "Погода"
-                    Toast.makeText(this, "Погода", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Раздел Погода находится в разработке", Toast.LENGTH_SHORT).show()
                     true
                 }
                 R.id.navigation_add -> {
-                    // Этот пункт не должен быть выбираемым
-                    false
+                    // Кнопка с крючком по центру - открываем экран добавления заметки
+                    val intent = Intent(this, AddFishingNoteActivity::class.java)
+                    startActivity(intent)
+                    overridePendingTransition(R.anim.slide_in_bottom, R.anim.slide_out_top)
+                    true
                 }
                 R.id.navigation_calendar -> {
                     // Обработка нажатия на "Календарь"
-                    Toast.makeText(this, "Календарь", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Раздел Календарь находится в разработке", Toast.LENGTH_SHORT).show()
                     true
                 }
                 R.id.navigation_notifications -> {
                     // Обработка нажатия на "Уведомления"
-                    Toast.makeText(this, "Уведомления", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Раздел Уведомления находится в разработке", Toast.LENGTH_SHORT).show()
                     true
                 }
                 else -> false
             }
         }
 
-        // Отключаем центральный элемент меню с проверкой на null
-        bottomNav?.menu?.getItem(2)?.isEnabled = false
+        // Важно! Не отключаем центральную кнопку, иначе не сможем перейти к добавлению заметки
+        // Исправляем эту ошибку из предыдущей версии:
+        // bottomNav?.menu?.getItem(2)?.isEnabled = false
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
@@ -142,15 +184,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
             R.id.nav_stats -> {
                 // Обработка нажатия на пункт "Статистика"
-                // Здесь будет открываться экран статистики, когда он будет создан
+                Toast.makeText(this, "Раздел Статистика находится в разработке", Toast.LENGTH_SHORT).show()
             }
             R.id.nav_settings -> {
                 // Обработка нажатия на пункт "Настройки"
-                // Здесь будет открываться экран настроек, когда он будет создан
+                Toast.makeText(this, "Раздел Настройки находится в разработке", Toast.LENGTH_SHORT).show()
             }
             R.id.nav_help -> {
                 // Обработка нажатия на пункт "Помощь/Связь"
-                // Здесь будет открываться экран поддержки, когда он будет создан
+                Toast.makeText(this, "Раздел Помощь/Связь находится в разработке", Toast.LENGTH_SHORT).show()
             }
             R.id.nav_logout -> {
                 FirebaseManager.auth.signOut()
@@ -183,5 +225,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             // Добавляем анимацию при выходе по кнопке "Назад"
             overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
         }
+    }
+
+    // Метод для обновления данных при возвращении к активности
+    override fun onResume() {
+        super.onResume()
+        // Перезагружаем данные при возвращении на экран
+        loadFishingNotes()
     }
 }

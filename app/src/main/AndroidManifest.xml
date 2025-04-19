@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.telephony" android:required="false" />
@@ -117,6 +118,18 @@
             android:name=".profile.ProfileActivity"
             android:exported="false"
             android:label="Личный кабинет"
+            android:theme="@style/Theme.DriftNotes" />
+
+        <service
+            android:name=".timer.TimerService"
+            android:enabled="true"
+            android:exported="false" />
+
+        <!-- Активность таймера -->
+        <activity
+            android:name=".timer.TimerActivity"
+            android:exported="false"
+            android:label="Таймеры"
             android:theme="@style/Theme.DriftNotes" />
 
     </application>
