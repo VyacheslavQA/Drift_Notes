@@ -49,4 +49,24 @@ object AnimationHelper {
         @Suppress("DEPRECATION")
         activity.overridePendingTransition(R.anim.slide_in_top, R.anim.slide_out_bottom)
     }
+    /**
+     * Безопасное завершение активности с анимацией
+     */
+    fun safeFinishWithAnimation(activity: Activity) {
+        try {
+            activity.finish()
+            // Используем проверку isFinishing, чтобы избежать ошибок при анимации
+            if (!activity.isFinishing) {
+                @Suppress("DEPRECATION")
+                activity.overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
+            }
+        } catch (e: Exception) {
+            // Если возникла ошибка с анимацией, просто завершаем активность
+            try {
+                activity.finish()
+            } catch (ignored: Exception) {
+                // Игнорируем любые ошибки - активность уже может быть уничтожена
+            }
+        }
+    }
 }

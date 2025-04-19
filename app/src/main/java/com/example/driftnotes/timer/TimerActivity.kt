@@ -7,7 +7,9 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.view.MenuItem
 import android.view.View
 import android.widget.EditText
@@ -16,7 +18,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import com.example.driftnotes.R
 import com.example.driftnotes.databinding.ActivityTimerBinding
-import com.example.driftnotes.utils.AnimationHelper
 import java.util.concurrent.TimeUnit
 
 class TimerActivity : AppCompatActivity() {
@@ -24,6 +25,12 @@ class TimerActivity : AppCompatActivity() {
     private lateinit var binding: ActivityTimerBinding
     private var timerService: TimerService? = null
     private var bound = false
+
+    // Добавляем Handler для выполнения задач в UI потоке
+    private val handler = Handler(Looper.getMainLooper())
+
+    // Для предотвращения множественных нажатий
+    private var isBusy = false
 
     // Связь с сервисом
     private val connection = object : ServiceConnection {
@@ -110,24 +117,64 @@ class TimerActivity : AppCompatActivity() {
     ) {
         // Обработчик кнопки Старт
         startButton.setOnClickListener {
-            showDurationDialog(timerId)
+            if (!isBusy) {
+                isBusy = true
+                showDurationDialog(timerId)
+            }
         }
 
         // Обработчик кнопки Стоп
         stopButton.setOnClickListener {
-            timerService?.stopTimer(timerId)
-            updateAllTimerViews()
+            if (!isBusy) {
+                isBusy = true
+                // Выполняем операцию в отдельном потоке, чтобы не блокировать UI
+                Thread {
+                    try {
+                        timerService?.stopTimer(timerId)
+                        // Обновляем UI в основном потоке
+                        handler.post {
+                            updateAllTimerViews()
+                            isBusy = false
+                        }
+                    } catch (e: Exception) {
+                        handler.post {
+                            Toast.makeText(this@TimerActivity, "Ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
+                            isBusy = false
+                        }
+                    }
+                }.start()
+            }
         }
 
         // Обработчик кнопки Сброс
         resetButton.setOnClickListener {
-            timerService?.resetTimer(timerId)
-            updateAllTimerViews()
+            if (!isBusy) {
+                isBusy = true
+                // Выполняем операцию в отдельном потоке, чтобы не блокировать UI
+                Thread {
+                    try {
+                        timerService?.resetTimer(timerId)
+                        // Обновляем UI в основном потоке
+                        handler.post {
+                            updateAllTimerViews()
+                            isBusy = false
+                        }
+                    } catch (e: Exception) {
+                        handler.post {
+                            Toast.makeText(this@TimerActivity, "Ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
+                            isBusy = false
+                        }
+                    }
+                }.start()
+            }
         }
 
         // Обработчик кнопки настроек
         optionsButton.setOnClickListener {
-            showTimerOptionsDialog(timerId)
+            if (!isBusy) {
+                isBusy = true
+                showTimerOptionsDialog(timerId)
+            }
         }
     }
 
@@ -147,14 +194,33 @@ class TimerActivity : AppCompatActivity() {
                     5 -> 60
                     6 -> {
                         showCustomDurationDialog(timerId)
+                        isBusy = false
                         return@setItems
                     }
                     else -> 5
                 }
 
-                val durationInMillis = TimeUnit.MINUTES.toMillis(durationInMinutes.toLong())
-                timerService?.startTimer(timerId, durationInMillis)
-                updateAllTimerViews()
+                // Запускаем таймер в отдельном потоке
+                Thread {
+                    try {
+                        val durationInMillis = TimeUnit.MINUTES.toMillis(durationInMinutes.toLong())
+                        timerService?.startTimer(timerId, durationInMillis)
+
+                        // Обновляем UI в основном потоке
+                        handler.post {
+                            updateAllTimerViews()
+                            isBusy = false
+                        }
+                    } catch (e: Exception) {
+                        handler.post {
+                            Toast.makeText(this, "Ошибка запуска таймера: ${e.message}", Toast.LENGTH_SHORT).show()
+                            isBusy = false
+                        }
+                    }
+                }.start()
+            }
+            .setOnCancelListener {
+                isBusy = false
             }
             .show()
     }
@@ -171,17 +237,39 @@ class TimerActivity : AppCompatActivity() {
                 try {
                     val minutes = editTextMinutes.text.toString().toInt()
                     if (minutes > 0) {
-                        val durationInMillis = TimeUnit.MINUTES.toMillis(minutes.toLong())
-                        timerService?.startTimer(timerId, durationInMillis)
-                        updateAllTimerViews()
+                        // Запускаем таймер в отдельном потоке
+                        Thread {
+                            try {
+                                val durationInMillis = TimeUnit.MINUTES.toMillis(minutes.toLong())
+                                timerService?.startTimer(timerId, durationInMillis)
+
+                                // Обновляем UI в основном потоке
+                                handler.post {
+                                    updateAllTimerViews()
+                                    isBusy = false
+                                }
+                            } catch (e: Exception) {
+                                handler.post {
+                                    Toast.makeText(this, "Ошибка запуска таймера: ${e.message}", Toast.LENGTH_SHORT).show()
+                                    isBusy = false
+                                }
+                            }
+                        }.start()
                     } else {
                         Toast.makeText(this, "Пожалуйста, введите положительное число", Toast.LENGTH_SHORT).show()
+                        isBusy = false
                     }
                 } catch (e: NumberFormatException) {
                     Toast.makeText(this, "Пожалуйста, введите корректное число", Toast.LENGTH_SHORT).show()
+                    isBusy = false
                 }
             }
-            .setNegativeButton("Отмена", null)
+            .setNegativeButton("Отмена") { _, _ ->
+                isBusy = false
+            }
+            .setOnCancelListener {
+                isBusy = false
+            }
             .show()
     }
 
@@ -198,6 +286,9 @@ class TimerActivity : AppCompatActivity() {
                     2 -> showSoundPickerDialog(timerId)
                 }
             }
+            .setOnCancelListener {
+                isBusy = false
+            }
             .show()
     }
 
@@ -213,13 +304,32 @@ class TimerActivity : AppCompatActivity() {
             .setPositiveButton("Сохранить") { _, _ ->
                 val newName = editTextName.text.toString().trim()
                 if (newName.isNotEmpty()) {
-                    timerService?.setTimerName(timerId, newName)
-                    updateAllTimerViews()
+                    // Переименование в отдельном потоке
+                    Thread {
+                        try {
+                            timerService?.setTimerName(timerId, newName)
+                            handler.post {
+                                updateAllTimerViews()
+                                isBusy = false
+                            }
+                        } catch (e: Exception) {
+                            handler.post {
+                                Toast.makeText(this, "Ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
+                                isBusy = false
+                            }
+                        }
+                    }.start()
                 } else {
                     Toast.makeText(this, "Название не может быть пустым", Toast.LENGTH_SHORT).show()
+                    isBusy = false
                 }
             }
-            .setNegativeButton("Отмена", null)
+            .setNegativeButton("Отмена") { _, _ ->
+                isBusy = false
+            }
+            .setOnCancelListener {
+                isBusy = false
+            }
             .show()
     }
 
@@ -236,8 +346,24 @@ class TimerActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle("Выберите цвет")
             .setItems(colors) { _, which ->
-                timerService?.setTimerColor(timerId, colorValues[which])
-                updateAllTimerViews()
+                // Установка цвета в отдельном потоке
+                Thread {
+                    try {
+                        timerService?.setTimerColor(timerId, colorValues[which])
+                        handler.post {
+                            updateAllTimerViews()
+                            isBusy = false
+                        }
+                    } catch (e: Exception) {
+                        handler.post {
+                            Toast.makeText(this, "Ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
+                            isBusy = false
+                        }
+                    }
+                }.start()
+            }
+            .setOnCancelListener {
+                isBusy = false
             }
             .show()
     }
@@ -256,21 +382,38 @@ class TimerActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle("Выберите звук")
             .setItems(sounds) { _, which ->
-                timerService?.setTimerSound(timerId, soundResources[which])
+                // Установка звука в отдельном потоке
+                Thread {
+                    try {
+                        timerService?.setTimerSound(timerId, soundResources[which])
 
-                // Воспроизводим предпросмотр звука, кроме режима вибрации
-                if (soundResources[which] != 0) {
-                    timerService?.playSound(soundResources[which])
-                } else {
-                    // Вибрация
-                    val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as android.os.Vibrator
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                        vibrator.vibrate(android.os.VibrationEffect.createOneShot(500, android.os.VibrationEffect.DEFAULT_AMPLITUDE))
-                    } else {
-                        @Suppress("DEPRECATION")
-                        vibrator.vibrate(500)
+                        // Воспроизводим предпросмотр звука, кроме режима вибрации
+                        if (soundResources[which] != 0) {
+                            timerService?.playSound(soundResources[which])
+                        } else {
+                            // Вибрация
+                            val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as android.os.Vibrator
+                            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                                vibrator.vibrate(android.os.VibrationEffect.createOneShot(500, android.os.VibrationEffect.DEFAULT_AMPLITUDE))
+                            } else {
+                                @Suppress("DEPRECATION")
+                                vibrator.vibrate(500)
+                            }
+                        }
+
+                        handler.post {
+                            isBusy = false
+                        }
+                    } catch (e: Exception) {
+                        handler.post {
+                            Toast.makeText(this, "Ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
+                            isBusy = false
+                        }
                     }
-                }
+                }.start()
+            }
+            .setOnCancelListener {
+                isBusy = false
             }
             .show()
     }
@@ -377,14 +520,22 @@ class TimerActivity : AppCompatActivity() {
 
         // Наблюдаем за изменениями таймера (только если он запущен)
         if (isRunning) {
+            // Удаляем старых наблюдателей, чтобы избежать утечек памяти
+            timerService?.getTimerLiveData(timerId)?.removeObservers(this)
+
+            // Добавляем нового наблюдателя
             timerService?.getTimerLiveData(timerId)?.observe(this, Observer { timeRemaining ->
-                if (timeRemaining <= 0) {
-                    // Таймер завершился - обновляем все элементы
-                    updateAllTimerViews()
-                } else {
-                    // Обновляем только отображение времени и прогресс
-                    timerTextView.text = formatTime(timeRemaining)
-                    progressBar.progress = timerService?.getTimerProgressPercent(timerId) ?: 0
+                try {
+                    if (timeRemaining <= 0) {
+                        // Таймер завершился - обновляем все элементы
+                        updateAllTimerViews()
+                    } else {
+                        // Обновляем только отображение времени и прогресс
+                        timerTextView.text = formatTime(timeRemaining)
+                        progressBar.progress = timerService?.getTimerProgressPercent(timerId) ?: 0
+                    }
+                } catch (e: Exception) {
+                    // Игнорируем ошибки при обновлении UI
                 }
             })
         }
@@ -416,22 +567,72 @@ class TimerActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         if (bound) {
-            updateAllTimerViews()
+            try {
+                updateAllTimerViews()
+            } catch (e: Exception) {
+                // Игнорируем ошибки
+            }
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        try {
+            // Убираем всех наблюдателей, чтобы избежать утечек памяти
+            if (bound && timerService != null) {
+                for (i in 0 until 4) {
+                    timerService?.getTimerLiveData(i)?.removeObservers(this)
+                }
+            }
+        } catch (e: Exception) {
+            // Игнорируем ошибки
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+
+        try {
+            // Убираем всех наблюдателей при остановке активности
+            if (bound && timerService != null) {
+                for (i in 0 until 4) {
+                    timerService?.getTimerLiveData(i)?.removeObservers(this)
+                }
+            }
+
+            // Отменяем все задачи handler
+            handler.removeCallbacksAndMessages(null)
+        } catch (e: Exception) {
+            // Игнорируем ошибки
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        if (bound) {
-            unbindService(connection)
-            bound = false
+
+        try {
+            // Корректно отсоединяем сервис
+            if (bound) {
+                try {
+                    unbindService(connection)
+                } catch (e: Exception) {
+                    // Игнорируем ошибки при отсоединении
+                }
+                bound = false
+            }
+
+            // Отменяем все задачи handler
+            handler.removeCallbacksAndMessages(null)
+        } catch (e: Exception) {
+            // Игнорируем ошибки
         }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             android.R.id.home -> {
-                AnimationHelper.finishWithAnimation(this)
+                finish() // Просто завершаем активность без анимации
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -439,6 +640,6 @@ class TimerActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        AnimationHelper.finishWithAnimation(this)
+        finish() // Просто завершаем активность без анимации
     }
 }

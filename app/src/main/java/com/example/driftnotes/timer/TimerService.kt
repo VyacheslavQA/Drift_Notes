@@ -166,7 +166,6 @@ class TimerService : Service() {
             .setContentIntent(pendingIntent)
             .setOnlyAlertOnce(true)
             .setOngoing(true)
-
         // Добавляем кнопки только если это уведомление для конкретного таймера
         if (timerId != -1) {
             builder.addAction(
@@ -186,67 +185,99 @@ class TimerService : Service() {
 
     // Обновление уведомления
     private fun updateNotification(timerId: Int) {
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.notify(NOTIFICATION_ID, createNotification(timerId))
+        try {
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.notify(NOTIFICATION_ID, createNotification(timerId))
+        } catch (e: Exception) {
+            // Обработка возможных ошибок при обновлении уведомления
+            e.printStackTrace()
+        }
     }
 
     // Запуск таймера
+    @Synchronized
     fun startTimer(timerId: Int, duration: Long) {
-        // Останавливаем существующий таймер, если он запущен
-        stopTimer(timerId)
+        try {
+            // Останавливаем существующий таймер, если он запущен
+            stopTimer(timerId)
 
-        // Настраиваем новый таймер
-        timers[timerId].duration = duration
-        timers[timerId].timeRemaining = duration
+            // Настраиваем новый таймер
+            timers[timerId].duration = duration
+            timers[timerId].timeRemaining = duration
 
-        // Создаем и запускаем CountDownTimer
-        timers[timerId].timer = object : CountDownTimer(duration, 1000) {
-            override fun onTick(millisUntilFinished: Long) {
-                timers[timerId].timeRemaining = millisUntilFinished
-                timers[timerId].timeRemainingLiveData.postValue(millisUntilFinished)
+            // Создаем и запускаем CountDownTimer
+            timers[timerId].timer = object : CountDownTimer(duration, 1000) {
+                override fun onTick(millisUntilFinished: Long) {
+                    try {
+                        timers[timerId].timeRemaining = millisUntilFinished
+                        timers[timerId].timeRemainingLiveData.postValue(millisUntilFinished)
 
-                // Обновляем уведомление каждые 5 секунд
-                if (millisUntilFinished % 5000 <= 1000) {
-                    updateNotification(timerId)
+                        // Обновляем уведомление каждые 5 секунд
+                        if (millisUntilFinished % 5000 <= 1000) {
+                            updateNotification(timerId)
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
                 }
-            }
 
-            override fun onFinish() {
-                timers[timerId].timeRemaining = 0
-                timers[timerId].timeRemainingLiveData.postValue(0L)
-                timers[timerId].timer = null
+                override fun onFinish() {
+                    try {
+                        timers[timerId].timeRemaining = 0
+                        timers[timerId].timeRemainingLiveData.postValue(0L)
+                        timers[timerId].timer = null
 
-                // Воспроизводим звук завершения
-                playSound(timers[timerId].soundResId)
+                        // Воспроизводим звук завершения
+                        playSound(timers[timerId].soundResId)
 
-                // Обновляем уведомление
-                updateNotification(-1)
-            }
-        }.start()
+                        // Обновляем уведомление
+                        updateNotification(-1)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            }.start()
 
-        // Обновляем уведомление
-        updateNotification(timerId)
+            // Обновляем уведомление
+            updateNotification(timerId)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            // Если таймер не запустился, сбрасываем его состояние
+            timers[timerId].timer = null
+            timers[timerId].timeRemaining = 0
+            timers[timerId].timeRemainingLiveData.postValue(0L)
+        }
     }
 
     // Остановка таймера
+    @Synchronized
     fun stopTimer(timerId: Int) {
-        timers[timerId].timer?.cancel()
-        timers[timerId].timer = null
-        timers[timerId].timeRemainingLiveData.postValue(timers[timerId].timeRemaining)
+        try {
+            timers[timerId].timer?.cancel()
+            timers[timerId].timer = null
+            timers[timerId].timeRemainingLiveData.postValue(timers[timerId].timeRemaining)
 
-        // Обновляем уведомление
-        updateNotification(-1)
+            // Обновляем уведомление
+            updateNotification(-1)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     // Сброс таймера
+    @Synchronized
     fun resetTimer(timerId: Int) {
-        timers[timerId].timer?.cancel()
-        timers[timerId].timer = null
-        timers[timerId].timeRemaining = 0
-        timers[timerId].timeRemainingLiveData.postValue(0L)
+        try {
+            timers[timerId].timer?.cancel()
+            timers[timerId].timer = null
+            timers[timerId].timeRemaining = 0
+            timers[timerId].timeRemainingLiveData.postValue(0L)
 
-        // Обновляем уведомление
-        updateNotification(-1)
+            // Обновляем уведомление
+            updateNotification(-1)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     // Воспроизведение звука
@@ -254,19 +285,30 @@ class TimerService : Service() {
         try {
             // Очищаем предыдущий MediaPlayer, если он существует
             mediaPlayer?.release()
+            mediaPlayer = null
 
             // Создаем новый MediaPlayer и воспроизводим звук
             mediaPlayer = MediaPlayer.create(this, soundResId)
-            mediaPlayer?.setOnCompletionListener { mp -> mp.release() }
+            mediaPlayer?.setOnCompletionListener { mp ->
+                try {
+                    mp.release()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
             mediaPlayer?.start()
 
             // Если устройство поддерживает вибрацию, вибрируем
-            val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as android.os.Vibrator
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                vibrator.vibrate(android.os.VibrationEffect.createOneShot(500, android.os.VibrationEffect.DEFAULT_AMPLITUDE))
-            } else {
-                @Suppress("DEPRECATION")
-                vibrator.vibrate(500)
+            try {
+                val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as android.os.Vibrator
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    vibrator.vibrate(android.os.VibrationEffect.createOneShot(500, android.os.VibrationEffect.DEFAULT_AMPLITUDE))
+                } else {
+                    @Suppress("DEPRECATION")
+                    vibrator.vibrate(500)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -275,14 +317,19 @@ class TimerService : Service() {
 
     // Форматирование времени
     fun formatTime(timeInMillis: Long): String {
-        val hours = TimeUnit.MILLISECONDS.toHours(timeInMillis)
-        val minutes = TimeUnit.MILLISECONDS.toMinutes(timeInMillis) % 60
-        val seconds = TimeUnit.MILLISECONDS.toSeconds(timeInMillis) % 60
+        try {
+            val hours = TimeUnit.MILLISECONDS.toHours(timeInMillis)
+            val minutes = TimeUnit.MILLISECONDS.toMinutes(timeInMillis) % 60
+            val seconds = TimeUnit.MILLISECONDS.toSeconds(timeInMillis) % 60
 
-        return if (hours > 0) {
-            String.format("%02d:%02d:%02d", hours, minutes, seconds)
-        } else {
-            String.format("%02d:%02d", minutes, seconds)
+            return if (hours > 0) {
+                String.format("%02d:%02d:%02d", hours, minutes, seconds)
+            } else {
+                String.format("%02d:%02d", minutes, seconds)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return "00:00"
         }
     }
 
@@ -299,8 +346,8 @@ class TimerService : Service() {
     // Получение процента прогресса таймера
     fun getTimerProgressPercent(timerId: Int): Int {
         if (timers[timerId].duration <= 0) return 0
-        val progress = (timers[timerId].timeRemaining * 100 / timers[timerId].duration).toInt()
-        return progress
+        val progress = ((timers[timerId].timeRemaining * 100) / timers[timerId].duration).toInt()
+        return progress.coerceIn(0, 100) // Гарантируем, что прогресс в диапазоне от 0 до 100
     }
 
     // Установка имени таймера
@@ -349,8 +396,12 @@ class TimerService : Service() {
         }
 
         // Освобождаем MediaPlayer
-        mediaPlayer?.release()
-        mediaPlayer = null
+        try {
+            mediaPlayer?.release()
+            mediaPlayer = null
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
 
         super.onDestroy()
     }
