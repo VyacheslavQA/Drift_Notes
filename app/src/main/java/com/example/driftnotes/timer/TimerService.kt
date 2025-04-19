@@ -65,11 +65,19 @@ class TimerService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        // Проверка, не является ли это намерением остановки таймера
-        if (intent?.action == "STOP_TIMER") {
-            val timerId = intent.getIntExtra("TIMER_ID", -1)
-            if (timerId != -1) {
-                stopTimer(timerId)
+        // Проверка, не является ли это намерением остановки или сброса таймера
+        when(intent?.action) {
+            "STOP_TIMER" -> {
+                val timerId = intent.getIntExtra("TIMER_ID", -1)
+                if (timerId != -1) {
+                    stopTimer(timerId)
+                }
+            }
+            "RESET_TIMER" -> {
+                val timerId = intent.getIntExtra("TIMER_ID", -1)
+                if (timerId != -1) {
+                    resetTimer(timerId)
+                }
             }
         }
 
@@ -134,6 +142,23 @@ class TimerService : Service() {
             }
         )
 
+        // Создание действия для сброса таймера
+        val resetIntent = Intent(this, TimerService::class.java).apply {
+            action = "RESET_TIMER"
+            putExtra("TIMER_ID", timerId)
+        }
+
+        val resetPendingIntent = PendingIntent.getService(
+            this,
+            100 + timerId, // Другой requestCode для сброса
+            resetIntent,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            } else {
+                PendingIntent.FLAG_UPDATE_CURRENT
+            }
+        )
+
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(contentTitle)
             .setContentText(contentText)
@@ -142,12 +167,17 @@ class TimerService : Service() {
             .setOnlyAlertOnce(true)
             .setOngoing(true)
 
-        // Добавляем кнопку "Стоп" только если это уведомление для конкретного таймера
+        // Добавляем кнопки только если это уведомление для конкретного таймера
         if (timerId != -1) {
             builder.addAction(
                 android.R.drawable.ic_media_pause,
                 "Стоп",
                 stopPendingIntent
+            )
+            builder.addAction(
+                android.R.drawable.ic_menu_close_clear_cancel,
+                "Сброс",
+                resetPendingIntent
             )
         }
 
@@ -202,6 +232,17 @@ class TimerService : Service() {
     fun stopTimer(timerId: Int) {
         timers[timerId].timer?.cancel()
         timers[timerId].timer = null
+        timers[timerId].timeRemainingLiveData.postValue(timers[timerId].timeRemaining)
+
+        // Обновляем уведомление
+        updateNotification(-1)
+    }
+
+    // Сброс таймера
+    fun resetTimer(timerId: Int) {
+        timers[timerId].timer?.cancel()
+        timers[timerId].timer = null
+        timers[timerId].timeRemaining = 0
         timers[timerId].timeRemainingLiveData.postValue(0L)
 
         // Обновляем уведомление

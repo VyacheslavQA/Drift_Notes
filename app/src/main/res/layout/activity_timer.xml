@@ -108,13 +108,27 @@
                         app:layout_constraintTop_toBottomOf="@+id/progressTimer1" />
 
                     <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonTimer1Reset"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Сброс"
+                        android:textColor="#FFFFFF"
+                        app:backgroundTint="#F44336"
+                        app:cornerRadius="12dp"
+                        android:visibility="gone"
+                        app:layout_constraintStart_toEndOf="@+id/buttonTimer1Stop"
+                        app:layout_constraintStart_toStartOf="@+id/buttonTimer1Start"
+                        app:layout_constraintTop_toBottomOf="@+id/progressTimer1" />
+
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/buttonTimer1Options"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:text="Настройки"
                         android:textColor="#FFFFFF"
-                        app:backgroundTint="#C5BE9C"
+                        app:backgroundTint="#2E7D32"
                         app:cornerRadius="12dp"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/progressTimer1" />
@@ -183,7 +197,7 @@
                         android:layout_marginTop="8dp"
                         android:text="Старт"
                         android:textColor="#FFFFFF"
-                        app:backgroundTint="#2196F3"
+                        app:backgroundTint="#4CAF50"
                         app:cornerRadius="12dp"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/progressTimer2" />
@@ -202,13 +216,27 @@
                         app:layout_constraintTop_toBottomOf="@+id/progressTimer2" />
 
                     <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonTimer2Reset"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Сброс"
+                        android:textColor="#FFFFFF"
+                        app:backgroundTint="#F44336"
+                        app:cornerRadius="12dp"
+                        android:visibility="gone"
+                        app:layout_constraintStart_toEndOf="@+id/buttonTimer2Stop"
+                        app:layout_constraintStart_toStartOf="@+id/buttonTimer2Start"
+                        app:layout_constraintTop_toBottomOf="@+id/progressTimer2" />
+
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/buttonTimer2Options"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:text="Настройки"
                         android:textColor="#FFFFFF"
-                        app:backgroundTint="#C5BE9C"
+                        app:backgroundTint="#2E7D32"
                         app:cornerRadius="12dp"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/progressTimer2" />
@@ -277,7 +305,7 @@
                         android:layout_marginTop="8dp"
                         android:text="Старт"
                         android:textColor="#FFFFFF"
-                        app:backgroundTint="#F44336"
+                        app:backgroundTint="#4CAF50"
                         app:cornerRadius="12dp"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/progressTimer3" />
@@ -296,13 +324,27 @@
                         app:layout_constraintTop_toBottomOf="@+id/progressTimer3" />
 
                     <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonTimer3Reset"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Сброс"
+                        android:textColor="#FFFFFF"
+                        app:backgroundTint="#F44336"
+                        app:cornerRadius="12dp"
+                        android:visibility="gone"
+                        app:layout_constraintStart_toEndOf="@+id/buttonTimer3Stop"
+                        app:layout_constraintStart_toStartOf="@+id/buttonTimer3Start"
+                        app:layout_constraintTop_toBottomOf="@+id/progressTimer3" />
+
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/buttonTimer3Options"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:text="Настройки"
                         android:textColor="#FFFFFF"
-                        app:backgroundTint="#C5BE9C"
+                        app:backgroundTint="#2E7D32"
                         app:cornerRadius="12dp"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/progressTimer3" />
@@ -372,8 +414,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:text="Старт"
-                        android:textColor="#000000"
-                        app:backgroundTint="#FFC107"
+                        android:textColor="#FFFFFF"
+                        app:backgroundTint="#4CAF50"
                         app:cornerRadius="12dp"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/progressTimer4" />
@@ -392,13 +434,27 @@
                         app:layout_constraintTop_toBottomOf="@+id/progressTimer4" />
 
                     <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonTimer4Reset"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Сброс"
+                        android:textColor="#FFFFFF"
+                        app:backgroundTint="#F44336"
+                        app:cornerRadius="12dp"
+                        android:visibility="gone"
+                        app:layout_constraintStart_toEndOf="@+id/buttonTimer4Stop"
+                        app:layout_constraintStart_toStartOf="@+id/buttonTimer4Start"
+                        app:layout_constraintTop_toBottomOf="@+id/progressTimer4" />
+
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/buttonTimer4Options"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:text="Настройки"
                         android:textColor="#FFFFFF"
-                        app:backgroundTint="#C5BE9C"
+                        app:backgroundTint="#2E7D32"
                         app:cornerRadius="12dp"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/progressTimer4" />

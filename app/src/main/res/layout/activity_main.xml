@@ -19,9 +19,9 @@
             android:id="@+id/recyclerView"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:padding="8dp"
-            android:clipToPadding="false"
             android:background="@color/background"
+            android:clipToPadding="false"
+            android:padding="8dp"
             app:layout_constraintBottom_toTopOf="@+id/bottomNavView"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -32,9 +32,9 @@
             android:id="@+id/textNoNotes"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:gravity="center"
             android:text="@string/no_notes_yet"
             android:textColor="#CCCCCC"
-            android:gravity="center"
             android:visibility="gone"
             app:layout_constraintBottom_toTopOf="@+id/bottomNavView"
             app:layout_constraintEnd_toEndOf="parent"
@@ -55,16 +55,16 @@
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottomNavView"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:menu="@menu/bottom_nav_menu"
-            app:labelVisibilityMode="labeled"
+            android:layout_height="54dp"
             android:background="@color/surface"
             app:itemIconTint="@color/bottom_nav_colors"
-            app:itemTextColor="@color/bottom_nav_text_colors" />
-
+            app:itemTextColor="@color/bottom_nav_text_colors"
+            app:labelVisibilityMode="labeled"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:menu="@menu/bottom_nav_menu" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

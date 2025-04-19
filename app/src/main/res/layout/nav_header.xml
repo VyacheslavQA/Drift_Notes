@@ -16,7 +16,7 @@
         android:contentDescription="@string/app_name"
         android:paddingTop="8dp"
         android:src="@drawable/ic_fishing_hook"
-        android:tint="#4CAF50" />
+         />
 
     <TextView
         android:id="@+id/textViewUsername"
