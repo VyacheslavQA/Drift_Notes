@@ -82,57 +82,63 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/textViewTimer1" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/buttonTimer1Start"
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:orientation="horizontal"
                         android:layout_marginTop="8dp"
-                        android:text="Старт"
-                        android:textColor="#FFFFFF"
-                        app:backgroundTint="#4CAF50"
-                        app:cornerRadius="12dp"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/progressTimer1" />
+                        app:layout_constraintTop_toBottomOf="@+id/progressTimer1">
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/buttonTimer1Stop"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Стоп"
-                        android:textColor="#FFFFFF"
-                        app:backgroundTint="#F44336"
-                        app:cornerRadius="12dp"
-                        android:visibility="gone"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/progressTimer1" />
+                        <!-- Кнопка Старт -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/buttonTimer1Start"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Старт"
+                            android:textColor="#FFFFFF"
+                            app:backgroundTint="#4CAF50"
+                            app:cornerRadius="12dp"
+                            android:layout_marginEnd="8dp"
+                            android:layout_weight="1" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/buttonTimer1Reset"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Сброс"
-                        android:textColor="#FFFFFF"
-                        app:backgroundTint="#F44336"
-                        app:cornerRadius="12dp"
-                        android:visibility="gone"
-                        app:layout_constraintStart_toEndOf="@+id/buttonTimer1Stop"
-                        app:layout_constraintStart_toStartOf="@+id/buttonTimer1Start"
-                        app:layout_constraintTop_toBottomOf="@+id/progressTimer1" />
+                        <!-- Кнопка Стоп -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/buttonTimer1Stop"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Стоп"
+                            android:textColor="#FFFFFF"
+                            app:backgroundTint="#F44336"
+                            app:cornerRadius="12dp"
+                            android:visibility="gone"
+                            android:layout_marginEnd="8dp"
+                            android:layout_weight="1" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/buttonTimer1Options"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Настройки"
-                        android:textColor="#DAD5C3"
-                        app:backgroundTint="#2E7D32"
-                        app:cornerRadius="12dp"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/progressTimer1" />
+                        <!-- Кнопка Сброс -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/buttonTimer1Reset"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Сброс"
+                            android:textColor="#FFFFFF"
+                            app:backgroundTint="#F44336"
+                            app:cornerRadius="12dp"
+                            android:visibility="gone"
+                            android:layout_marginEnd="8dp"
+                            android:layout_weight="1" />
 
+                        <!-- Кнопка Настройки -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/buttonTimer1Options"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Настройки"
+                            android:textColor="#DAD5C3"
+                            app:backgroundTint="#2E7D32"
+                            app:cornerRadius="12dp"
+                            android:layout_weight="1" />
+                    </LinearLayout>
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.cardview.widget.CardView>
 
@@ -190,57 +196,63 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/textViewTimer2" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/buttonTimer2Start"
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:orientation="horizontal"
                         android:layout_marginTop="8dp"
-                        android:text="Старт"
-                        android:textColor="#FFFFFF"
-                        app:backgroundTint="#4CAF50"
-                        app:cornerRadius="12dp"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/progressTimer2" />
+                        app:layout_constraintTop_toBottomOf="@+id/progressTimer2">
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/buttonTimer2Stop"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Стоп"
-                        android:textColor="#FFFFFF"
-                        app:backgroundTint="#F44336"
-                        app:cornerRadius="12dp"
-                        android:visibility="gone"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/progressTimer2" />
+                        <!-- Кнопка Старт -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/buttonTimer2Start"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Старт"
+                            android:textColor="#FFFFFF"
+                            app:backgroundTint="#4CAF50"
+                            app:cornerRadius="12dp"
+                            android:layout_marginEnd="8dp"
+                            android:layout_weight="1" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/buttonTimer2Reset"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Сброс"
-                        android:textColor="#FFFFFF"
-                        app:backgroundTint="#F44336"
-                        app:cornerRadius="12dp"
-                        android:visibility="gone"
-                        app:layout_constraintStart_toEndOf="@+id/buttonTimer2Stop"
-                        app:layout_constraintStart_toStartOf="@+id/buttonTimer2Start"
-                        app:layout_constraintTop_toBottomOf="@+id/progressTimer2" />
+                        <!-- Кнопка Стоп -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/buttonTimer2Stop"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Стоп"
+                            android:textColor="#FFFFFF"
+                            app:backgroundTint="#F44336"
+                            app:cornerRadius="12dp"
+                            android:visibility="gone"
+                            android:layout_marginEnd="8dp"
+                            android:layout_weight="1" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/buttonTimer2Options"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Настройки"
-                        android:textColor="#DAD5C3"
-                        app:backgroundTint="#2E7D32"
-                        app:cornerRadius="12dp"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/progressTimer2" />
+                        <!-- Кнопка Сброс -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/buttonTimer2Reset"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Сброс"
+                            android:textColor="#FFFFFF"
+                            app:backgroundTint="#F44336"
+                            app:cornerRadius="12dp"
+                            android:visibility="gone"
+                            android:layout_marginEnd="8dp"
+                            android:layout_weight="1" />
 
+                        <!-- Кнопка Настройки -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/buttonTimer2Options"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Настройки"
+                            android:textColor="#DAD5C3"
+                            app:backgroundTint="#2E7D32"
+                            app:cornerRadius="12dp"
+                            android:layout_weight="1" />
+                    </LinearLayout>
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.cardview.widget.CardView>
 
@@ -298,57 +310,63 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/textViewTimer3" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/buttonTimer3Start"
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:orientation="horizontal"
                         android:layout_marginTop="8dp"
-                        android:text="Старт"
-                        android:textColor="#FFFFFF"
-                        app:backgroundTint="#4CAF50"
-                        app:cornerRadius="12dp"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/progressTimer3" />
+                        app:layout_constraintTop_toBottomOf="@+id/progressTimer3">
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/buttonTimer3Stop"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Стоп"
-                        android:textColor="#FFFFFF"
-                        app:backgroundTint="#F44336"
-                        app:cornerRadius="12dp"
-                        android:visibility="gone"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/progressTimer3" />
+                        <!-- Кнопка Старт -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/buttonTimer3Start"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Старт"
+                            android:textColor="#FFFFFF"
+                            app:backgroundTint="#4CAF50"
+                            app:cornerRadius="12dp"
+                            android:layout_marginEnd="8dp"
+                            android:layout_weight="1" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/buttonTimer3Reset"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Сброс"
-                        android:textColor="#FFFFFF"
-                        app:backgroundTint="#F44336"
-                        app:cornerRadius="12dp"
-                        android:visibility="gone"
-                        app:layout_constraintStart_toEndOf="@+id/buttonTimer3Stop"
-                        app:layout_constraintStart_toStartOf="@+id/buttonTimer3Start"
-                        app:layout_constraintTop_toBottomOf="@+id/progressTimer3" />
+                        <!-- Кнопка Стоп -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/buttonTimer3Stop"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Стоп"
+                            android:textColor="#FFFFFF"
+                            app:backgroundTint="#F44336"
+                            app:cornerRadius="12dp"
+                            android:visibility="gone"
+                            android:layout_marginEnd="8dp"
+                            android:layout_weight="1" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/buttonTimer3Options"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Настройки"
-                        android:textColor="#DAD5C3"
-                        app:backgroundTint="#2E7D32"
-                        app:cornerRadius="12dp"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/progressTimer3" />
+                        <!-- Кнопка Сброс -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/buttonTimer3Reset"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Сброс"
+                            android:textColor="#FFFFFF"
+                            app:backgroundTint="#F44336"
+                            app:cornerRadius="12dp"
+                            android:visibility="gone"
+                            android:layout_marginEnd="8dp"
+                            android:layout_weight="1" />
 
+                        <!-- Кнопка Настройки -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/buttonTimer3Options"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Настройки"
+                            android:textColor="#DAD5C3"
+                            app:backgroundTint="#2E7D32"
+                            app:cornerRadius="12dp"
+                            android:layout_weight="1" />
+                    </LinearLayout>
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.cardview.widget.CardView>
 
@@ -408,57 +426,63 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/textViewTimer4" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/buttonTimer4Start"
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:orientation="horizontal"
                         android:layout_marginTop="8dp"
-                        android:text="Старт"
-                        android:textColor="#FFFFFF"
-                        app:backgroundTint="#4CAF50"
-                        app:cornerRadius="12dp"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/progressTimer4" />
+                        app:layout_constraintTop_toBottomOf="@+id/progressTimer4">
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/buttonTimer4Stop"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Стоп"
-                        android:textColor="#FFFFFF"
-                        android:visibility="gone"
-                        app:backgroundTint="#F44336"
-                        app:cornerRadius="12dp"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/progressTimer4" />
+                        <!-- Кнопка Старт -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/buttonTimer4Start"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Старт"
+                            android:textColor="#FFFFFF"
+                            app:backgroundTint="#4CAF50"
+                            app:cornerRadius="12dp"
+                            android:layout_marginEnd="8dp"
+                            android:layout_weight="1" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/buttonTimer4Reset"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Сброс"
-                        android:textColor="#FFFFFF"
-                        android:visibility="gone"
-                        app:backgroundTint="#F44336"
-                        app:cornerRadius="12dp"
-                        app:layout_constraintStart_toEndOf="@+id/buttonTimer4Stop"
-                        app:layout_constraintStart_toStartOf="@+id/buttonTimer4Start"
-                        app:layout_constraintTop_toBottomOf="@+id/progressTimer4" />
+                        <!-- Кнопка Стоп -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/buttonTimer4Stop"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Стоп"
+                            android:textColor="#FFFFFF"
+                            android:visibility="gone"
+                            app:backgroundTint="#F44336"
+                            app:cornerRadius="12dp"
+                            android:layout_marginEnd="8dp"
+                            android:layout_weight="1" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/buttonTimer4Options"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Настройки"
-                        android:textColor="#FFFFFF"
-                        app:backgroundTint="#2E7D32"
-                        app:cornerRadius="12dp"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/progressTimer4" />
+                        <!-- Кнопка Сброс -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/buttonTimer4Reset"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Сброс"
+                            android:textColor="#FFFFFF"
+                            android:visibility="gone"
+                            app:backgroundTint="#F44336"
+                            app:cornerRadius="12dp"
+                            android:layout_marginEnd="8dp"
+                            android:layout_weight="1" />
 
+                        <!-- Кнопка Настройки -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/buttonTimer4Options"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Настройки"
+                            android:textColor="#FFFFFF"
+                            app:backgroundTint="#2E7D32"
+                            app:cornerRadius="12dp"
+                            android:layout_weight="1" />
+                    </LinearLayout>
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.cardview.widget.CardView>
 

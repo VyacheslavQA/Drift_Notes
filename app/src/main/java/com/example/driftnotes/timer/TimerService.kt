@@ -13,6 +13,7 @@ import android.os.Binder
 import android.os.Build
 import android.os.CountDownTimer
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -65,18 +66,22 @@ class TimerService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.d("TimerService", "onStartCommand: Запуск сервиса с flags=$flags, startId=$startId")
+
         // Проверка, не является ли это намерением остановки или сброса таймера
-        when(intent?.action) {
-            "STOP_TIMER" -> {
-                val timerId = intent.getIntExtra("TIMER_ID", -1)
-                if (timerId != -1) {
-                    stopTimer(timerId)
+        intent?.let {
+            when(intent.action) {
+                "STOP_TIMER" -> {
+                    val timerId = intent.getIntExtra("TIMER_ID", -1)
+                    if (timerId != -1) {
+                        stopTimer(timerId)
+                    }
                 }
-            }
-            "RESET_TIMER" -> {
-                val timerId = intent.getIntExtra("TIMER_ID", -1)
-                if (timerId != -1) {
-                    resetTimer(timerId)
+                "RESET_TIMER" -> {
+                    val timerId = intent.getIntExtra("TIMER_ID", -1)
+                    if (timerId != -1) {
+                        resetTimer(timerId)
+                    }
                 }
             }
         }
@@ -141,7 +146,6 @@ class TimerService : Service() {
                 PendingIntent.FLAG_UPDATE_CURRENT
             }
         )
-
         // Создание действия для сброса таймера
         val resetIntent = Intent(this, TimerService::class.java).apply {
             action = "RESET_TIMER"
@@ -197,6 +201,7 @@ class TimerService : Service() {
     // Запуск таймера
     @Synchronized
     fun startTimer(timerId: Int, duration: Long) {
+        Log.d("TimerService", "startTimer: timerId=$timerId, duration=$duration")
         try {
             // Останавливаем существующий таймер, если он запущен
             stopTimer(timerId)
@@ -241,7 +246,7 @@ class TimerService : Service() {
             // Обновляем уведомление
             updateNotification(timerId)
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e("TimerService", "Ошибка при запуске таймера: ${e.message}", e)
             // Если таймер не запустился, сбрасываем его состояние
             timers[timerId].timer = null
             timers[timerId].timeRemaining = 0
@@ -252,6 +257,7 @@ class TimerService : Service() {
     // Остановка таймера
     @Synchronized
     fun stopTimer(timerId: Int) {
+        Log.d("TimerService", "stopTimer: timerId=$timerId")
         try {
             timers[timerId].timer?.cancel()
             timers[timerId].timer = null
@@ -267,6 +273,7 @@ class TimerService : Service() {
     // Сброс таймера
     @Synchronized
     fun resetTimer(timerId: Int) {
+        Log.d("TimerService", "resetTimer: timerId=$timerId")
         try {
             timers[timerId].timer?.cancel()
             timers[timerId].timer = null

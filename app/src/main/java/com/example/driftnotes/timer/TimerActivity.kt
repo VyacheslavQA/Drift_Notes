@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.widget.EditText
@@ -38,6 +39,7 @@ class TimerActivity : AppCompatActivity() {
             val binder = service as TimerService.LocalBinder
             timerService = binder.getService()
             bound = true
+            Log.d("TimerActivity", "onServiceConnected: Сервис подключен")
             updateAllTimerViews()
         }
 
@@ -63,6 +65,8 @@ class TimerActivity : AppCompatActivity() {
 
         // Настраиваем обработчики кнопок для каждого таймера
         setupTimerButtons()
+
+        Log.d("TimerActivity", "onCreate: Инициализация TimerActivity завершена")
     }
 
     private fun setupTimerButtons() {
@@ -484,6 +488,8 @@ class TimerActivity : AppCompatActivity() {
         if (background is android.graphics.drawable.GradientDrawable) {
             background.setStroke(4, timerColor)
         }
+
+        progressBar.progressTintList = android.content.res.ColorStateList.valueOf(timerColor)
 
         progressBar.progressTintList = android.content.res.ColorStateList.valueOf(timerColor)
 
