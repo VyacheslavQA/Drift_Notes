@@ -1,4 +1,3 @@
-// Файл app/src/main/java/com/example/driftnotes/timer/TimerService.kt
 package com.example.driftnotes.timer
 
 import android.app.Notification
@@ -100,15 +99,19 @@ class TimerService : Service() {
                                 val duration = msg.obj as Long
                                 handleStartTimer(timerId, duration)
                             }
+
                             MSG_STOP_TIMER -> {
                                 handleStopTimer(msg.arg1)
                             }
+
                             MSG_RESET_TIMER -> {
                                 handleResetTimer(msg.arg1)
                             }
+
                             MSG_UPDATE_TIMER -> {
                                 handleUpdateTimer(msg.arg1)
                             }
+
                             MSG_PLAY_SOUND -> {
                                 handlePlaySound(msg.arg1)
                             }
@@ -137,13 +140,14 @@ class TimerService : Service() {
         try {
             // Проверка, не является ли это намерением остановки или сброса таймера
             intent?.let {
-                when(intent.action) {
+                when (intent.action) {
                     "STOP_TIMER" -> {
                         val timerId = intent.getIntExtra("TIMER_ID", -1)
                         if (timerId != -1) {
                             stopTimer(timerId)
                         }
                     }
+
                     "RESET_TIMER" -> {
                         val timerId = intent.getIntExtra("TIMER_ID", -1)
                         if (timerId != -1) {
@@ -170,7 +174,8 @@ class TimerService : Service() {
                 )
                 channel.description = "Канал для отображения работающих таймеров"
 
-                val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                val notificationManager =
+                    getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                 notificationManager.createNotificationChannel(channel)
             } catch (e: Exception) {
                 Log.e("TimerService", "Ошибка при создании канала уведомлений: ${e.message}", e)
@@ -275,13 +280,18 @@ class TimerService : Service() {
 
     // Обновление уведомления (выполняется в UI потоке)
     private fun updateNotification(timerId: Int) {
-        mainHandler.post {
-            try {
-                val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                notificationManager.notify(NOTIFICATION_ID, createNotification(timerId))
-            } catch (e: Exception) {
-                Log.e("TimerService", "Ошибка при обновлении уведомления: ${e.message}", e)
+        try {
+            mainHandler.post {
+                try {
+                    val notificationManager =
+                        getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                    notificationManager.notify(NOTIFICATION_ID, createNotification(timerId))
+                } catch (e: Exception) {
+                    Log.e("TimerService", "Ошибка при обновлении уведомления: ${e.message}", e)
+                }
             }
+        } catch (e: Exception) {
+            Log.e("TimerService", "Ошибка в updateNotification: ${e.message}", e)
         }
     }
 
@@ -303,7 +313,9 @@ class TimerService : Service() {
         Log.d("TimerService", "startTimer: timerId=$timerId, duration=$duration")
         try {
             // Останавливаем существующий таймер, если он запущен
-            handleStopTimer(timerId)
+            if (timers[timerId].running) {
+                handleStopTimer(timerId)
+            }
 
             // Настраиваем новый таймер
             timers[timerId].duration = duration
@@ -319,12 +331,20 @@ class TimerService : Service() {
             serviceHandler.sendMessageDelayed(updateMsg, UPDATE_INTERVAL)
 
             // Отправляем начальное значение в LiveData
-            mainHandler.post {
-                try {
-                    timers[timerId].timeRemainingLiveData.value = duration
-                } catch (e: Exception) {
-                    Log.e("TimerService", "Ошибка при обновлении LiveData: ${e.message}", e)
+            try {
+                mainHandler.post {
+                    try {
+                        timers[timerId].timeRemainingLiveData.value = duration
+                    } catch (e: Exception) {
+                        Log.e("TimerService", "Ошибка при обновлении LiveData: ${e.message}", e)
+                    }
                 }
+            } catch (e: Exception) {
+                Log.e(
+                    "TimerService",
+                    "Ошибка при обновлении LiveData в handleStartTimer: ${e.message}",
+                    e
+                )
             }
 
             // Обновляем уведомление
@@ -344,6 +364,24 @@ class TimerService : Service() {
             serviceHandler.sendMessage(msg)
         } catch (e: Exception) {
             Log.e("TimerService", "Ошибка при остановке таймера: ${e.message}", e)
+
+            // Аварийная остановка при ошибке
+            try {
+                mainHandler.post {
+                    try {
+                        timers[timerId].running = false
+                        timers[timerId].timeRemainingLiveData.value = timers[timerId].timeRemaining
+                    } catch (e: Exception) {
+                        Log.e(
+                            "TimerService",
+                            "Ошибка при аварийной остановке таймера: ${e.message}",
+                            e
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("TimerService", "Критическая ошибка при аварийной остановке: ${e.message}", e)
+            }
         }
     }
 
@@ -358,12 +396,20 @@ class TimerService : Service() {
             timers[timerId].running = false
 
             // Отправляем текущее значение в LiveData
-            mainHandler.post {
-                try {
-                    timers[timerId].timeRemainingLiveData.value = timers[timerId].timeRemaining
-                } catch (e: Exception) {
-                    Log.e("TimerService", "Ошибка при обновлении LiveData: ${e.message}", e)
+            try {
+                mainHandler.post {
+                    try {
+                        timers[timerId].timeRemainingLiveData.value = timers[timerId].timeRemaining
+                    } catch (e: Exception) {
+                        Log.e("TimerService", "Ошибка при обновлении LiveData: ${e.message}", e)
+                    }
                 }
+            } catch (e: Exception) {
+                Log.e(
+                    "TimerService",
+                    "Ошибка при обновлении LiveData в handleStopTimer: ${e.message}",
+                    e
+                )
             }
 
             // Обновляем уведомление
@@ -384,16 +430,24 @@ class TimerService : Service() {
         } catch (e: Exception) {
             Log.e("TimerService", "Ошибка при сбросе таймера: ${e.message}", e)
 
-            // Если произошла ошибка при отправке сообщения, попробуем выполнить сброс прямо здесь
-            mainHandler.post {
-                try {
-                    // Сбрасываем таймер в основном потоке
-                    timers[timerId].running = false
-                    timers[timerId].timeRemaining = 0
-                    timers[timerId].timeRemainingLiveData.value = 0L
-                } catch (innerE: Exception) {
-                    Log.e("TimerService", "Ошибка при аварийном сбросе таймера: ${innerE.message}", innerE)
+            // Аварийный сброс при ошибке
+            try {
+                mainHandler.post {
+                    try {
+                        // Сбрасываем таймер в основном потоке
+                        timers[timerId].running = false
+                        timers[timerId].timeRemaining = 0
+                        timers[timerId].timeRemainingLiveData.value = 0L
+                    } catch (e: Exception) {
+                        Log.e(
+                            "TimerService",
+                            "Ошибка при аварийном сбросе таймера: ${e.message}",
+                            e
+                        )
+                    }
                 }
+            } catch (e: Exception) {
+                Log.e("TimerService", "Критическая ошибка при аварийном сбросе: ${e.message}", e)
             }
         }
     }
@@ -410,12 +464,24 @@ class TimerService : Service() {
             timers[timerId].timeRemaining = 0
 
             // Отправляем нулевое значение в LiveData
-            mainHandler.post {
-                try {
-                    timers[timerId].timeRemainingLiveData.value = 0L
-                } catch (e: Exception) {
-                    Log.e("TimerService", "Ошибка при обновлении LiveData: ${e.message}", e)
+            try {
+                mainHandler.post {
+                    try {
+                        timers[timerId].timeRemainingLiveData.value = 0L
+                    } catch (e: Exception) {
+                        Log.e(
+                            "TimerService",
+                            "Ошибка при обновлении LiveData в handleResetTimer: ${e.message}",
+                            e
+                        )
+                    }
                 }
+            } catch (e: Exception) {
+                Log.e(
+                    "TimerService",
+                    "Ошибка при обновлении LiveData в handleResetTimer: ${e.message}",
+                    e
+                )
             }
 
             // Обновляем уведомление
@@ -441,16 +507,29 @@ class TimerService : Service() {
                 timers[timerId].running = false
 
                 // Отправляем нулевое значение в LiveData
-                mainHandler.post {
-                    try {
-                        timers[timerId].timeRemainingLiveData.value = 0L
-                    } catch (e: Exception) {
-                        Log.e("TimerService", "Ошибка при обновлении LiveData: ${e.message}", e)
+                try {
+                    mainHandler.post {
+                        try {
+                            timers[timerId].timeRemainingLiveData.value = 0L
+                        } catch (e: Exception) {
+                            Log.e(
+                                "TimerService",
+                                "Ошибка при обновлении LiveData при завершении таймера: ${e.message}",
+                                e
+                            )
+                        }
                     }
+                } catch (e: Exception) {
+                    Log.e(
+                        "TimerService",
+                        "Ошибка при обновлении LiveData в handleUpdateTimer: ${e.message}",
+                        e
+                    )
                 }
 
                 // Воспроизводим звук завершения
-                val soundMsg = serviceHandler.obtainMessage(MSG_PLAY_SOUND, timers[timerId].soundResId, 0)
+                val soundMsg =
+                    serviceHandler.obtainMessage(MSG_PLAY_SOUND, timers[timerId].soundResId, 0)
                 serviceHandler.sendMessage(soundMsg)
 
                 // Обновляем уведомление
@@ -462,18 +541,31 @@ class TimerService : Service() {
                 timers[timerId].timeRemaining = remainingTime
 
                 // Отправляем текущее значение в LiveData
-                mainHandler.post {
-                    try {
-                        timers[timerId].timeRemainingLiveData.value = remainingTime
-                    } catch (e: Exception) {
-                        Log.e("TimerService", "Ошибка при обновлении LiveData: ${e.message}", e)
+                try {
+                    mainHandler.post {
+                        try {
+                            timers[timerId].timeRemainingLiveData.value = remainingTime
+                        } catch (e: Exception) {
+                            Log.e(
+                                "TimerService",
+                                "Ошибка при обновлении LiveData при работе таймера: ${e.message}",
+                                e
+                            )
+                        }
                     }
+                } catch (e: Exception) {
+                    Log.e(
+                        "TimerService",
+                        "Ошибка при обновлении LiveData в handleUpdateTimer: ${e.message}",
+                        e
+                    )
                 }
 
                 // Обновляем уведомление каждые 5 секунд
                 if (currentTime >= timers[timerId].nextUpdateTime) {
                     updateNotification(timerId)
-                    timers[timerId].nextUpdateTime = currentTime + 5000 // Следующее обновление через 5 секунд
+                    timers[timerId].nextUpdateTime =
+                        currentTime + 5000 // Следующее обновление через 5 секунд
                 }
 
                 // Планируем следующее обновление через 1 секунду, только если таймер запущен
@@ -524,7 +616,11 @@ class TimerService : Service() {
             val msg = serviceHandler.obtainMessage(MSG_PLAY_SOUND, soundResId, 0)
             serviceHandler.sendMessage(msg)
         } catch (e: Exception) {
-            Log.e("TimerService", "Ошибка при отправке запроса на воспроизведение звука: ${e.message}", e)
+            Log.e(
+                "TimerService",
+                "Ошибка при отправке запроса на воспроизведение звука: ${e.message}",
+                e
+            )
         }
     }
 
@@ -578,7 +674,8 @@ class TimerService : Service() {
     fun getTimerProgressPercent(timerId: Int): Int {
         try {
             if (timerId < 0 || timerId >= timers.size || timers[timerId].duration <= 0) return 0
-            val progress = ((timers[timerId].timeRemaining * 100) / timers[timerId].duration).toInt()
+            val progress =
+                ((timers[timerId].timeRemaining * 100) / timers[timerId].duration).toInt()
             return progress.coerceIn(0, 100) // Гарантируем, что прогресс в диапазоне от 0 до 100
         } catch (e: Exception) {
             Log.e("TimerService", "Ошибка при получении процента прогресса", e)
@@ -678,33 +775,32 @@ class TimerService : Service() {
             MutableLiveData<Long>().apply { value = 0L }
         }
     }
-
-    override fun onDestroy() {
-        // Останавливаем все таймеры при уничтожении сервиса
-        try {
-            for (i in timers.indices) {
-                stopTimer(i)
-            }
-
-            // Освобождаем MediaPlayer
+        override fun onDestroy() {
+            // Останавливаем все таймеры при уничтожении сервиса
             try {
-                mediaPlayer?.release()
-                mediaPlayer = null
+                for (i in timers.indices) {
+                    stopTimer(i)
+                }
+
+                // Освобождаем MediaPlayer
+                try {
+                    mediaPlayer?.release()
+                    mediaPlayer = null
+                } catch (e: Exception) {
+                    Log.e("TimerService", "Ошибка при освобождении MediaPlayer", e)
+                }
+
+                // Останавливаем фоновый поток
+                try {
+                    handlerThread.quitSafely()
+                } catch (e: Exception) {
+                    Log.e("TimerService", "Ошибка при остановке потока", e)
+                }
             } catch (e: Exception) {
-                Log.e("TimerService", "Ошибка при освобождении MediaPlayer", e)
+                Log.e("TimerService", "Ошибка при уничтожении сервиса", e)
             }
 
-            // Останавливаем фоновый поток
-            try {
-                handlerThread.quitSafely()
-            } catch (e: Exception) {
-                Log.e("TimerService", "Ошибка при остановке потока", e)
-            }
-        } catch (e: Exception) {
-            Log.e("TimerService", "Ошибка при уничтожении сервиса", e)
+            super.onDestroy()
+            Log.d("TimerService", "Service destroyed")
         }
-
-        super.onDestroy()
-        Log.d("TimerService", "Service destroyed")
     }
-}

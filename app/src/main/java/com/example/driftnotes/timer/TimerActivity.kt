@@ -1,4 +1,3 @@
-// Файл app/src/main/java/com/example/driftnotes/timer/TimerActivity.kt
 package com.example.driftnotes.timer
 
 import android.app.AlertDialog
@@ -48,73 +47,82 @@ class TimerActivity : AppCompatActivity() {
         binding = ActivityTimerBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Настройка ActionBar
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = "Таймеры"
+        try {
+            // Настройка ActionBar
+            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+            supportActionBar?.title = "Таймеры"
 
-        // Запускаем сервис и привязываемся к нему
-        val intent = Intent(this, TimerService::class.java)
-        startService(intent)
-        bindService(intent, connection, Context.BIND_AUTO_CREATE)
+            // Запускаем сервис и привязываемся к нему
+            val intent = Intent(this, TimerService::class.java)
+            startService(intent)
+            bindService(intent, connection, Context.BIND_AUTO_CREATE)
 
-        // Настраиваем обработчики кнопок для каждого таймера
-        setupTimerButtons()
+            // Настраиваем обработчики кнопок для каждого таймера
+            setupTimerButtons()
+        } catch (e: Exception) {
+            Log.e("TimerActivity", "Ошибка в onCreate: ${e.message}", e)
+            Toast.makeText(this, "Ошибка инициализации: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
 
         Log.d("TimerActivity", "onCreate: Инициализация TimerActivity завершена")
     }
 
     private fun setupTimerButtons() {
-        // Настройка первого таймера
-        setupTimerControls(
-            TimerService.TIMER_1,
-            binding.textViewTimer1Name,
-            binding.textViewTimer1,
-            binding.progressTimer1,
-            binding.buttonTimer1Start,
-            binding.buttonTimer1Stop,
-            binding.buttonTimer1Reset,
-            binding.buttonTimer1Options,
-            binding.cardTimer1
-        )
+        try {
+            // Настройка первого таймера
+            setupTimerControls(
+                TimerService.TIMER_1,
+                binding.textViewTimer1Name,
+                binding.textViewTimer1,
+                binding.progressTimer1,
+                binding.buttonTimer1Start,
+                binding.buttonTimer1Stop,
+                binding.buttonTimer1Reset,
+                binding.buttonTimer1Options,
+                binding.cardTimer1
+            )
 
-        // Настройка второго таймера
-        setupTimerControls(
-            TimerService.TIMER_2,
-            binding.textViewTimer2Name,
-            binding.textViewTimer2,
-            binding.progressTimer2,
-            binding.buttonTimer2Start,
-            binding.buttonTimer2Stop,
-            binding.buttonTimer2Reset,
-            binding.buttonTimer2Options,
-            binding.cardTimer2
-        )
+            // Настройка второго таймера
+            setupTimerControls(
+                TimerService.TIMER_2,
+                binding.textViewTimer2Name,
+                binding.textViewTimer2,
+                binding.progressTimer2,
+                binding.buttonTimer2Start,
+                binding.buttonTimer2Stop,
+                binding.buttonTimer2Reset,
+                binding.buttonTimer2Options,
+                binding.cardTimer2
+            )
 
-        // Настройка третьего таймера
-        setupTimerControls(
-            TimerService.TIMER_3,
-            binding.textViewTimer3Name,
-            binding.textViewTimer3,
-            binding.progressTimer3,
-            binding.buttonTimer3Start,
-            binding.buttonTimer3Stop,
-            binding.buttonTimer3Reset,
-            binding.buttonTimer3Options,
-            binding.cardTimer3
-        )
+            // Настройка третьего таймера
+            setupTimerControls(
+                TimerService.TIMER_3,
+                binding.textViewTimer3Name,
+                binding.textViewTimer3,
+                binding.progressTimer3,
+                binding.buttonTimer3Start,
+                binding.buttonTimer3Stop,
+                binding.buttonTimer3Reset,
+                binding.buttonTimer3Options,
+                binding.cardTimer3
+            )
 
-        // Настройка четвертого таймера
-        setupTimerControls(
-            TimerService.TIMER_4,
-            binding.textViewTimer4Name,
-            binding.textViewTimer4,
-            binding.progressTimer4,
-            binding.buttonTimer4Start,
-            binding.buttonTimer4Stop,
-            binding.buttonTimer4Reset,
-            binding.buttonTimer4Options,
-            binding.cardTimer4
-        )
+            // Настройка четвертого таймера
+            setupTimerControls(
+                TimerService.TIMER_4,
+                binding.textViewTimer4Name,
+                binding.textViewTimer4,
+                binding.progressTimer4,
+                binding.buttonTimer4Start,
+                binding.buttonTimer4Stop,
+                binding.buttonTimer4Reset,
+                binding.buttonTimer4Options,
+                binding.cardTimer4
+            )
+        } catch (e: Exception) {
+            Log.e("TimerActivity", "Ошибка при настройке кнопок таймеров: ${e.message}", e)
+        }
     }
 
     private fun setupTimerControls(
@@ -128,26 +136,58 @@ class TimerActivity : AppCompatActivity() {
         optionsButton: com.google.android.material.button.MaterialButton,
         cardView: androidx.cardview.widget.CardView
     ) {
-        // Обработчик кнопки Старт
-        startButton.setOnClickListener {
-            showDurationDialog(timerId)
-        }
+        try {
+            // Обработчик кнопки Старт
+            startButton.setOnClickListener {
+                try {
+                    showDurationDialog(timerId)
+                } catch (e: Exception) {
+                    Log.e("TimerActivity", "Ошибка в обработчике Start кнопки: ${e.message}", e)
+                    Toast.makeText(this, "Не удалось запустить таймер", Toast.LENGTH_SHORT).show()
+                }
+            }
 
-        // Обработчик кнопки Стоп
-        stopButton.setOnClickListener {
-            timerService?.stopTimer(timerId)
-            updateTimerView(timerId)
-        }
+            // Обработчик кнопки Стоп
+            stopButton.setOnClickListener {
+                try {
+                    timerService?.stopTimer(timerId)
+                    updateTimerView(timerId)
+                } catch (e: Exception) {
+                    Log.e("TimerActivity", "Ошибка в обработчике Stop кнопки: ${e.message}", e)
+                    Toast.makeText(this, "Не удалось остановить таймер", Toast.LENGTH_SHORT).show()
 
-        // Обработчик кнопки Сброс
-        resetButton.setOnClickListener {
-            timerService?.resetTimer(timerId)
-            updateTimerView(timerId)
-        }
+                    // Экстренное обновление UI
+                    stopButton.visibility = View.GONE
+                    startButton.visibility = View.VISIBLE
+                }
+            }
 
-        // Обработчик кнопки настроек
-        optionsButton.setOnClickListener {
-            showTimerOptionsDialog(timerId)
+            // Обработчик кнопки Сброс
+            resetButton.setOnClickListener {
+                try {
+                    timerService?.resetTimer(timerId)
+                    updateTimerView(timerId)
+                } catch (e: Exception) {
+                    Log.e("TimerActivity", "Ошибка в обработчике Reset кнопки: ${e.message}", e)
+                    Toast.makeText(this, "Не удалось сбросить таймер", Toast.LENGTH_SHORT).show()
+
+                    // Экстренное обновление UI
+                    timerTextView.text = "00:00"
+                    progressBar.progress = 0
+                }
+            }
+
+            // Обработчик кнопки настроек
+            optionsButton.setOnClickListener {
+                try {
+                    showTimerOptionsDialog(timerId)
+                } catch (e: Exception) {
+                    Log.e("TimerActivity", "Ошибка в обработчике Options кнопки: ${e.message}", e)
+                    Toast.makeText(this, "Не удалось открыть настройки", Toast.LENGTH_SHORT).show()
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("TimerActivity", "Ошибка при настройке обработчиков таймера $timerId: ${e.message}", e)
         }
     }
 
@@ -158,24 +198,29 @@ class TimerActivity : AppCompatActivity() {
         try {
             AlertDialog.Builder(this)
                 .setTitle("Выберите длительность")
-                .setItems(options) { _, which ->
-                    val durationInMinutes = when (which) {
-                        0 -> 5
-                        1 -> 10
-                        2 -> 15
-                        3 -> 30
-                        4 -> 45
-                        5 -> 60
-                        6 -> {
-                            showCustomDurationDialog(timerId)
-                            return@setItems
+                .setItems(options) { dialog, which ->
+                    try {
+                        val durationInMinutes = when (which) {
+                            0 -> 5
+                            1 -> 10
+                            2 -> 15
+                            3 -> 30
+                            4 -> 45
+                            5 -> 60
+                            6 -> {
+                                showCustomDurationDialog(timerId)
+                                return@setItems
+                            }
+                            else -> 5
                         }
-                        else -> 5
-                    }
 
-                    val durationInMillis = TimeUnit.MINUTES.toMillis(durationInMinutes.toLong())
-                    timerService?.startTimer(timerId, durationInMillis)
-                    updateTimerView(timerId)
+                        val durationInMillis = TimeUnit.MINUTES.toMillis(durationInMinutes.toLong())
+                        timerService?.startTimer(timerId, durationInMillis)
+                        updateTimerView(timerId)
+                    } catch (e: Exception) {
+                        Log.e("TimerActivity", "Ошибка при выборе длительности: ${e.message}", e)
+                        Toast.makeText(this, "Не удалось установить длительность", Toast.LENGTH_SHORT).show()
+                    }
                 }
                 .show()
         } catch (e: Exception) {
@@ -194,7 +239,7 @@ class TimerActivity : AppCompatActivity() {
                 .setView(dialogView)
                 .setPositiveButton("Начать") { _, _ ->
                     try {
-                        val minutes = editTextMinutes.text.toString().toInt()
+                        val minutes = editTextMinutes.text.toString().toIntOrNull() ?: 0
                         if (minutes > 0) {
                             val durationInMillis = TimeUnit.MINUTES.toMillis(minutes.toLong())
                             timerService?.startTimer(timerId, durationInMillis)
@@ -202,8 +247,9 @@ class TimerActivity : AppCompatActivity() {
                         } else {
                             Toast.makeText(this, "Пожалуйста, введите положительное число", Toast.LENGTH_SHORT).show()
                         }
-                    } catch (e: NumberFormatException) {
-                        Toast.makeText(this, "Пожалуйста, введите корректное число", Toast.LENGTH_SHORT).show()
+                    } catch (e: Exception) {
+                        Log.e("TimerActivity", "Ошибка при обработке ввода длительности: ${e.message}", e)
+                        Toast.makeText(this, "Ошибка при установке длительности", Toast.LENGTH_SHORT).show()
                     }
                 }
                 .setNegativeButton("Отмена", null)
@@ -222,15 +268,21 @@ class TimerActivity : AppCompatActivity() {
             AlertDialog.Builder(this)
                 .setTitle("Настройки таймера")
                 .setItems(options) { _, which ->
-                    when (which) {
-                        0 -> showRenameTimerDialog(timerId)
-                        1 -> showColorPickerDialog(timerId)
-                        2 -> showSoundPickerDialog(timerId)
+                    try {
+                        when (which) {
+                            0 -> showRenameTimerDialog(timerId)
+                            1 -> showColorPickerDialog(timerId)
+                            2 -> showSoundPickerDialog(timerId)
+                        }
+                    } catch (e: Exception) {
+                        Log.e("TimerActivity", "Ошибка при обработке выбора опции: ${e.message}", e)
+                        Toast.makeText(this, "Не удалось выполнить действие", Toast.LENGTH_SHORT).show()
                     }
                 }
                 .show()
         } catch (e: Exception) {
             Log.e("TimerActivity", "Ошибка при отображении диалога настроек: ${e.message}", e)
+            Toast.makeText(this, "Не удалось отобразить настройки", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -245,18 +297,24 @@ class TimerActivity : AppCompatActivity() {
                 .setTitle("Переименовать таймер")
                 .setView(dialogView)
                 .setPositiveButton("Сохранить") { _, _ ->
-                    val newName = editTextName.text.toString().trim()
-                    if (newName.isNotEmpty()) {
-                        timerService?.setTimerName(timerId, newName)
-                        updateTimerView(timerId)
-                    } else {
-                        Toast.makeText(this, "Название не может быть пустым", Toast.LENGTH_SHORT).show()
+                    try {
+                        val newName = editTextName.text.toString().trim()
+                        if (newName.isNotEmpty()) {
+                            timerService?.setTimerName(timerId, newName)
+                            updateTimerView(timerId)
+                        } else {
+                            Toast.makeText(this, "Название не может быть пустым", Toast.LENGTH_SHORT).show()
+                        }
+                    } catch (e: Exception) {
+                        Log.e("TimerActivity", "Ошибка при переименовании таймера: ${e.message}", e)
+                        Toast.makeText(this, "Не удалось переименовать таймер", Toast.LENGTH_SHORT).show()
                     }
                 }
                 .setNegativeButton("Отмена", null)
                 .show()
         } catch (e: Exception) {
             Log.e("TimerActivity", "Ошибка при отображении диалога переименования: ${e.message}", e)
+            Toast.makeText(this, "Не удалось отобразить диалог переименования", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -274,12 +332,18 @@ class TimerActivity : AppCompatActivity() {
             AlertDialog.Builder(this)
                 .setTitle("Выберите цвет")
                 .setItems(colors) { _, which ->
-                    timerService?.setTimerColor(timerId, colorValues[which])
-                    updateTimerView(timerId)
+                    try {
+                        timerService?.setTimerColor(timerId, colorValues[which])
+                        updateTimerView(timerId)
+                    } catch (e: Exception) {
+                        Log.e("TimerActivity", "Ошибка при установке цвета таймера: ${e.message}", e)
+                        Toast.makeText(this, "Не удалось изменить цвет", Toast.LENGTH_SHORT).show()
+                    }
                 }
                 .show()
         } catch (e: Exception) {
             Log.e("TimerActivity", "Ошибка при отображении диалога выбора цвета: ${e.message}", e)
+            Toast.makeText(this, "Не удалось отобразить выбор цвета", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -297,14 +361,20 @@ class TimerActivity : AppCompatActivity() {
             AlertDialog.Builder(this)
                 .setTitle("Выберите звук")
                 .setItems(sounds) { _, which ->
-                    timerService?.setTimerSound(timerId, soundResources[which])
+                    try {
+                        timerService?.setTimerSound(timerId, soundResources[which])
 
-                    // Воспроизводим предпросмотр звука
-                    timerService?.playSound(soundResources[which])
+                        // Воспроизводим предпросмотр звука
+                        timerService?.playSound(soundResources[which])
+                    } catch (e: Exception) {
+                        Log.e("TimerActivity", "Ошибка при установке звука таймера: ${e.message}", e)
+                        Toast.makeText(this, "Не удалось изменить звук", Toast.LENGTH_SHORT).show()
+                    }
                 }
                 .show()
         } catch (e: Exception) {
             Log.e("TimerActivity", "Ошибка при отображении диалога выбора звука: ${e.message}", e)
+            Toast.makeText(this, "Не удалось отобразить выбор звука", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -319,6 +389,7 @@ class TimerActivity : AppCompatActivity() {
             updateTimerView(TimerService.TIMER_4)
         } catch (e: Exception) {
             Log.e("TimerActivity", "Ошибка при обновлении всех таймеров: ${e.message}", e)
+            Toast.makeText(this, "Ошибка обновления таймеров", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -392,7 +463,7 @@ class TimerActivity : AppCompatActivity() {
                 startButton.visibility = View.VISIBLE
                 stopButton.visibility = View.GONE
                 timerTextView.text = formatTime(timeRemaining)
-                progressBar.progress = 0
+                progressBar.progress = timerService?.getTimerProgressPercent(timerId) ?: 0
             } else {
                 // Таймер неактивен или сброшен
                 startButton.visibility = View.VISIBLE
@@ -402,37 +473,54 @@ class TimerActivity : AppCompatActivity() {
             }
 
             // Удаляем предыдущие наблюдатели, чтобы избежать дублирования
-            timerService?.getTimerLiveData(timerId)?.removeObservers(this)
+            try {
+                timerService?.getTimerLiveData(timerId)?.removeObservers(this)
+            } catch (e: Exception) {
+                Log.e("TimerActivity", "Ошибка при удалении наблюдателей: ${e.message}", e)
+            }
 
             // Наблюдаем за изменениями таймера
-            timerService?.getTimerLiveData(timerId)?.observe(this, Observer { time ->
-                try {
-                    if (time <= 0) {
-                        // Таймер завершился - обновляем все элементы
-                        updateTimerView(timerId)
-                    } else {
-                        // Обновляем только отображение времени и прогресс
-                        timerTextView.text = formatTime(time)
-                        progressBar.progress = timerService?.getTimerProgressPercent(timerId) ?: 0
+            try {
+                timerService?.getTimerLiveData(timerId)?.observe(this, Observer { time ->
+                    try {
+                        if (time <= 0) {
+                            // Таймер завершился - обновляем все элементы
+                            startButton.visibility = View.VISIBLE
+                            stopButton.visibility = View.GONE
+                            timerTextView.text = "00:00"
+                            progressBar.progress = 0
+                        } else {
+                            // Обновляем только отображение времени и прогресс
+                            timerTextView.text = formatTime(time)
+                            progressBar.progress = timerService?.getTimerProgressPercent(timerId) ?: 0
+                        }
+                    } catch (e: Exception) {
+                        Log.e("TimerActivity", "Ошибка при обновлении UI: ${e.message}", e)
                     }
-                } catch (e: Exception) {
-                    Log.e("TimerActivity", "Ошибка при обновлении UI: ${e.message}", e)
-                }
-            })
+                })
+            } catch (e: Exception) {
+                Log.e("TimerActivity", "Ошибка при установке наблюдателя: ${e.message}", e)
+            }
+
         } catch (e: Exception) {
             Log.e("TimerActivity", "Ошибка при обновлении таймера $timerId: ${e.message}", e)
         }
     }
 
     private fun formatTime(timeInMillis: Long): String {
-        val hours = TimeUnit.MILLISECONDS.toHours(timeInMillis)
-        val minutes = TimeUnit.MILLISECONDS.toMinutes(timeInMillis) % 60
-        val seconds = TimeUnit.MILLISECONDS.toSeconds(timeInMillis) % 60
+        try {
+            val hours = TimeUnit.MILLISECONDS.toHours(timeInMillis)
+            val minutes = TimeUnit.MILLISECONDS.toMinutes(timeInMillis) % 60
+            val seconds = TimeUnit.MILLISECONDS.toSeconds(timeInMillis) % 60
 
-        return if (hours > 0) {
-            String.format("%02d:%02d:%02d", hours, minutes, seconds)
-        } else {
-            String.format("%02d:%02d", minutes, seconds)
+            return if (hours > 0) {
+                String.format("%02d:%02d:%02d", hours, minutes, seconds)
+            } else {
+                String.format("%02d:%02d", minutes, seconds)
+            }
+        } catch (e: Exception) {
+            Log.e("TimerActivity", "Ошибка при форматировании времени", e)
+            return "00:00"
         }
     }
 
@@ -449,12 +537,16 @@ class TimerActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (bound) {
-            try {
+        try {
+            if (bound) {
                 updateAllTimerViews()
-            } catch (e: Exception) {
-                Log.e("TimerActivity", "Ошибка в onResume: ${e.message}", e)
+            } else {
+                // Если не привязаны к сервису, повторяем привязку
+                val intent = Intent(this, TimerService::class.java)
+                bindService(intent, connection, Context.BIND_AUTO_CREATE)
             }
+        } catch (e: Exception) {
+            Log.e("TimerActivity", "Ошибка в onResume: ${e.message}", e)
         }
     }
 
@@ -467,13 +559,17 @@ class TimerActivity : AppCompatActivity() {
         super.onDestroy()
 
         // Корректно отсоединяем сервис
-        if (bound) {
-            try {
-                unbindService(connection)
-                bound = false
-            } catch (e: Exception) {
-                Log.e("TimerActivity", "Ошибка при отключении от сервиса", e)
+        try {
+            if (bound) {
+                try {
+                    unbindService(connection)
+                    bound = false
+                } catch (e: Exception) {
+                    Log.e("TimerActivity", "Ошибка при отключении от сервиса", e)
+                }
             }
+        } catch (e: Exception) {
+            Log.e("TimerActivity", "Ошибка в onDestroy: ${e.message}", e)
         }
     }
 
