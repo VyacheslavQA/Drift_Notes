@@ -93,7 +93,7 @@
                         <!-- Кнопка Старт -->
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/buttonTimer1Start"
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:text="Старт"
                             android:textColor="#FFFFFF"
@@ -105,7 +105,7 @@
                         <!-- Кнопка Стоп -->
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/buttonTimer1Stop"
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:text="Стоп"
                             android:textColor="#FFFFFF"
@@ -118,26 +118,26 @@
                         <!-- Кнопка Сброс -->
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/buttonTimer1Reset"
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:text="Сброс"
                             android:textColor="#FFFFFF"
                             app:backgroundTint="#F44336"
                             app:cornerRadius="12dp"
-                            android:visibility="gone"
                             android:layout_marginEnd="8dp"
                             android:layout_weight="1" />
 
-                        <!-- Кнопка Настройки -->
+                        <!-- Кнопка Настройки с иконкой шестеренки -->
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/buttonTimer1Options"
-                            android:layout_width="wrap_content"
+                            android:layout_width="50dp"
                             android:layout_height="wrap_content"
-                            android:text="Настройки"
                             android:textColor="#DAD5C3"
                             app:backgroundTint="#2E7D32"
                             app:cornerRadius="12dp"
-                            android:layout_weight="1" />
+                            app:icon="@android:drawable/ic_menu_manage"
+                            app:iconGravity="textStart"
+                            app:iconPadding="0dp" />
                     </LinearLayout>
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.cardview.widget.CardView>
@@ -207,7 +207,7 @@
                         <!-- Кнопка Старт -->
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/buttonTimer2Start"
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:text="Старт"
                             android:textColor="#FFFFFF"
@@ -219,7 +219,7 @@
                         <!-- Кнопка Стоп -->
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/buttonTimer2Stop"
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:text="Стоп"
                             android:textColor="#FFFFFF"
@@ -232,26 +232,26 @@
                         <!-- Кнопка Сброс -->
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/buttonTimer2Reset"
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:text="Сброс"
                             android:textColor="#FFFFFF"
                             app:backgroundTint="#F44336"
                             app:cornerRadius="12dp"
-                            android:visibility="gone"
                             android:layout_marginEnd="8dp"
                             android:layout_weight="1" />
 
-                        <!-- Кнопка Настройки -->
+                        <!-- Кнопка Настройки с иконкой шестеренки -->
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/buttonTimer2Options"
-                            android:layout_width="wrap_content"
+                            android:layout_width="50dp"
                             android:layout_height="wrap_content"
-                            android:text="Настройки"
                             android:textColor="#DAD5C3"
                             app:backgroundTint="#2E7D32"
                             app:cornerRadius="12dp"
-                            android:layout_weight="1" />
+                            app:icon="@android:drawable/ic_menu_manage"
+                            app:iconGravity="textStart"
+                            app:iconPadding="0dp" />
                     </LinearLayout>
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.cardview.widget.CardView>
@@ -321,7 +321,7 @@
                         <!-- Кнопка Старт -->
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/buttonTimer3Start"
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:text="Старт"
                             android:textColor="#FFFFFF"
@@ -333,7 +333,7 @@
                         <!-- Кнопка Стоп -->
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/buttonTimer3Stop"
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:text="Стоп"
                             android:textColor="#FFFFFF"
@@ -346,26 +346,26 @@
                         <!-- Кнопка Сброс -->
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/buttonTimer3Reset"
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:text="Сброс"
                             android:textColor="#FFFFFF"
                             app:backgroundTint="#F44336"
                             app:cornerRadius="12dp"
-                            android:visibility="gone"
                             android:layout_marginEnd="8dp"
                             android:layout_weight="1" />
 
-                        <!-- Кнопка Настройки -->
+                        <!-- Кнопка Настройки с иконкой шестеренки -->
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/buttonTimer3Options"
-                            android:layout_width="wrap_content"
+                            android:layout_width="50dp"
                             android:layout_height="wrap_content"
-                            android:text="Настройки"
                             android:textColor="#DAD5C3"
                             app:backgroundTint="#2E7D32"
                             app:cornerRadius="12dp"
-                            android:layout_weight="1" />
+                            app:icon="@android:drawable/ic_menu_manage"
+                            app:iconGravity="textStart"
+                            app:iconPadding="0dp" />
                     </LinearLayout>
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.cardview.widget.CardView>
@@ -437,7 +437,7 @@
                         <!-- Кнопка Старт -->
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/buttonTimer4Start"
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:text="Старт"
                             android:textColor="#FFFFFF"
@@ -449,7 +449,7 @@
                         <!-- Кнопка Стоп -->
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/buttonTimer4Stop"
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:text="Стоп"
                             android:textColor="#FFFFFF"
@@ -462,26 +462,26 @@
                         <!-- Кнопка Сброс -->
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/buttonTimer4Reset"
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:text="Сброс"
                             android:textColor="#FFFFFF"
-                            android:visibility="gone"
                             app:backgroundTint="#F44336"
                             app:cornerRadius="12dp"
                             android:layout_marginEnd="8dp"
                             android:layout_weight="1" />
 
-                        <!-- Кнопка Настройки -->
+                        <!-- Кнопка Настройки с иконкой шестеренки -->
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/buttonTimer4Options"
-                            android:layout_width="wrap_content"
+                            android:layout_width="50dp"
                             android:layout_height="wrap_content"
-                            android:text="Настройки"
                             android:textColor="#FFFFFF"
                             app:backgroundTint="#2E7D32"
                             app:cornerRadius="12dp"
-                            android:layout_weight="1" />
+                            app:icon="@android:drawable/ic_menu_manage"
+                            app:iconGravity="textStart"
+                            app:iconPadding="0dp" />
                     </LinearLayout>
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.cardview.widget.CardView>

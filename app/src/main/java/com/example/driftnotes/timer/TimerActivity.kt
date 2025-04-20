@@ -189,7 +189,6 @@ class TimerActivity : AppCompatActivity() {
         try {
             val dialogView = layoutInflater.inflate(R.layout.dialog_custom_duration, null)
             val editTextMinutes = dialogView.findViewById<EditText>(R.id.editTextMinutes)
-
             AlertDialog.Builder(this)
                 .setTitle("Введите длительность (минуты)")
                 .setView(dialogView)
@@ -386,21 +385,18 @@ class TimerActivity : AppCompatActivity() {
                 // Таймер запущен
                 startButton.visibility = View.GONE
                 stopButton.visibility = View.VISIBLE
-                resetButton.visibility = View.VISIBLE
                 timerTextView.text = timerService?.getFormattedTime(timerId) ?: "00:00"
                 progressBar.progress = timerService?.getTimerProgressPercent(timerId) ?: 0
             } else if (timeRemaining > 0) {
                 // Таймер на паузе
                 startButton.visibility = View.VISIBLE
                 stopButton.visibility = View.GONE
-                resetButton.visibility = View.VISIBLE
                 timerTextView.text = formatTime(timeRemaining)
                 progressBar.progress = 0
             } else {
                 // Таймер неактивен или сброшен
                 startButton.visibility = View.VISIBLE
                 stopButton.visibility = View.GONE
-                resetButton.visibility = View.GONE
                 timerTextView.text = "00:00"
                 progressBar.progress = 0
             }
