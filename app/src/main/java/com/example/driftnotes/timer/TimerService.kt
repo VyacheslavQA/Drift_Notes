@@ -11,9 +11,8 @@ import android.graphics.Color
 import android.media.MediaPlayer
 import android.os.Binder
 import android.os.Build
-import android.os.Handler
+import android.os.CountDownTimer
 import android.os.IBinder
-import android.os.Looper
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LiveData
@@ -34,22 +33,19 @@ class TimerService : Service() {
     }
 
     private val binder = LocalBinder()
-    private val timers = Array(4) { TimerInfo() }
+    private lateinit var timers: Array<TimerInfo>
     private var mediaPlayer: MediaPlayer? = null
 
-    // Добавляем Handler, привязанный к главному потоку для работы таймеров
-    private val handler = Handler(Looper.getMainLooper())
-
     // Класс для хранения информации о таймере
-    inner class TimerInfo {
-        var name: String = "Таймер ${timers.indexOf(this) + 1}"
+    inner class TimerInfo(val timerId: Int) {
+        var name: String = "Таймер ${timerId + 1}"
         var color: Int = Color.parseColor("#4CAF50") // Зеленый по умолчанию
         var soundResId: Int = R.raw.timer_bell // Звук по умолчанию
 
         var duration: Long = 0
         var timeRemaining: Long = 0
-        var running: Boolean = false // Имя изменено с isRunning на running
-        var runnable: Runnable? = null
+        var running: Boolean = false
+        var countDownTimer: CountDownTimer? = null
 
         val timeRemainingLiveData = MutableLiveData<Long>()
 
@@ -63,8 +59,11 @@ class TimerService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        // Инициализируем массив таймеров
+        timers = Array(4) { TimerInfo(it) }
         createNotificationChannel()
         startForeground(NOTIFICATION_ID, createNotification())
+        Log.d("TimerService", "Service created")
     }
 
     override fun onBind(intent: Intent): IBinder {
@@ -124,13 +123,13 @@ class TimerService : Service() {
             }
         )
 
-        val contentTitle = if (timerId != -1) {
+        val contentTitle = if (timerId != -1 && timerId < timers.size) {
             "Таймер: ${timers[timerId].name}"
         } else {
             "Таймеры"
         }
 
-        val contentText = if (timerId != -1) {
+        val contentText = if (timerId != -1 && timerId < timers.size) {
             "Осталось: ${formatTime(timers[timerId].timeRemaining)}"
         } else {
             "Следите за своими таймерами"
@@ -179,7 +178,7 @@ class TimerService : Service() {
             .setOngoing(true)
 
         // Добавляем кнопки только если это уведомление для конкретного таймера
-        if (timerId != -1) {
+        if (timerId != -1 && timerId < timers.size) {
             builder.addAction(
                 android.R.drawable.ic_media_pause,
                 "Стоп",
@@ -209,6 +208,11 @@ class TimerService : Service() {
     fun startTimer(timerId: Int, duration: Long) {
         Log.d("TimerService", "startTimer: timerId=$timerId, duration=$duration")
 
+        if (timerId < 0 || timerId >= timers.size) {
+            Log.e("TimerService", "Неверный timerId: $timerId")
+            return
+        }
+
         // Останавливаем существующий таймер, если он запущен
         stopTimer(timerId)
 
@@ -217,43 +221,36 @@ class TimerService : Service() {
         timers[timerId].timeRemaining = duration
         timers[timerId].running = true
 
-        // Создаем и запускаем Runnable для обновления таймера
-        val updateInterval = 1000L // 1 секунда
-        val timerRunnable = object : Runnable {
-            override fun run() {
-                if (!timers[timerId].running) return
+        // Создаем и запускаем CountDownTimer для этого таймера
+        timers[timerId].countDownTimer = object : CountDownTimer(duration, 1000) {
+            override fun onTick(millisUntilFinished: Long) {
+                // Обновляем оставшееся время
+                timers[timerId].timeRemaining = millisUntilFinished
+                timers[timerId].timeRemainingLiveData.postValue(millisUntilFinished)
 
-                if (timers[timerId].timeRemaining <= 0) {
-                    // Таймер завершился
-                    timers[timerId].timeRemaining = 0
-                    timers[timerId].running = false
-                    timers[timerId].timeRemainingLiveData.postValue(0L)
-
-                    // Воспроизводим звук завершения
-                    playSound(timers[timerId].soundResId)
-
-                    // Обновляем уведомление
-                    updateNotification(-1)
-                } else {
-                    // Уменьшаем оставшееся время
-                    timers[timerId].timeRemaining -= updateInterval
-                    timers[timerId].timeRemainingLiveData.postValue(timers[timerId].timeRemaining)
-
-                    // Обновляем уведомление каждые 5 секунд
-                    if (timers[timerId].timeRemaining % 5000 <= 1000) {
-                        updateNotification(timerId)
-                    }
-
-                    // Планируем следующее обновление
-                    handler.postDelayed(this, updateInterval)
+                // Обновляем уведомление каждые 5 секунд
+                if (millisUntilFinished % 5000 <= 1000) {
+                    updateNotification(timerId)
                 }
+
+                Log.d("TimerService", "Timer $timerId: $millisUntilFinished ms left")
             }
-        }
 
-        timers[timerId].runnable = timerRunnable
+            override fun onFinish() {
+                // Таймер завершился
+                timers[timerId].timeRemaining = 0
+                timers[timerId].running = false
+                timers[timerId].timeRemainingLiveData.postValue(0L)
 
-        // Запускаем таймер
-        handler.post(timerRunnable)
+                // Воспроизводим звук завершения
+                playSound(timers[timerId].soundResId)
+
+                // Обновляем уведомление
+                updateNotification(-1)
+
+                Log.d("TimerService", "Timer $timerId finished")
+            }
+        }.start()
 
         // Обновляем уведомление
         updateNotification(timerId)
@@ -263,10 +260,13 @@ class TimerService : Service() {
     fun stopTimer(timerId: Int) {
         Log.d("TimerService", "stopTimer: timerId=$timerId")
 
-        timers[timerId].running = false
-        timers[timerId].runnable?.let {
-            handler.removeCallbacks(it)
+        if (timerId < 0 || timerId >= timers.size) {
+            Log.e("TimerService", "Неверный timerId: $timerId")
+            return
         }
+
+        timers[timerId].running = false
+        timers[timerId].countDownTimer?.cancel()
         timers[timerId].timeRemainingLiveData.postValue(timers[timerId].timeRemaining)
 
         // Обновляем уведомление
@@ -277,10 +277,13 @@ class TimerService : Service() {
     fun resetTimer(timerId: Int) {
         Log.d("TimerService", "resetTimer: timerId=$timerId")
 
-        timers[timerId].running = false
-        timers[timerId].runnable?.let {
-            handler.removeCallbacks(it)
+        if (timerId < 0 || timerId >= timers.size) {
+            Log.e("TimerService", "Неверный timerId: $timerId")
+            return
         }
+
+        timers[timerId].running = false
+        timers[timerId].countDownTimer?.cancel()
         timers[timerId].timeRemaining = 0
         timers[timerId].timeRemainingLiveData.postValue(0L)
 
@@ -330,58 +333,88 @@ class TimerService : Service() {
 
     // Получение форматированного времени таймера
     fun getFormattedTime(timerId: Int): String {
-        return formatTime(timers[timerId].timeRemaining)
+        return if (timerId >= 0 && timerId < timers.size) {
+            formatTime(timers[timerId].timeRemaining)
+        } else {
+            "00:00"
+        }
     }
 
     // Проверка, запущен ли таймер
     fun isTimerRunning(timerId: Int): Boolean {
-        return timers[timerId].running
+        return if (timerId >= 0 && timerId < timers.size) {
+            timers[timerId].running
+        } else {
+            false
+        }
     }
 
     // Получение процента прогресса таймера
     fun getTimerProgressPercent(timerId: Int): Int {
-        if (timers[timerId].duration <= 0) return 0
+        if (timerId < 0 || timerId >= timers.size || timers[timerId].duration <= 0) return 0
         val progress = ((timers[timerId].timeRemaining * 100) / timers[timerId].duration).toInt()
         return progress.coerceIn(0, 100) // Гарантируем, что прогресс в диапазоне от 0 до 100
     }
 
     // Установка имени таймера
     fun setTimerName(timerId: Int, name: String) {
-        timers[timerId].name = name
-        // Обновляем уведомление, если таймер запущен
-        if (timers[timerId].running) {
-            updateNotification(timerId)
+        if (timerId >= 0 && timerId < timers.size) {
+            timers[timerId].name = name
+            // Обновляем уведомление, если таймер запущен
+            if (timers[timerId].running) {
+                updateNotification(timerId)
+            }
         }
     }
 
     // Получение имени таймера
     fun getTimerName(timerId: Int): String {
-        return timers[timerId].name
+        return if (timerId >= 0 && timerId < timers.size) {
+            timers[timerId].name
+        } else {
+            "Таймер"
+        }
     }
 
     // Установка цвета таймера
     fun setTimerColor(timerId: Int, color: Int) {
-        timers[timerId].color = color
+        if (timerId >= 0 && timerId < timers.size) {
+            timers[timerId].color = color
+        }
     }
 
     // Получение цвета таймера
     fun getTimerColor(timerId: Int): Int {
-        return timers[timerId].color
+        return if (timerId >= 0 && timerId < timers.size) {
+            timers[timerId].color
+        } else {
+            Color.GREEN
+        }
     }
 
     // Установка звука таймера
     fun setTimerSound(timerId: Int, soundResId: Int) {
-        timers[timerId].soundResId = soundResId
+        if (timerId >= 0 && timerId < timers.size) {
+            timers[timerId].soundResId = soundResId
+        }
     }
 
     // Получение звука таймера
     fun getTimerSound(timerId: Int): Int {
-        return timers[timerId].soundResId
+        return if (timerId >= 0 && timerId < timers.size) {
+            timers[timerId].soundResId
+        } else {
+            R.raw.timer_bell
+        }
     }
 
     // Получение LiveData для таймера
     fun getTimerLiveData(timerId: Int): LiveData<Long> {
-        return timers[timerId].timeRemainingLiveData
+        return if (timerId >= 0 && timerId < timers.size) {
+            timers[timerId].timeRemainingLiveData
+        } else {
+            MutableLiveData<Long>().apply { value = 0L }
+        }
     }
 
     override fun onDestroy() {
@@ -399,5 +432,6 @@ class TimerService : Service() {
         }
 
         super.onDestroy()
+        Log.d("TimerService", "Service destroyed")
     }
 }

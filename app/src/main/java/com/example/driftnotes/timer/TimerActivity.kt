@@ -17,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import com.example.driftnotes.R
 import com.example.driftnotes.databinding.ActivityTimerBinding
+import com.example.driftnotes.utils.AnimationHelper
 import java.util.concurrent.TimeUnit
 
 class TimerActivity : AppCompatActivity() {
@@ -134,13 +135,13 @@ class TimerActivity : AppCompatActivity() {
         // Обработчик кнопки Стоп
         stopButton.setOnClickListener {
             timerService?.stopTimer(timerId)
-            updateAllTimerViews()
+            updateTimerView(timerId)
         }
 
         // Обработчик кнопки Сброс
         resetButton.setOnClickListener {
             timerService?.resetTimer(timerId)
-            updateAllTimerViews()
+            updateTimerView(timerId)
         }
 
         // Обработчик кнопки настроек
@@ -172,7 +173,7 @@ class TimerActivity : AppCompatActivity() {
 
                 val durationInMillis = TimeUnit.MINUTES.toMillis(durationInMinutes.toLong())
                 timerService?.startTimer(timerId, durationInMillis)
-                updateAllTimerViews()
+                updateTimerView(timerId)
             }
             .show()
     }
@@ -191,7 +192,7 @@ class TimerActivity : AppCompatActivity() {
                     if (minutes > 0) {
                         val durationInMillis = TimeUnit.MINUTES.toMillis(minutes.toLong())
                         timerService?.startTimer(timerId, durationInMillis)
-                        updateAllTimerViews()
+                        updateTimerView(timerId)
                     } else {
                         Toast.makeText(this, "Пожалуйста, введите положительное число", Toast.LENGTH_SHORT).show()
                     }
@@ -232,7 +233,7 @@ class TimerActivity : AppCompatActivity() {
                 val newName = editTextName.text.toString().trim()
                 if (newName.isNotEmpty()) {
                     timerService?.setTimerName(timerId, newName)
-                    updateAllTimerViews()
+                    updateTimerView(timerId)
                 } else {
                     Toast.makeText(this, "Название не может быть пустым", Toast.LENGTH_SHORT).show()
                 }
@@ -255,7 +256,7 @@ class TimerActivity : AppCompatActivity() {
             .setTitle("Выберите цвет")
             .setItems(colors) { _, which ->
                 timerService?.setTimerColor(timerId, colorValues[which])
-                updateAllTimerViews()
+                updateTimerView(timerId)
             }
             .show()
     }
@@ -264,10 +265,10 @@ class TimerActivity : AppCompatActivity() {
     private fun showSoundPickerDialog(timerId: Int) {
         val sounds = arrayOf("Звонок", "Пинг", "Мелодия 1", "Мелодия 2")
         val soundResources = arrayOf(
-            R.raw.timer_bell,     // Замените на реальные
-            R.raw.timer_ping,     // ресурсы звуков
-            R.raw.timer_melody1,  // в вашем проекте
-            R.raw.timer_melody2
+            R.raw.timer_bell,
+            R.raw.timer_bell,  // Повторно используем один и тот же файл
+            R.raw.timer_bell,  // если другие файлы недоступны
+            R.raw.timer_bell
         )
 
         AlertDialog.Builder(this)
@@ -344,16 +345,6 @@ class TimerActivity : AppCompatActivity() {
         timerTextView.setTextColor(timerColor)
         progressBar.progressTintList = android.content.res.ColorStateList.valueOf(timerColor)
 
-        // Обновляем бордюр карточки таймера (если возможно)
-        try {
-            val drawable = cardView.background
-            if (drawable is android.graphics.drawable.GradientDrawable) {
-                drawable.setStroke(4, timerColor)
-            }
-        } catch (e: Exception) {
-            Log.e("TimerActivity", "Ошибка при обновлении цвета карточки", e)
-        }
-
         // Определяем состояние таймера
         val isRunning = timerService?.isTimerRunning(timerId) == true
         val timeRemaining = timerService?.getTimerLiveData(timerId)?.value ?: 0L
@@ -379,19 +370,25 @@ class TimerActivity : AppCompatActivity() {
             stopButton.visibility = View.GONE
             resetButton.visibility = View.GONE
             timerTextView.text = "00:00"
-            timerTextView.setTextColor(Color.GRAY)
             progressBar.progress = 0
         }
 
+        // Удаляем предыдущие наблюдатели, чтобы избежать дублирования
+        timerService?.getTimerLiveData(timerId)?.removeObservers(this)
+
         // Наблюдаем за изменениями таймера
         timerService?.getTimerLiveData(timerId)?.observe(this, Observer { time ->
-            if (time <= 0) {
-                // Таймер завершился - обновляем все элементы
-                updateAllTimerViews()
-            } else {
-                // Обновляем только отображение времени и прогресс
-                timerTextView.text = formatTime(time)
-                progressBar.progress = timerService?.getTimerProgressPercent(timerId) ?: 0
+            try {
+                if (time <= 0) {
+                    // Таймер завершился - обновляем все элементы
+                    updateTimerView(timerId)
+                } else {
+                    // Обновляем только отображение времени и прогресс
+                    timerTextView.text = formatTime(time)
+                    progressBar.progress = timerService?.getTimerProgressPercent(timerId) ?: 0
+                }
+            } catch (e: Exception) {
+                Log.e("TimerActivity", "Ошибка при обновлении UI: ${e.message}", e)
             }
         })
     }
@@ -443,7 +440,7 @@ class TimerActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             android.R.id.home -> {
-                finish() // Просто завершаем активность
+                AnimationHelper.finishWithAnimation(this)
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -453,6 +450,6 @@ class TimerActivity : AppCompatActivity() {
     // Для Android 13+ (API 33+)
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        finish() // Просто завершаем активность
+        AnimationHelper.finishWithAnimation(this)
     }
 }
