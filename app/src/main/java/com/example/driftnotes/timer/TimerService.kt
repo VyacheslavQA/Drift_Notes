@@ -11,8 +11,9 @@ import android.graphics.Color
 import android.media.MediaPlayer
 import android.os.Binder
 import android.os.Build
-import android.os.CountDownTimer
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LiveData
@@ -36,19 +37,24 @@ class TimerService : Service() {
     private val timers = Array(4) { TimerInfo() }
     private var mediaPlayer: MediaPlayer? = null
 
+    // Добавляем Handler, привязанный к главному потоку для работы таймеров
+    private val handler = Handler(Looper.getMainLooper())
+
     // Класс для хранения информации о таймере
     inner class TimerInfo {
-        var name: String = "Таймер"
+        var name: String = "Таймер ${timers.indexOf(this) + 1}"
         var color: Int = Color.parseColor("#4CAF50") // Зеленый по умолчанию
         var soundResId: Int = R.raw.timer_bell // Звук по умолчанию
 
         var duration: Long = 0
         var timeRemaining: Long = 0
-        var timer: CountDownTimer? = null
+        var running: Boolean = false // Имя изменено с isRunning на running
+        var runnable: Runnable? = null
 
         val timeRemainingLiveData = MutableLiveData<Long>()
 
-        fun isRunning(): Boolean = timer != null
+        // Функция для проверки состояния таймера
+        fun isRunning(): Boolean = running
     }
 
     inner class LocalBinder : Binder() {
@@ -146,6 +152,7 @@ class TimerService : Service() {
                 PendingIntent.FLAG_UPDATE_CURRENT
             }
         )
+
         // Создание действия для сброса таймера
         val resetIntent = Intent(this, TimerService::class.java).apply {
             action = "RESET_TIMER"
@@ -170,6 +177,7 @@ class TimerService : Service() {
             .setContentIntent(pendingIntent)
             .setOnlyAlertOnce(true)
             .setOngoing(true)
+
         // Добавляем кнопки только если это уведомление для конкретного таймера
         if (timerId != -1) {
             builder.addAction(
@@ -193,98 +201,91 @@ class TimerService : Service() {
             val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.notify(NOTIFICATION_ID, createNotification(timerId))
         } catch (e: Exception) {
-            // Обработка возможных ошибок при обновлении уведомления
-            e.printStackTrace()
+            Log.e("TimerService", "Ошибка при обновлении уведомления", e)
         }
     }
 
     // Запуск таймера
-    @Synchronized
     fun startTimer(timerId: Int, duration: Long) {
         Log.d("TimerService", "startTimer: timerId=$timerId, duration=$duration")
-        try {
-            // Останавливаем существующий таймер, если он запущен
-            stopTimer(timerId)
 
-            // Настраиваем новый таймер
-            timers[timerId].duration = duration
-            timers[timerId].timeRemaining = duration
+        // Останавливаем существующий таймер, если он запущен
+        stopTimer(timerId)
 
-            // Создаем и запускаем CountDownTimer
-            timers[timerId].timer = object : CountDownTimer(duration, 1000) {
-                override fun onTick(millisUntilFinished: Long) {
-                    try {
-                        timers[timerId].timeRemaining = millisUntilFinished
-                        timers[timerId].timeRemainingLiveData.postValue(millisUntilFinished)
+        // Настраиваем новый таймер
+        timers[timerId].duration = duration
+        timers[timerId].timeRemaining = duration
+        timers[timerId].running = true
 
-                        // Обновляем уведомление каждые 5 секунд
-                        if (millisUntilFinished % 5000 <= 1000) {
-                            updateNotification(timerId)
-                        }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
+        // Создаем и запускаем Runnable для обновления таймера
+        val updateInterval = 1000L // 1 секунда
+        val timerRunnable = object : Runnable {
+            override fun run() {
+                if (!timers[timerId].running) return
+
+                if (timers[timerId].timeRemaining <= 0) {
+                    // Таймер завершился
+                    timers[timerId].timeRemaining = 0
+                    timers[timerId].running = false
+                    timers[timerId].timeRemainingLiveData.postValue(0L)
+
+                    // Воспроизводим звук завершения
+                    playSound(timers[timerId].soundResId)
+
+                    // Обновляем уведомление
+                    updateNotification(-1)
+                } else {
+                    // Уменьшаем оставшееся время
+                    timers[timerId].timeRemaining -= updateInterval
+                    timers[timerId].timeRemainingLiveData.postValue(timers[timerId].timeRemaining)
+
+                    // Обновляем уведомление каждые 5 секунд
+                    if (timers[timerId].timeRemaining % 5000 <= 1000) {
+                        updateNotification(timerId)
                     }
+
+                    // Планируем следующее обновление
+                    handler.postDelayed(this, updateInterval)
                 }
-
-                override fun onFinish() {
-                    try {
-                        timers[timerId].timeRemaining = 0
-                        timers[timerId].timeRemainingLiveData.postValue(0L)
-                        timers[timerId].timer = null
-
-                        // Воспроизводим звук завершения
-                        playSound(timers[timerId].soundResId)
-
-                        // Обновляем уведомление
-                        updateNotification(-1)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                }
-            }.start()
-
-            // Обновляем уведомление
-            updateNotification(timerId)
-        } catch (e: Exception) {
-            Log.e("TimerService", "Ошибка при запуске таймера: ${e.message}", e)
-            // Если таймер не запустился, сбрасываем его состояние
-            timers[timerId].timer = null
-            timers[timerId].timeRemaining = 0
-            timers[timerId].timeRemainingLiveData.postValue(0L)
+            }
         }
+
+        timers[timerId].runnable = timerRunnable
+
+        // Запускаем таймер
+        handler.post(timerRunnable)
+
+        // Обновляем уведомление
+        updateNotification(timerId)
     }
 
     // Остановка таймера
-    @Synchronized
     fun stopTimer(timerId: Int) {
         Log.d("TimerService", "stopTimer: timerId=$timerId")
-        try {
-            timers[timerId].timer?.cancel()
-            timers[timerId].timer = null
-            timers[timerId].timeRemainingLiveData.postValue(timers[timerId].timeRemaining)
 
-            // Обновляем уведомление
-            updateNotification(-1)
-        } catch (e: Exception) {
-            e.printStackTrace()
+        timers[timerId].running = false
+        timers[timerId].runnable?.let {
+            handler.removeCallbacks(it)
         }
+        timers[timerId].timeRemainingLiveData.postValue(timers[timerId].timeRemaining)
+
+        // Обновляем уведомление
+        updateNotification(-1)
     }
 
     // Сброс таймера
-    @Synchronized
     fun resetTimer(timerId: Int) {
         Log.d("TimerService", "resetTimer: timerId=$timerId")
-        try {
-            timers[timerId].timer?.cancel()
-            timers[timerId].timer = null
-            timers[timerId].timeRemaining = 0
-            timers[timerId].timeRemainingLiveData.postValue(0L)
 
-            // Обновляем уведомление
-            updateNotification(-1)
-        } catch (e: Exception) {
-            e.printStackTrace()
+        timers[timerId].running = false
+        timers[timerId].runnable?.let {
+            handler.removeCallbacks(it)
         }
+        timers[timerId].timeRemaining = 0
+        timers[timerId].timeRemainingLiveData.postValue(0L)
+
+        // Обновляем уведомление
+        updateNotification(-1)
     }
 
     // Воспроизведение звука
@@ -300,25 +301,12 @@ class TimerService : Service() {
                 try {
                     mp.release()
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    Log.e("TimerService", "Ошибка при освобождении MediaPlayer", e)
                 }
             }
             mediaPlayer?.start()
-
-            // Если устройство поддерживает вибрацию, вибрируем
-            try {
-                val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as android.os.Vibrator
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    vibrator.vibrate(android.os.VibrationEffect.createOneShot(500, android.os.VibrationEffect.DEFAULT_AMPLITUDE))
-                } else {
-                    @Suppress("DEPRECATION")
-                    vibrator.vibrate(500)
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e("TimerService", "Ошибка при воспроизведении звука", e)
         }
     }
 
@@ -335,7 +323,7 @@ class TimerService : Service() {
                 String.format("%02d:%02d", minutes, seconds)
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e("TimerService", "Ошибка при форматировании времени", e)
             return "00:00"
         }
     }
@@ -347,7 +335,7 @@ class TimerService : Service() {
 
     // Проверка, запущен ли таймер
     fun isTimerRunning(timerId: Int): Boolean {
-        return timers[timerId].isRunning()
+        return timers[timerId].running
     }
 
     // Получение процента прогресса таймера
@@ -361,7 +349,7 @@ class TimerService : Service() {
     fun setTimerName(timerId: Int, name: String) {
         timers[timerId].name = name
         // Обновляем уведомление, если таймер запущен
-        if (timers[timerId].isRunning()) {
+        if (timers[timerId].running) {
             updateNotification(timerId)
         }
     }
@@ -407,7 +395,7 @@ class TimerService : Service() {
             mediaPlayer?.release()
             mediaPlayer = null
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e("TimerService", "Ошибка при освобождении MediaPlayer", e)
         }
 
         super.onDestroy()
