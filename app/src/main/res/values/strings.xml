@@ -301,5 +301,21 @@
     <string name="new_password">Новый пароль</string>
     <string name="confirm_new_password">Подтвердите новый пароль</string>
 
+    <!-- Добавь эти строки в файл app/src/main/res/values/strings.xml -->
+    <string name="start_date">Дата начала</string>
+    <string name="end_date">Дата окончания</string>
+    <string name="multi_day_fishing">Многодневная рыбалка</string>
+    <string name="tackle_optional">Снасти (необязательно)</string>
+    <string name="notes_optional">Заметки (необязательно)</string>
+
+    <string name="select_fishing_type">Выберите тип рыбалки</string>
+    <string name="select_on_map">Выбрать на карте</string>
+    <string name="photos">Фотографии</string>
+    <string name="create_marker_map">Создать маркерную карту</string>
+
+    <!-- Добавь эти строки в файл app/src/main/res/values/strings.xml -->
+    <string name="no_bites_yet">Поклевок еще нет. Добавьте первую!</string>
+
+
 
 </resources>

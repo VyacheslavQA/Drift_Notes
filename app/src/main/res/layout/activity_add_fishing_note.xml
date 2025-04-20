@@ -1,105 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background"
     tools:context=".fishing.AddFishingNoteActivity">
 
+    <!-- ScrollView для прокрутки формы -->
     <ScrollView
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Блок выбора типа рыбалки -->
+            <!-- Блок начальной формы (выбор типа рыбалки) -->
             <TextView
-                android:id="@+id/textViewFishingTypeLabel"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/select_fishing_type_first"
+                android:layout_marginBottom="16dp"
+                android:text="@string/select_fishing_type"
                 android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="#DAD5C3"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                android:textStyle="bold" />
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/dropdownFishingTypeLayout"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                app:boxBackgroundColor="#1A1A1A"
-                app:boxStrokeColor="#4CAF50"
-                android:textColorHint="#AAAAAA"
-                app:hintTextColor="#4CAF50"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textViewFishingTypeLabel">
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
 
                 <AutoCompleteTextView
                     android:id="@+id/dropdownFishingType"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="none"
-                    android:textColor="#DAD5C3"
-                    android:hint="@string/fishing_type" />
+                    android:hint="@string/fishing_type"
+                    android:inputType="none" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <com.google.android.material.button.MaterialButton
+            <Button
                 android:id="@+id/buttonInitialCancel"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="@string/cancel"
-                android:textColor="#DAD5C3"
-                app:backgroundTint="#2E7D32"
-                app:cornerRadius="24dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/dropdownFishingTypeLayout" />
+                android:text="@string/cancel" />
 
-            <!-- Основная форма, которая будет показана после выбора типа рыбалки -->
+            <!-- Основная форма для добавления деталей заметки (скрыта при запуске) -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/formContent"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:visibility="gone"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/dropdownFishingTypeLayout">
+                android:layout_marginTop="16dp">
 
                 <TextView
                     android:id="@+id/formContentTitle"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="@string/fishing_details_for"
                     android:textSize="18sp"
                     android:textStyle="bold"
-                    android:textColor="#DAD5C3"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
-                <!-- Место ловли -->
+                <!-- Поле для места рыбалки (обязательное) -->
                 <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/layoutLocation"
+                    android:id="@+id/locationInputLayout"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    app:boxBackgroundColor="#1A1A1A"
-                    app:boxStrokeColor="#4CAF50"
-                    android:textColorHint="#AAAAAA"
-                    app:hintTextColor="#4CAF50"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/formContentTitle">
@@ -108,253 +79,238 @@
                         android:id="@+id/editTextLocation"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textColor="#FFFFFF"
-                        android:hint="@string/location" />
+                        android:hint="@string/location"
+                        android:inputType="textCapSentences" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Кнопка выбора места на карте -->
-                <com.google.android.material.button.MaterialButton
+                <!-- Кнопка открытия карты -->
+                <Button
                     android:id="@+id/buttonOpenMap"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="@string/open_map"
-                    android:textColor="#DAD5C3"
-                    app:backgroundTint="#2E7D32"
-                    app:cornerRadius="24dp"
-                    app:icon="@android:drawable/ic_dialog_map"
+                    android:text="@string/select_on_map"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/layoutLocation" />
+                    app:layout_constraintTop_toBottomOf="@+id/locationInputLayout" />
 
-                <!-- Отображение выбранных координат -->
+                <!-- Текст с координатами (скрыт до выбора на карте) -->
                 <TextView
                     android:id="@+id/textViewSelectedCoordinates"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:textStyle="italic"
-                    android:textColor="#2E7D32"
+                    android:visibility="gone"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/buttonOpenMap"
-                    tools:text="Координаты: 55.755826, 37.617300" />
+                    app:layout_constraintTop_toBottomOf="@+id/buttonOpenMap" />
 
-                <!-- Кнопка маркерной карты (только для карповой рыбалки) -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/buttonOpenMarkerMap"
+                <!-- Чекбокс для многодневной рыбалки -->
+                <CheckBox
+                    android:id="@+id/checkBoxMultiDay"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="@string/open_marker_map"
-                    android:textColor="#DAD5C3"
-                    app:backgroundTint="#2E7D32"
-                    app:cornerRadius="24dp"
-                    app:icon="@android:drawable/ic_menu_edit"
-                    android:visibility="gone"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/multi_day_fishing"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/textViewSelectedCoordinates" />
 
-                <!-- Дата ловли -->
+                <!-- Поле для начальной даты -->
                 <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/layoutDate"
+                    android:id="@+id/layoutStartDate"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    app:boxBackgroundColor="#1A1A1A"
-                    app:boxStrokeColor="#4CAF50"
-                    android:textColorHint="#AAAAAA"
-                    app:hintTextColor="#4CAF50"
+                    android:layout_marginTop="8dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/buttonOpenMarkerMap">
+                    app:layout_constraintTop_toBottomOf="@+id/checkBoxMultiDay">
 
                     <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/editTextDate"
+                        android:id="@+id/editTextStartDate"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="@string/date"
-                        android:textColor="#DAD5C3"
                         android:focusable="false"
-                        android:clickable="true" />
+                        android:hint="@string/start_date"
+                        android:inputType="none" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Блок погоды -->
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/weatherBlock"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:background="#1E2B23"
-                    android:padding="8dp"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/layoutDate">
-
-                    <TextView
-                        android:id="@+id/textViewWeatherTitle"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:text="@string/weather_data"
-                        android:textStyle="bold"
-                        android:textColor="#4CAF50"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <TextView
-                        android:id="@+id/textViewWeatherStatus"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="@string/weather_not_loaded"
-                        android:textColor="#CCCCCC"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/textViewWeatherTitle" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/buttonLoadWeather"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="@string/load_weather"
-                        android:textColor="#DAD5C3"
-                        app:backgroundTint="#2E7D32"
-                        app:cornerRadius="24dp"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/textViewWeatherStatus" />
-
-                    <ProgressBar
-                        android:id="@+id/progressBarWeather"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:visibility="gone"
-                        android:indeterminateTint="#4CAF50"
-                        app:layout_constraintBottom_toBottomOf="@+id/buttonLoadWeather"
-                        app:layout_constraintStart_toEndOf="@+id/buttonLoadWeather"
-                        app:layout_constraintTop_toTopOf="@+id/buttonLoadWeather" />
-                </androidx.constraintlayout.widget.ConstraintLayout>
-
-                <!-- Снасти -->
+                <!-- Поле для конечной даты (скрыто при однодневной рыбалке) -->
                 <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/layoutTackle"
+                    android:id="@+id/layoutEndDate"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/layoutStartDate">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editTextEndDate"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:focusable="false"
+                        android:hint="@string/end_date"
+                        android:inputType="none" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Поле для снастей (необязательное) -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tackleInputLayout"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    app:boxBackgroundColor="#1A1A1A"
-                    app:boxStrokeColor="#4CAF50"
-                    android:textColorHint="#AAAAAA"
-                    app:hintTextColor="#4CAF50"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/weatherBlock">
+                    app:layout_constraintTop_toBottomOf="@+id/layoutEndDate">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editTextTackle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textColor="#DAD5C3"
-                        android:hint="@string/tackle" />
+                        android:hint="@string/tackle_optional"
+                        android:inputType="textCapSentences|textMultiLine"
+                        android:minLines="2" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Заметки -->
+                <!-- Поле для заметок (необязательное) -->
                 <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/layoutNotes"
+                    android:id="@+id/notesInputLayout"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    app:boxBackgroundColor="#1A1A1A"
-                    app:boxStrokeColor="#4CAF50"
-                    android:textColorHint="#AAAAAA"
-                    app:hintTextColor="#4CAF50"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/layoutTackle">
+                    app:layout_constraintTop_toBottomOf="@+id/tackleInputLayout">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editTextNotes"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="@string/notes"
-                        android:textColor="#DAD5C3"
-                        android:inputType="textMultiLine"
-                        android:minLines="3"
-                        android:gravity="top" />
+                        android:hint="@string/notes_optional"
+                        android:inputType="textCapSentences|textMultiLine"
+                        android:minLines="3" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Фотографии -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/buttonAddPhoto"
+                <!-- Блок для погоды -->
+                <TextView
+                    android:id="@+id/textViewWeatherLabel"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:text="@string/add_photo"
-                    android:textColor="#DAD5C3"
-                    app:backgroundTint="#2E7D32"
-                    app:cornerRadius="24dp"
-                    app:icon="@android:drawable/ic_menu_camera"
+                    android:text="@string/weather"
+                    android:textStyle="bold"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/layoutNotes" />
+                    app:layout_constraintTop_toBottomOf="@+id/notesInputLayout" />
+
+                <Button
+                    android:id="@+id/buttonLoadWeather"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/load_weather"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textViewWeatherLabel" />
+
+                <ProgressBar
+                    android:id="@+id/progressBarWeather"
+                    style="?android:attr/progressBarStyleSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toBottomOf="@+id/buttonLoadWeather"
+                    app:layout_constraintEnd_toEndOf="@+id/buttonLoadWeather"
+                    app:layout_constraintStart_toStartOf="@+id/buttonLoadWeather"
+                    app:layout_constraintTop_toTopOf="@+id/buttonLoadWeather" />
+
+                <TextView
+                    android:id="@+id/textViewWeatherStatus"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/weather_not_loaded"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/buttonLoadWeather" />
+
+                <!-- Блок для фотографий -->
+                <TextView
+                    android:id="@+id/textViewPhotosLabel"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/photos"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textViewWeatherStatus" />
+
+                <Button
+                    android:id="@+id/buttonAddPhoto"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/add_photo"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textViewPhotosLabel" />
 
                 <TextView
                     android:id="@+id/textViewPhotoCount"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:textAlignment="center"
-                    android:textColor="#D7CCA1"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/buttonAddPhoto"
-                    tools:text="Выбрано: 0 фото" />
+                    app:layout_constraintTop_toBottomOf="@+id/buttonAddPhoto" />
 
-                <!-- Кнопки сохранения и отмены -->
-                <com.google.android.material.button.MaterialButton
+                <!-- Кнопка для открытия маркерной карты (только для карповой рыбалки) -->
+                <Button
+                    android:id="@+id/buttonOpenMarkerMap"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/create_marker_map"
+                    android:visibility="gone"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textViewPhotoCount" />
+
+                <!-- Кнопки "Сохранить" и "Отмена" -->
+                <Button
                     android:id="@+id/buttonSave"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp"
                     android:text="@string/save"
-                    android:textColor="#DAD5C3"
-                    app:backgroundTint="#2E7D32"
-                    app:cornerRadius="24dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/textViewPhotoCount" />
+                    app:layout_constraintTop_toBottomOf="@+id/buttonOpenMarkerMap" />
 
-                <com.google.android.material.button.MaterialButton
+                <Button
                     android:id="@+id/buttonCancel"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:layout_marginBottom="24dp"
                     android:text="@string/cancel"
-                    android:textColor="#1E1E1E"
-                    android:backgroundTint="#AAAAAA"
-                    app:cornerRadius="24dp"
-                    app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/buttonSave" />
+
             </androidx.constraintlayout.widget.ConstraintLayout>
-        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </LinearLayout>
     </ScrollView>
 
-    <!-- Основной ProgressBar -->
+    <!-- Индикатор загрузки -->
     <ProgressBar
         android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:indeterminateTint="#4CAF50"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_gravity="center"
+        android:visibility="gone" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

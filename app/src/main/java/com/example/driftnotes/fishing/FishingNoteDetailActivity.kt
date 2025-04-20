@@ -1,3 +1,4 @@
+// Путь: app/src/main/java/com/example/driftnotes/fishing/FishingNoteDetailActivity.kt
 package com.example.driftnotes.fishing
 
 import android.content.Intent
@@ -7,6 +8,9 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -29,7 +33,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 class FishingNoteDetailActivity : AppCompatActivity() {
 
@@ -47,6 +53,11 @@ class FishingNoteDetailActivity : AppCompatActivity() {
     private val biteRecords = mutableListOf<BiteRecord>()
     private lateinit var biteAdapter: BiteRecordAdapter
     private lateinit var biteChart: BarChart
+
+    // Для многодневной рыбалки
+    private var currentDayIndex: Int = 0
+    private var dayCount: Int = 1
+    private lateinit var daySpinner: Spinner
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -90,10 +101,27 @@ class FishingNoteDetailActivity : AppCompatActivity() {
         // Получаем ссылку на BarChart
         biteChart = binding.biteChart
 
+        // Настраиваем спиннер для выбора дня
+        daySpinner = binding.spinnerDay
+        daySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                if (currentDayIndex != position) {
+                    currentDayIndex = position
+                    updateBitesForSelectedDay()
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                // Ничего не делаем
+            }
+        }
+
         // Обработчик кнопки добавления поклевки
         binding.buttonAddBite.setOnClickListener {
             currentNote?.let { note ->
-                showAddBiteDialog(note.date)
+                // Получаем дату для выбранного дня
+                val selectedDate = getDateForDayIndex(note.date, note.endDate, currentDayIndex)
+                showAddBiteDialog(selectedDate)
             }
         }
 
@@ -109,6 +137,49 @@ class FishingNoteDetailActivity : AppCompatActivity() {
 
         // Загружаем данные записи
         loadNoteData()
+    }
+
+    /**
+     * Получает дату для указанного индекса дня в многодневной рыбалке
+     */
+    private fun getDateForDayIndex(startDate: Date, endDate: Date?, dayIndex: Int): Date {
+        if (endDate == null || dayIndex == 0) return startDate
+
+        val calendar = Calendar.getInstance()
+        calendar.time = startDate
+        calendar.add(Calendar.DAY_OF_MONTH, dayIndex)
+
+        // Проверяем, что не вышли за конечную дату
+        return if (calendar.time.after(endDate)) endDate else calendar.time
+    }
+
+    /**
+     * Обновляет список поклевок для выбранного дня
+     */
+    private fun updateBitesForSelectedDay() {
+        currentNote?.let { note ->
+            // Фильтруем поклевки по выбранному дню
+            val filteredBites = note.biteRecords.filter { it.dayIndex == currentDayIndex }
+
+            // Обновляем список
+            biteRecords.clear()
+            biteRecords.addAll(filteredBites)
+            biteAdapter.updateBites(biteRecords)
+
+            // Обновляем график
+            updateBiteChart()
+
+            // Обновляем UI в зависимости от наличия поклевок
+            if (filteredBites.isEmpty()) {
+                binding.textViewNoBites.visibility = View.VISIBLE
+                binding.chartScrollView.visibility = View.GONE
+                binding.recyclerViewBites.visibility = View.GONE
+            } else {
+                binding.textViewNoBites.visibility = View.GONE
+                binding.chartScrollView.visibility = View.VISIBLE
+                binding.recyclerViewBites.visibility = View.VISIBLE
+            }
+        }
     }
 
     /**
@@ -242,9 +313,35 @@ class FishingNoteDetailActivity : AppCompatActivity() {
             }
 
             binding.textViewLocation.text = note.location
-            binding.textViewDate.text = dateFormat.format(note.date)
-            binding.textViewTackle.text = note.tackle
-            binding.textViewNotes.text = note.notes
+
+            // Отображаем дату или диапазон дат
+            if (note.isMultiDay && note.endDate != null) {
+                val startDateStr = dateFormat.format(note.date)
+                val endDateStr = dateFormat.format(note.endDate)
+                binding.textViewDate.text = "$startDateStr - $endDateStr"
+
+                // Вычисляем количество дней
+                val diffInMillis = note.endDate.time - note.date.time
+                dayCount = (TimeUnit.MILLISECONDS.toDays(diffInMillis) + 1).toInt()
+
+                // Настраиваем спиннер для выбора дня
+                setupDaySpinner(dayCount)
+                binding.spinnerDayContainer.visibility = View.VISIBLE
+            } else {
+                binding.textViewDate.text = dateFormat.format(note.date)
+                dayCount = 1
+                binding.spinnerDayContainer.visibility = View.GONE
+            }
+
+// Отображаем снасти и заметки (если они есть)
+            if (note.notes.isNotEmpty()) {
+                binding.textViewNotesLabel.visibility = View.VISIBLE
+                binding.textViewNotes.visibility = View.VISIBLE
+                binding.textViewNotes.text = note.notes
+            } else {
+                binding.textViewNotesLabel.visibility = View.GONE
+                binding.textViewNotes.visibility = View.GONE
+            }
 
             // Включаем/отключаем кнопку просмотра на карте в зависимости от наличия координат
             binding.buttonViewOnMap.isEnabled = note.latitude != 0.0 && note.longitude != 0.0
@@ -291,24 +388,16 @@ class FishingNoteDetailActivity : AppCompatActivity() {
                 binding.textViewBitesLabel.visibility = View.VISIBLE
                 binding.buttonAddBite.visibility = View.VISIBLE
 
-                // Загружаем поклевки
+                // Загружаем все поклевки
                 biteRecords.clear()
-                biteRecords.addAll(note.biteRecords)
-
-                if (biteRecords.isEmpty()) {
+                if (note.biteRecords.isNotEmpty()) {
+                    // Если есть поклевки, показываем их для текущего дня
+                    updateBitesForSelectedDay()
+                } else {
+                    // Если поклевок нет, показываем сообщение
                     binding.textViewNoBites.visibility = View.VISIBLE
                     binding.chartScrollView.visibility = View.GONE
                     binding.recyclerViewBites.visibility = View.GONE
-                } else {
-                    binding.textViewNoBites.visibility = View.GONE
-                    binding.chartScrollView.visibility = View.VISIBLE
-                    binding.recyclerViewBites.visibility = View.VISIBLE
-
-                    // Обновляем адаптер
-                    biteAdapter.updateBites(biteRecords)
-
-                    // Отображаем график поклевок
-                    updateBiteChart()
                 }
             } else {
                 binding.textViewBitesLabel.visibility = View.GONE
@@ -316,17 +405,40 @@ class FishingNoteDetailActivity : AppCompatActivity() {
                 binding.textViewNoBites.visibility = View.GONE
                 binding.chartScrollView.visibility = View.GONE
                 binding.recyclerViewBites.visibility = View.GONE
+                binding.spinnerDayContainer.visibility = View.GONE
             }
         }
     }
 
     /**
+     * Настраивает спиннер для выбора дня
+     */
+    private fun setupDaySpinner(dayCount: Int) {
+        // Создаем список дней
+        val days = ArrayList<String>()
+        for (i in 0 until dayCount) {
+            days.add("День ${i + 1}")
+        }
+
+        // Настраиваем адаптер
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, days)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        daySpinner.adapter = adapter
+
+        // Выбираем первый день по умолчанию
+        daySpinner.setSelection(0)
+        currentDayIndex = 0
+    }
+
+    /**
      * Показывает диалог добавления поклевки
      */
-    private fun showAddBiteDialog(date: java.util.Date) {
+    private fun showAddBiteDialog(date: Date) {
         BiteDialog(this, date, null) { newBite ->
+            // Создаем новую поклевку с указанием дня
+            val biteWithDay = newBite.copy(dayIndex = currentDayIndex)
             // Добавляем новую поклевку
-            addBiteRecord(newBite)
+            addBiteRecord(biteWithDay)
         }.show()
     }
 
@@ -335,9 +447,13 @@ class FishingNoteDetailActivity : AppCompatActivity() {
      */
     private fun showEditBiteDialog(bite: BiteRecord) {
         currentNote?.let { note ->
-            BiteDialog(this, note.date, bite) { updatedBite ->
+            // Получаем дату для текущего дня
+            val dayDate = getDateForDayIndex(note.date, note.endDate, bite.dayIndex)
+            BiteDialog(this, dayDate, bite) { updatedBite ->
+                // Сохраняем индекс дня
+                val biteWithDay = updatedBite.copy(dayIndex = bite.dayIndex)
                 // Обновляем поклевку
-                updateBiteRecord(updatedBite)
+                updateBiteRecord(biteWithDay)
             }.show()
         }
     }
@@ -361,11 +477,19 @@ class FishingNoteDetailActivity : AppCompatActivity() {
      */
     private fun addBiteRecord(bite: BiteRecord) {
         currentNote?.let { note ->
-            // Добавляем поклевку в текущий список
-            biteRecords.add(bite)
+            // Получаем текущий список поклевок
+            val currentBites = note.biteRecords.toMutableList()
 
-            // Сортируем по времени
-            biteRecords.sortBy { it.time }
+            // Добавляем новую поклевку
+            currentBites.add(bite)
+
+            // Сортируем по времени в пределах дня
+            val sortedBites = currentBites.sortedWith(compareBy({ it.dayIndex }, { it.time }))
+
+            // Обновляем список для текущего дня
+            val currentDayBites = sortedBites.filter { it.dayIndex == currentDayIndex }
+            biteRecords.clear()
+            biteRecords.addAll(currentDayBites)
 
             // Обновляем адаптер
             biteAdapter.updateBites(biteRecords)
@@ -378,8 +502,11 @@ class FishingNoteDetailActivity : AppCompatActivity() {
             binding.chartScrollView.visibility = View.VISIBLE
             binding.recyclerViewBites.visibility = View.VISIBLE
 
+            // Обновляем объект заметки
+            currentNote = note.copy(biteRecords = sortedBites)
+
             // Сохраняем изменения в Firestore
-            saveBitesToFirestore()
+            saveBitesToFirestore(sortedBites)
 
             // Показываем сообщение
             Toast.makeText(this, "Поклевка добавлена", Toast.LENGTH_SHORT).show()
@@ -390,26 +517,39 @@ class FishingNoteDetailActivity : AppCompatActivity() {
      * Обновляет существующую запись о поклевке
      */
     private fun updateBiteRecord(bite: BiteRecord) {
-        // Находим индекс обновляемой поклевки
-        val index = biteRecords.indexOfFirst { it.id == bite.id }
-        if (index != -1) {
-            // Обновляем поклевку в списке
-            biteRecords[index] = bite
+        currentNote?.let { note ->
+            // Получаем текущий список поклевок
+            val currentBites = note.biteRecords.toMutableList()
 
-            // Сортируем по времени
-            biteRecords.sortBy { it.time }
+            // Находим индекс обновляемой поклевки
+            val index = currentBites.indexOfFirst { it.id == bite.id }
+            if (index != -1) {
+                // Обновляем поклевку в списке
+                currentBites[index] = bite
 
-            // Обновляем адаптер
-            biteAdapter.updateBites(biteRecords)
+                // Сортируем по времени в пределах дня
+                val sortedBites = currentBites.sortedWith(compareBy({ it.dayIndex }, { it.time }))
 
-            // Обновляем график
-            updateBiteChart()
+                // Обновляем список для текущего дня
+                val currentDayBites = sortedBites.filter { it.dayIndex == currentDayIndex }
+                biteRecords.clear()
+                biteRecords.addAll(currentDayBites)
 
-            // Сохраняем изменения в Firestore
-            saveBitesToFirestore()
+                // Обновляем адаптер
+                biteAdapter.updateBites(biteRecords)
 
-            // Показываем сообщение
-            Toast.makeText(this, "Поклевка обновлена", Toast.LENGTH_SHORT).show()
+                // Обновляем график
+                updateBiteChart()
+
+                // Обновляем объект заметки
+                currentNote = note.copy(biteRecords = sortedBites)
+
+                // Сохраняем изменения в Firestore
+                saveBitesToFirestore(sortedBites)
+
+                // Показываем сообщение
+                Toast.makeText(this, "Поклевка обновлена", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -417,47 +557,56 @@ class FishingNoteDetailActivity : AppCompatActivity() {
      * Удаляет запись о поклевке
      */
     private fun deleteBiteRecord(bite: BiteRecord) {
-        // Удаляем поклевку из списка
-        biteRecords.removeAll { it.id == bite.id }
+        currentNote?.let { note ->
+            // Получаем текущий список поклевок
+            val currentBites = note.biteRecords.toMutableList()
 
-        // Обновляем адаптер
-        biteAdapter.updateBites(biteRecords)
+            // Удаляем поклевку
+            currentBites.removeAll { it.id == bite.id }
 
-        // Обновляем график
-        updateBiteChart()
+            // Обновляем список для текущего дня
+            val currentDayBites = currentBites.filter { it.dayIndex == currentDayIndex }
+            biteRecords.clear()
+            biteRecords.addAll(currentDayBites)
 
-        // Обновляем интерфейс, если список пуст
-        if (biteRecords.isEmpty()) {
-            binding.textViewNoBites.visibility = View.VISIBLE
-            binding.chartScrollView.visibility = View.GONE
-            binding.recyclerViewBites.visibility = View.GONE
+            // Обновляем адаптер
+            biteAdapter.updateBites(biteRecords)
+
+            // Обновляем график
+            updateBiteChart()
+
+            // Обновляем интерфейс, если список пуст
+            if (currentDayBites.isEmpty()) {
+                binding.textViewNoBites.visibility = View.VISIBLE
+                binding.chartScrollView.visibility = View.GONE
+                binding.recyclerViewBites.visibility = View.GONE
+            }
+
+            // Обновляем объект заметки
+            currentNote = note.copy(biteRecords = currentBites)
+
+            // Сохраняем изменения в Firestore
+            saveBitesToFirestore(currentBites)
+
+            // Показываем сообщение
+            Toast.makeText(this, "Поклевка удалена", Toast.LENGTH_SHORT).show()
         }
-
-        // Сохраняем изменения в Firestore
-        saveBitesToFirestore()
-
-        // Показываем сообщение
-        Toast.makeText(this, "Поклевка удалена", Toast.LENGTH_SHORT).show()
     }
 
     /**
      * Сохраняет список поклевок в Firestore
      */
-    private fun saveBitesToFirestore() {
+    private fun saveBitesToFirestore(bites: List<BiteRecord>) {
         noteId?.let { id ->
             // Подготавливаем данные для обновления
             val updateData = mapOf(
-                "biteRecords" to biteRecords
+                "biteRecords" to bites
             )
 
             // Обновляем документ
             firestore.collection("fishing_notes")
                 .document(id)
                 .update(updateData)
-                .addOnSuccessListener {
-                    // Обновляем локальный объект заметки
-                    currentNote = currentNote?.copy(biteRecords = biteRecords)
-                }
                 .addOnFailureListener { e ->
                     Toast.makeText(
                         this,

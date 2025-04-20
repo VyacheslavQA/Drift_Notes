@@ -1,3 +1,4 @@
+// Путь: app/src/main/java/com/example/driftnotes/fishing/AddFishingNoteActivity.kt
 package com.example.driftnotes.fishing
 
 import android.app.Activity
@@ -12,6 +13,7 @@ import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
@@ -40,6 +42,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 
 class AddFishingNoteActivity : AppCompatActivity() {
 
@@ -55,7 +58,9 @@ class AddFishingNoteActivity : AppCompatActivity() {
     private lateinit var dropdownFishingType: AutoCompleteTextView
     private lateinit var formContentTitle: TextView
     private lateinit var textViewSelectedCoordinates: TextView
-    private lateinit var editTextDate: TextInputEditText
+    private lateinit var editTextStartDate: TextInputEditText
+    private lateinit var editTextEndDate: TextInputEditText
+    private lateinit var checkBoxMultiDay: CheckBox
     private lateinit var buttonAddPhoto: Button
     private lateinit var buttonSave: Button
     private lateinit var buttonCancel: Button
@@ -70,7 +75,8 @@ class AddFishingNoteActivity : AppCompatActivity() {
     private lateinit var textViewPhotoCount: TextView
     private lateinit var mainProgressBar: ProgressBar
 
-    private val calendar = Calendar.getInstance()
+    private val startCalendar = Calendar.getInstance()
+    private val endCalendar = Calendar.getInstance()
     private val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
     private val selectedPhotos = mutableListOf<Uri>()
     private var currentPhotoUri: Uri? = null
@@ -83,6 +89,7 @@ class AddFishingNoteActivity : AppCompatActivity() {
     private var selectedLatitude: Double = 0.0
     private var selectedLongitude: Double = 0.0
     private var selectedFishingType: String = ""
+    private var isMultiDayFishing: Boolean = false
 
     // ID маркерной карты (если создана)
     private var markerMapId: String = ""
@@ -147,7 +154,9 @@ class AddFishingNoteActivity : AppCompatActivity() {
         dropdownFishingType = findViewById(R.id.dropdownFishingType)
         formContentTitle = findViewById(R.id.formContentTitle)
         textViewSelectedCoordinates = findViewById(R.id.textViewSelectedCoordinates)
-        editTextDate = findViewById(R.id.editTextDate)
+        editTextStartDate = findViewById(R.id.editTextStartDate)
+        editTextEndDate = findViewById(R.id.editTextEndDate)
+        checkBoxMultiDay = findViewById(R.id.checkBoxMultiDay)
         buttonAddPhoto = findViewById(R.id.buttonAddPhoto)
         buttonSave = findViewById(R.id.buttonSave)
         buttonCancel = findViewById(R.id.buttonCancel)
@@ -161,12 +170,35 @@ class AddFishingNoteActivity : AppCompatActivity() {
         editTextNotes = findViewById(R.id.editTextNotes)
         textViewPhotoCount = findViewById(R.id.textViewPhotoCount)
         mainProgressBar = findViewById(R.id.progressBar)
+
+        // Начально скрываем поле конечной даты
+        findViewById<View>(R.id.layoutEndDate).visibility = View.GONE
     }
 
     private fun setupEventListeners() {
-        // Обработчик выбора даты
-        editTextDate.setOnClickListener {
-            showDatePicker()
+        // Обработчик выбора дат
+        editTextStartDate.setOnClickListener {
+            showStartDatePicker()
+        }
+
+        editTextEndDate.setOnClickListener {
+            showEndDatePicker()
+        }
+
+        // Обработчик чекбокса многодневной рыбалки
+        checkBoxMultiDay.setOnCheckedChangeListener { _, isChecked ->
+            isMultiDayFishing = isChecked
+            if (isChecked) {
+                findViewById<View>(R.id.layoutEndDate).visibility = View.VISIBLE
+                // Устанавливаем конечную дату на день позже начальной, если еще не установлена
+                if (editTextEndDate.text.isNullOrEmpty()) {
+                    endCalendar.time = startCalendar.time
+                    endCalendar.add(Calendar.DAY_OF_MONTH, 1)
+                    editTextEndDate.setText(dateFormat.format(endCalendar.time))
+                }
+            } else {
+                findViewById<View>(R.id.layoutEndDate).visibility = View.GONE
+            }
         }
 
         // Обработчик добавления фото
@@ -320,21 +352,54 @@ class AddFishingNoteActivity : AppCompatActivity() {
     }
 
     private fun updateDateDisplay() {
-        editTextDate.setText(dateFormat.format(calendar.time))
+        editTextStartDate.setText(dateFormat.format(startCalendar.time))
+        if (isMultiDayFishing) {
+            editTextEndDate.setText(dateFormat.format(endCalendar.time))
+        }
     }
 
-    private fun showDatePicker() {
+    private fun showStartDatePicker() {
         DatePickerDialog(
             this,
             { _, year, month, day ->
-                calendar.set(Calendar.YEAR, year)
-                calendar.set(Calendar.MONTH, month)
-                calendar.set(Calendar.DAY_OF_MONTH, day)
+                startCalendar.set(Calendar.YEAR, year)
+                startCalendar.set(Calendar.MONTH, month)
+                startCalendar.set(Calendar.DAY_OF_MONTH, day)
+
+                // Если конечная дата раньше начальной, обновляем и ее
+                if (isMultiDayFishing && endCalendar.before(startCalendar)) {
+                    endCalendar.time = startCalendar.time
+                    endCalendar.add(Calendar.DAY_OF_MONTH, 1)
+                }
+
                 updateDateDisplay()
             },
-            calendar.get(Calendar.YEAR),
-            calendar.get(Calendar.MONTH),
-            calendar.get(Calendar.DAY_OF_MONTH)
+            startCalendar.get(Calendar.YEAR),
+            startCalendar.get(Calendar.MONTH),
+            startCalendar.get(Calendar.DAY_OF_MONTH)
+        ).show()
+    }
+
+    private fun showEndDatePicker() {
+        DatePickerDialog(
+            this,
+            { _, year, month, day ->
+                val tempCalendar = Calendar.getInstance()
+                tempCalendar.set(Calendar.YEAR, year)
+                tempCalendar.set(Calendar.MONTH, month)
+                tempCalendar.set(Calendar.DAY_OF_MONTH, day)
+
+                // Проверяем, что конечная дата не раньше начальной
+                if (tempCalendar.before(startCalendar)) {
+                    Toast.makeText(this, "Конечная дата не может быть раньше начальной", Toast.LENGTH_SHORT).show()
+                } else {
+                    endCalendar.time = tempCalendar.time
+                    editTextEndDate.setText(dateFormat.format(endCalendar.time))
+                }
+            },
+            endCalendar.get(Calendar.YEAR),
+            endCalendar.get(Calendar.MONTH),
+            endCalendar.get(Calendar.DAY_OF_MONTH)
         ).show()
     }
 
@@ -435,25 +500,27 @@ class AddFishingNoteActivity : AppCompatActivity() {
         }
 
         val location = editTextLocation.text.toString().trim()
-        val tackle = editTextTackle.text.toString().trim()
-        val notes = editTextNotes.text.toString().trim()
 
-        if (location.isEmpty() || tackle.isEmpty()) {
-            Toast.makeText(this, "Пожалуйста, заполните обязательные поля", Toast.LENGTH_SHORT)
-                .show()
+        // Проверяем только обязательные поля
+        if (location.isEmpty()) {
+            Toast.makeText(this, "Необходимо указать место рыбалки", Toast.LENGTH_SHORT).show()
             return
         }
+
+        // Получаем даты
+        val startDate = startCalendar.time
+        val endDate = if (isMultiDayFishing) endCalendar.time else null
 
         buttonSave.isEnabled = false
 
         if (selectedPhotos.isEmpty()) {
-            saveNoteToFirestore(emptyList())
+            saveNoteToFirestore(emptyList(), startDate, endDate)
         } else {
-            uploadPhotosAndSaveNote()
+            uploadPhotosAndSaveNote(startDate, endDate)
         }
     }
 
-    private fun uploadPhotosAndSaveNote() {
+    private fun uploadPhotosAndSaveNote(startDate: Date, endDate: Date?) {
         val photoUrls = mutableListOf<String>()
         var uploadedCount = 0
         var errorCount = 0
@@ -495,7 +562,7 @@ class AddFishingNoteActivity : AppCompatActivity() {
                             // Если все фотографии обработаны, сохраняем запись
                             if (uploadedCount + errorCount == selectedPhotos.size) {
                                 Log.d("AddFishingNote", "Все фото обработаны. Сохраняем запись.")
-                                saveNoteToFirestore(photoUrls)
+                                saveNoteToFirestore(photoUrls, startDate, endDate)
                             }
                         }.addOnFailureListener { e ->
                             Log.e(
@@ -506,7 +573,7 @@ class AddFishingNoteActivity : AppCompatActivity() {
                             errorCount++
 
                             if (uploadedCount + errorCount == selectedPhotos.size) {
-                                saveNoteToFirestore(photoUrls)
+                                saveNoteToFirestore(photoUrls, startDate, endDate)
                             }
                         }
                     }.addOnFailureListener { e ->
@@ -514,7 +581,7 @@ class AddFishingNoteActivity : AppCompatActivity() {
                         errorCount++
 
                         if (uploadedCount + errorCount == selectedPhotos.size) {
-                            saveNoteToFirestore(photoUrls)
+                            saveNoteToFirestore(photoUrls, startDate, endDate)
                         }
                     }
 
@@ -525,7 +592,7 @@ class AddFishingNoteActivity : AppCompatActivity() {
                     errorCount++
 
                     if (uploadedCount + errorCount == selectedPhotos.size) {
-                        saveNoteToFirestore(photoUrls)
+                        saveNoteToFirestore(photoUrls, startDate, endDate)
                     }
                 }
             } catch (e: Exception) {
@@ -533,13 +600,13 @@ class AddFishingNoteActivity : AppCompatActivity() {
                 errorCount++
 
                 if (uploadedCount + errorCount == selectedPhotos.size) {
-                    saveNoteToFirestore(photoUrls)
+                    saveNoteToFirestore(photoUrls, startDate, endDate)
                 }
             }
         }
     }
 
-    private fun saveNoteToFirestore(photoUrls: List<String>) {
+    private fun saveNoteToFirestore(photoUrls: List<String>, startDate: Date, endDate: Date?) {
         val userId = auth.currentUser?.uid
 
         if (userId == null) {
@@ -550,15 +617,21 @@ class AddFishingNoteActivity : AppCompatActivity() {
             return
         }
 
+        // Получаем текст из полей (теперь необязательных)
+        val tackle = editTextTackle.text.toString().trim()
+        val notes = editTextNotes.text.toString().trim()
+
         // Создаем объект записи о рыбалке с координатами, погодой, типом рыбалки и ID маркерной карты
         val fishingNote = FishingNote(
             userId = userId,
             location = editTextLocation.text.toString().trim(),
             latitude = selectedLatitude,
             longitude = selectedLongitude,
-            date = calendar.time,
-            tackle = editTextTackle.text.toString().trim(),
-            notes = editTextNotes.text.toString().trim(),
+            date = startDate,
+            endDate = endDate,
+            isMultiDay = isMultiDayFishing,
+            tackle = tackle,
+            notes = notes,
             photoUrls = photoUrls,
             fishingType = selectedFishingType,
             weather = weatherData,

@@ -1,3 +1,4 @@
+// Путь: app/src/main/java/com/example/driftnotes/fishing/BiteDialog.kt
 package com.example.driftnotes.fishing
 
 import android.app.Dialog
@@ -19,7 +20,7 @@ import java.util.UUID
  */
 class BiteDialog(
     context: Context,
-    private val date: Date, // Дата рыбалки
+    private val date: Date, // Дата рыбалки (конкретный день)
     private val existingBite: BiteRecord? = null, // Существующая поклевка для редактирования
     private val onBiteAdded: (BiteRecord) -> Unit
 ) : Dialog(context) {
@@ -121,7 +122,7 @@ class BiteDialog(
             0f
         }
 
-        // Устанавливаем дату рыбалки, но сохраняем выбранное время
+        // Устанавливаем выбранную дату, но сохраняем выбранное время
         val fishingDate = Calendar.getInstance().apply {
             time = date
             set(Calendar.HOUR_OF_DAY, calendar.get(Calendar.HOUR_OF_DAY))
@@ -129,14 +130,18 @@ class BiteDialog(
             set(Calendar.SECOND, 0)
         }.time
 
+        // Сохраняем индекс дня из существующей поклевки или используем 0 по умолчанию
+        val dayIndex = existingBite?.dayIndex ?: 0
+
         // Создаем или обновляем объект поклевки
         val biteRecord = if (existingBite != null) {
-            // Обновляем существующую, сохраняя ID
+            // Обновляем существующую, сохраняя ID и dayIndex
             existingBite.copy(
                 time = fishingDate,
                 fishType = fishType,
                 weight = weight,
-                notes = notes
+                notes = notes,
+                dayIndex = dayIndex
             )
         } else {
             // Создаем новую
@@ -145,7 +150,8 @@ class BiteDialog(
                 time = fishingDate,
                 fishType = fishType,
                 weight = weight,
-                notes = notes
+                notes = notes,
+                dayIndex = dayIndex
             )
         }
 
