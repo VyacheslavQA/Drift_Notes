@@ -1,3 +1,4 @@
+// Файл app/src/main/java/com/example/driftnotes/timer/TimerService.kt
 package com.example.driftnotes.timer
 
 import android.app.Notification
@@ -11,8 +12,12 @@ import android.graphics.Color
 import android.media.MediaPlayer
 import android.os.Binder
 import android.os.Build
-import android.os.CountDownTimer
+import android.os.Handler
+import android.os.HandlerThread
 import android.os.IBinder
+import android.os.Looper
+import android.os.Message
+import android.os.Process
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LiveData
@@ -30,11 +35,28 @@ class TimerService : Service() {
 
         private const val NOTIFICATION_ID = 1
         private const val CHANNEL_ID = "TimerServiceChannel"
+
+        // Коды сообщений для обработчика
+        private const val MSG_START_TIMER = 1
+        private const val MSG_STOP_TIMER = 2
+        private const val MSG_RESET_TIMER = 3
+        private const val MSG_UPDATE_TIMER = 4
+        private const val MSG_PLAY_SOUND = 5
+
+        // Интервал обновления в миллисекундах
+        private const val UPDATE_INTERVAL = 1000L
     }
 
     private val binder = LocalBinder()
     private lateinit var timers: Array<TimerInfo>
     private var mediaPlayer: MediaPlayer? = null
+
+    // Создаем отдельный поток для работы таймеров
+    private lateinit var serviceHandler: Handler
+    private lateinit var handlerThread: HandlerThread
+
+    // Обработчик для UI потока
+    private val mainHandler = Handler(Looper.getMainLooper())
 
     // Класс для хранения информации о таймере
     inner class TimerInfo(val timerId: Int) {
@@ -44,8 +66,9 @@ class TimerService : Service() {
 
         var duration: Long = 0
         var timeRemaining: Long = 0
+        var startTime: Long = 0
         var running: Boolean = false
-        var countDownTimer: CountDownTimer? = null
+        var nextUpdateTime: Long = 0
 
         val timeRemainingLiveData = MutableLiveData<Long>()
 
@@ -61,6 +84,36 @@ class TimerService : Service() {
         super.onCreate()
         // Инициализируем массив таймеров
         timers = Array(4) { TimerInfo(it) }
+
+        // Создаем отдельный поток с повышенным приоритетом
+        handlerThread = HandlerThread("TimerServiceThread", Process.THREAD_PRIORITY_BACKGROUND)
+        handlerThread.start()
+
+        // Создаем обработчик для этого потока
+        serviceHandler = object : Handler(handlerThread.looper) {
+            override fun handleMessage(msg: Message) {
+                when (msg.what) {
+                    MSG_START_TIMER -> {
+                        val timerId = msg.arg1
+                        val duration = msg.obj as Long
+                        handleStartTimer(timerId, duration)
+                    }
+                    MSG_STOP_TIMER -> {
+                        handleStopTimer(msg.arg1)
+                    }
+                    MSG_RESET_TIMER -> {
+                        handleResetTimer(msg.arg1)
+                    }
+                    MSG_UPDATE_TIMER -> {
+                        handleUpdateTimer(msg.arg1)
+                    }
+                    MSG_PLAY_SOUND -> {
+                        handlePlaySound(msg.arg1)
+                    }
+                }
+            }
+        }
+
         createNotificationChannel()
         startForeground(NOTIFICATION_ID, createNotification())
         Log.d("TimerService", "Service created")
@@ -194,63 +247,51 @@ class TimerService : Service() {
         return builder.build()
     }
 
-    // Обновление уведомления
+    // Обновление уведомления (выполняется в UI потоке)
     private fun updateNotification(timerId: Int) {
-        try {
-            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.notify(NOTIFICATION_ID, createNotification(timerId))
-        } catch (e: Exception) {
-            Log.e("TimerService", "Ошибка при обновлении уведомления", e)
+        mainHandler.post {
+            try {
+                val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                notificationManager.notify(NOTIFICATION_ID, createNotification(timerId))
+            } catch (e: Exception) {
+                Log.e("TimerService", "Ошибка при обновлении уведомления", e)
+            }
         }
     }
 
     // Запуск таймера
     fun startTimer(timerId: Int, duration: Long) {
+        if (timerId < 0 || timerId >= timers.size) return
+
+        // Отправляем сообщение обработчику в фоновом потоке
+        val msg = serviceHandler.obtainMessage(MSG_START_TIMER, timerId, 0, duration)
+        serviceHandler.sendMessage(msg)
+    }
+
+    // Внутренняя обработка запуска таймера (выполняется в фоновом потоке)
+    private fun handleStartTimer(timerId: Int, duration: Long) {
         Log.d("TimerService", "startTimer: timerId=$timerId, duration=$duration")
 
-        if (timerId < 0 || timerId >= timers.size) {
-            Log.e("TimerService", "Неверный timerId: $timerId")
-            return
-        }
-
         // Останавливаем существующий таймер, если он запущен
-        stopTimer(timerId)
+        handleStopTimer(timerId)
 
         // Настраиваем новый таймер
         timers[timerId].duration = duration
         timers[timerId].timeRemaining = duration
+        timers[timerId].startTime = System.currentTimeMillis()
         timers[timerId].running = true
 
-        // Создаем и запускаем CountDownTimer для этого таймера
-        timers[timerId].countDownTimer = object : CountDownTimer(duration, 1000) {
-            override fun onTick(millisUntilFinished: Long) {
-                // Обновляем оставшееся время
-                timers[timerId].timeRemaining = millisUntilFinished
-                timers[timerId].timeRemainingLiveData.postValue(millisUntilFinished)
+        // Устанавливаем время следующего обновления
+        timers[timerId].nextUpdateTime = System.currentTimeMillis() + UPDATE_INTERVAL
 
-                // Обновляем уведомление каждые 5 секунд
-                if (millisUntilFinished % 5000 <= 1000) {
-                    updateNotification(timerId)
-                }
+        // Отправляем сообщение для обновления таймера через 1 секунду
+        val updateMsg = serviceHandler.obtainMessage(MSG_UPDATE_TIMER, timerId, 0)
+        serviceHandler.sendMessageDelayed(updateMsg, UPDATE_INTERVAL)
 
-                Log.d("TimerService", "Timer $timerId: $millisUntilFinished ms left")
-            }
-
-            override fun onFinish() {
-                // Таймер завершился
-                timers[timerId].timeRemaining = 0
-                timers[timerId].running = false
-                timers[timerId].timeRemainingLiveData.postValue(0L)
-
-                // Воспроизводим звук завершения
-                playSound(timers[timerId].soundResId)
-
-                // Обновляем уведомление
-                updateNotification(-1)
-
-                Log.d("TimerService", "Timer $timerId finished")
-            }
-        }.start()
+        // Отправляем начальное значение в LiveData
+        mainHandler.post {
+            timers[timerId].timeRemainingLiveData.value = duration
+        }
 
         // Обновляем уведомление
         updateNotification(timerId)
@@ -258,16 +299,27 @@ class TimerService : Service() {
 
     // Остановка таймера
     fun stopTimer(timerId: Int) {
+        if (timerId < 0 || timerId >= timers.size) return
+
+        // Отправляем сообщение обработчику в фоновом потоке
+        val msg = serviceHandler.obtainMessage(MSG_STOP_TIMER, timerId, 0)
+        serviceHandler.sendMessage(msg)
+    }
+
+    // Внутренняя обработка остановки таймера (выполняется в фоновом потоке)
+    private fun handleStopTimer(timerId: Int) {
         Log.d("TimerService", "stopTimer: timerId=$timerId")
 
-        if (timerId < 0 || timerId >= timers.size) {
-            Log.e("TimerService", "Неверный timerId: $timerId")
-            return
-        }
+        // Отменяем ожидающие сообщения для этого таймера
+        serviceHandler.removeMessages(MSG_UPDATE_TIMER, timerId)
 
+        // Останавливаем таймер
         timers[timerId].running = false
-        timers[timerId].countDownTimer?.cancel()
-        timers[timerId].timeRemainingLiveData.postValue(timers[timerId].timeRemaining)
+
+        // Отправляем текущее значение в LiveData
+        mainHandler.post {
+            timers[timerId].timeRemainingLiveData.value = timers[timerId].timeRemaining
+        }
 
         // Обновляем уведомление
         updateNotification(-1)
@@ -275,42 +327,116 @@ class TimerService : Service() {
 
     // Сброс таймера
     fun resetTimer(timerId: Int) {
+        if (timerId < 0 || timerId >= timers.size) return
+
+        // Отправляем сообщение обработчику в фоновом потоке
+        val msg = serviceHandler.obtainMessage(MSG_RESET_TIMER, timerId, 0)
+        serviceHandler.sendMessage(msg)
+    }
+
+    // Внутренняя обработка сброса таймера (выполняется в фоновом потоке)
+    private fun handleResetTimer(timerId: Int) {
         Log.d("TimerService", "resetTimer: timerId=$timerId")
 
-        if (timerId < 0 || timerId >= timers.size) {
-            Log.e("TimerService", "Неверный timerId: $timerId")
-            return
-        }
+        // Отменяем ожидающие сообщения для этого таймера
+        serviceHandler.removeMessages(MSG_UPDATE_TIMER, timerId)
 
+        // Сбрасываем таймер
         timers[timerId].running = false
-        timers[timerId].countDownTimer?.cancel()
         timers[timerId].timeRemaining = 0
-        timers[timerId].timeRemainingLiveData.postValue(0L)
+
+        // Отправляем нулевое значение в LiveData
+        mainHandler.post {
+            timers[timerId].timeRemainingLiveData.value = 0L
+        }
 
         // Обновляем уведомление
         updateNotification(-1)
     }
 
-    // Воспроизведение звука
-    fun playSound(soundResId: Int) {
-        try {
-            // Очищаем предыдущий MediaPlayer, если он существует
-            mediaPlayer?.release()
-            mediaPlayer = null
+    // Обработка обновления таймера (выполняется в фоновом потоке)
+    private fun handleUpdateTimer(timerId: Int) {
+        if (timerId < 0 || timerId >= timers.size || !timers[timerId].running) return
 
-            // Создаем новый MediaPlayer и воспроизводим звук
-            mediaPlayer = MediaPlayer.create(this, soundResId)
-            mediaPlayer?.setOnCompletionListener { mp ->
+        // Вычисляем прошедшее время
+        val currentTime = System.currentTimeMillis()
+        val elapsedTime = currentTime - timers[timerId].startTime
+        val remainingTime = timers[timerId].duration - elapsedTime
+
+        if (remainingTime <= 0) {
+            // Таймер завершился
+            timers[timerId].timeRemaining = 0
+            timers[timerId].running = false
+
+            // Отправляем нулевое значение в LiveData
+            mainHandler.post {
+                timers[timerId].timeRemainingLiveData.value = 0L
+            }
+
+            // Воспроизводим звук завершения
+            val soundMsg = serviceHandler.obtainMessage(MSG_PLAY_SOUND, timers[timerId].soundResId, 0)
+            serviceHandler.sendMessage(soundMsg)
+
+            // Обновляем уведомление
+            updateNotification(-1)
+
+            Log.d("TimerService", "Timer $timerId finished")
+        } else {
+            // Таймер еще работает
+            timers[timerId].timeRemaining = remainingTime
+
+            // Отправляем текущее значение в LiveData
+            mainHandler.post {
+                timers[timerId].timeRemainingLiveData.value = remainingTime
+            }
+
+            // Обновляем уведомление каждые 5 секунд
+            if (currentTime >= timers[timerId].nextUpdateTime) {
+                updateNotification(timerId)
+                timers[timerId].nextUpdateTime = currentTime + 5000 // Следующее обновление через 5 секунд
+            }
+
+            // Планируем следующее обновление через 1 секунду
+            val updateMsg = serviceHandler.obtainMessage(MSG_UPDATE_TIMER, timerId, 0)
+            serviceHandler.sendMessageDelayed(updateMsg, UPDATE_INTERVAL)
+
+            Log.d("TimerService", "Timer $timerId: $remainingTime ms left")
+        }
+    }
+
+    // Воспроизведение звука (выполняется в фоновом потоке)
+    private fun handlePlaySound(soundResId: Int) {
+        try {
+            // Используем UI поток для работы с MediaPlayer
+            mainHandler.post {
                 try {
-                    mp.release()
+                    // Очищаем предыдущий MediaPlayer, если он существует
+                    mediaPlayer?.release()
+                    mediaPlayer = null
+
+                    // Создаем новый MediaPlayer и воспроизводим звук
+                    mediaPlayer = MediaPlayer.create(this@TimerService, soundResId)
+                    mediaPlayer?.setOnCompletionListener { mp ->
+                        try {
+                            mp.release()
+                        } catch (e: Exception) {
+                            Log.e("TimerService", "Ошибка при освобождении MediaPlayer", e)
+                        }
+                    }
+                    mediaPlayer?.start()
                 } catch (e: Exception) {
-                    Log.e("TimerService", "Ошибка при освобождении MediaPlayer", e)
+                    Log.e("TimerService", "Ошибка при воспроизведении звука", e)
                 }
             }
-            mediaPlayer?.start()
         } catch (e: Exception) {
-            Log.e("TimerService", "Ошибка при воспроизведении звука", e)
+            Log.e("TimerService", "Ошибка при обработке звука", e)
         }
+    }
+
+    // Воспроизведение звука (публичный метод)
+    fun playSound(soundResId: Int) {
+        val msg = serviceHandler.obtainMessage(MSG_PLAY_SOUND, soundResId, 0)
+        serviceHandler.sendMessage(msg)
     }
 
     // Форматирование времени
@@ -429,6 +555,13 @@ class TimerService : Service() {
             mediaPlayer = null
         } catch (e: Exception) {
             Log.e("TimerService", "Ошибка при освобождении MediaPlayer", e)
+        }
+
+        // Останавливаем фоновый поток
+        try {
+            handlerThread.quitSafely()
+        } catch (e: Exception) {
+            Log.e("TimerService", "Ошибка при остановке потока", e)
         }
 
         super.onDestroy()
