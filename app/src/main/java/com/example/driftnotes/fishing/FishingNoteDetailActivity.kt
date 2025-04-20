@@ -10,12 +10,14 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.ImageButton
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.viewpager2.widget.ViewPager2
 import com.example.driftnotes.R
 import com.example.driftnotes.databinding.ActivityFishingNoteDetailBinding
 import com.example.driftnotes.fishing.markermap.MarkerMapActivity
@@ -81,8 +83,20 @@ class FishingNoteDetailActivity : AppCompatActivity() {
         photoAdapter = PhotoPagerAdapter(emptyList())
         binding.viewPagerPhotos.adapter = photoAdapter
 
+        // Устанавливаем слушателя для изменения страницы, чтобы убедиться что фото загружаются
+        binding.viewPagerPhotos.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+                // Принудительно обновляем текущее фото при его отображении
+                photoAdapter.notifyItemChanged(position)
+            }
+        })
+
         // Настраиваем индикатор страниц
         binding.dotsIndicator.attachTo(binding.viewPagerPhotos)
+
+        // Заменяем текстовые кнопки на иконки карандаша
+        setupEditButtons()
 
         // Устанавливаем обработчик для кнопки просмотра на карте
         binding.buttonViewOnMap.setOnClickListener {
@@ -125,18 +139,29 @@ class FishingNoteDetailActivity : AppCompatActivity() {
             }
         }
 
-        // Обработчик редактирования снастей
-        binding.buttonEditTackle.setOnClickListener {
+        // Загружаем данные записи
+        loadNoteData()
+    }
+
+    /**
+     * Настраивает кнопки редактирования снастей и заметок
+     */
+    private fun setupEditButtons() {
+        // Скрываем текстовые кнопки
+        binding.buttonEditTackle.visibility = View.GONE
+        binding.buttonEditNotes.visibility = View.GONE
+
+        // Показываем иконки карандаша и настраиваем их слушателей
+        binding.btnEditTackle.visibility = View.VISIBLE
+        binding.btnEditNotes.visibility = View.VISIBLE
+
+        binding.btnEditTackle.setOnClickListener {
             showEditTackleDialog()
         }
 
-        // Обработчик редактирования заметок
-        binding.buttonEditNotes.setOnClickListener {
+        binding.btnEditNotes.setOnClickListener {
             showEditNotesDialog()
         }
-
-        // Загружаем данные записи
-        loadNoteData()
     }
 
     /**
@@ -333,14 +358,28 @@ class FishingNoteDetailActivity : AppCompatActivity() {
                 binding.spinnerDayContainer.visibility = View.GONE
             }
 
-// Отображаем снасти и заметки (если они есть)
+            // Отображаем снасти и заметки (если они есть)
             if (note.notes.isNotEmpty()) {
                 binding.textViewNotesLabel.visibility = View.VISIBLE
                 binding.textViewNotes.visibility = View.VISIBLE
                 binding.textViewNotes.text = note.notes
+                binding.btnEditNotes.visibility = View.VISIBLE
             } else {
                 binding.textViewNotesLabel.visibility = View.GONE
                 binding.textViewNotes.visibility = View.GONE
+                binding.btnEditNotes.visibility = View.GONE
+            }
+
+            // Отображаем снасти (если они есть)
+            if (note.tackle.isNotEmpty()) {
+                binding.textViewTackleLabel.visibility = View.VISIBLE
+                binding.textViewTackle.visibility = View.VISIBLE
+                binding.textViewTackle.text = note.tackle
+                binding.btnEditTackle.visibility = View.VISIBLE
+            } else {
+                binding.textViewTackleLabel.visibility = View.GONE
+                binding.textViewTackle.visibility = View.GONE
+                binding.btnEditTackle.visibility = View.GONE
             }
 
             // Включаем/отключаем кнопку просмотра на карте в зависимости от наличия координат
@@ -631,9 +670,9 @@ class FishingNoteDetailActivity : AppCompatActivity() {
         border.cornerRadius = 8f
         binding.biteChart.setBackground(border)
 
-        // Уменьшаем ширину графика в два раза
+        // Исправляем ширину графика - устанавливаем адекватный размер для видимости
         val layoutParams = binding.biteChart.layoutParams
-        layoutParams.width = 1200 // Уменьшено в 2 раза с 2400px до 1200px
+        layoutParams.width = resources.displayMetrics.widthPixels * 2 // Два экрана по ширине
         binding.biteChart.layoutParams = layoutParams
 
         // Подготавливаем данные для графика
@@ -750,7 +789,7 @@ class FishingNoteDetailActivity : AppCompatActivity() {
             // Затем прокручиваем к текущему времени с небольшой задержкой
             binding.chartScrollView.postDelayed({
                 val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-                val scrollPosition = (currentHour * 50).toInt() // 50 пикселей на час, с учетом уменьшенной ширины
+                val scrollPosition = (currentHour * 50).toInt() // 50 пикселей на час
                 binding.chartScrollView.smoothScrollTo(scrollPosition, 0)
             }, 300)
         }

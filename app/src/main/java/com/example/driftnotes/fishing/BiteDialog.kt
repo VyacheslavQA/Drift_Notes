@@ -35,7 +35,7 @@ class BiteDialog(
         // Убираем заголовок диалога
         requestWindowFeature(Window.FEATURE_NO_TITLE)
 
-        // Инициализация привязки
+// Инициализация привязки
         binding = DialogAddBiteBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -64,8 +64,18 @@ class BiteDialog(
             // Меняем текст кнопки
             binding.buttonSaveBite.text = "Сохранить изменения"
         } else {
-            // В режиме добавления используем текущее время
+            // В режиме добавления устанавливаем дату из переданного параметра
+            // но время берем текущее
             calendar.time = Date()
+
+            // Получаем день, месяц, год из переданной даты
+            val dateCalendar = Calendar.getInstance()
+            dateCalendar.time = date
+
+            // Устанавливаем день, месяц, год из даты выбранного дня рыбалки
+            calendar.set(Calendar.YEAR, dateCalendar.get(Calendar.YEAR))
+            calendar.set(Calendar.MONTH, dateCalendar.get(Calendar.MONTH))
+            calendar.set(Calendar.DAY_OF_MONTH, dateCalendar.get(Calendar.DAY_OF_MONTH))
         }
 
         // Обновляем отображение времени
@@ -122,14 +132,6 @@ class BiteDialog(
             0f
         }
 
-        // Устанавливаем выбранную дату, но сохраняем выбранное время
-        val fishingDate = Calendar.getInstance().apply {
-            time = date
-            set(Calendar.HOUR_OF_DAY, calendar.get(Calendar.HOUR_OF_DAY))
-            set(Calendar.MINUTE, calendar.get(Calendar.MINUTE))
-            set(Calendar.SECOND, 0)
-        }.time
-
         // Сохраняем индекс дня из существующей поклевки или используем 0 по умолчанию
         val dayIndex = existingBite?.dayIndex ?: 0
 
@@ -137,7 +139,7 @@ class BiteDialog(
         val biteRecord = if (existingBite != null) {
             // Обновляем существующую, сохраняя ID и dayIndex
             existingBite.copy(
-                time = fishingDate,
+                time = calendar.time,
                 fishType = fishType,
                 weight = weight,
                 notes = notes,
@@ -147,7 +149,7 @@ class BiteDialog(
             // Создаем новую
             BiteRecord(
                 id = UUID.randomUUID().toString(),
-                time = fishingDate,
+                time = calendar.time,
                 fishType = fishType,
                 weight = weight,
                 notes = notes,

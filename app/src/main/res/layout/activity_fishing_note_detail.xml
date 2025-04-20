@@ -1,239 +1,337 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fillViewport="true"
     tools:context=".fishing.FishingNoteDetailActivity">
 
-    <ScrollView
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:padding="16dp">
 
+        <!-- ViewPager для фотографий -->
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/viewPagerPhotos"
+            android:layout_width="0dp"
+            android:layout_height="200dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Индикатор страниц для фотографий -->
+        <com.tbuonomo.viewpagerdotsindicator.DotsIndicator
+            android:id="@+id/dotsIndicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:dotsColor="@android:color/darker_gray"
+            app:dotsCornerRadius="8dp"
+            app:dotsSize="8dp"
+            app:dotsSpacing="4dp"
+            app:dotsWidthFactor="2.5"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/viewPagerPhotos"
+            app:selectedDotColor="@color/primary" />
+
+        <!-- Тип рыбалки -->
+        <TextView
+            android:id="@+id/textViewFishingTypeLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Тип рыбалки:"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/dotsIndicator" />
+
+        <TextView
+            android:id="@+id/textViewFishingType"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/textViewFishingTypeLabel"
+            app:layout_constraintTop_toTopOf="@+id/textViewFishingTypeLabel"
+            tools:text="Карповая" />
+
+        <!-- Местоположение -->
+        <TextView
+            android:id="@+id/textViewLocationLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Место:"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textViewFishingType" />
+
+        <TextView
+            android:id="@+id/textViewLocation"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/textViewLocationLabel"
+            app:layout_constraintTop_toTopOf="@+id/textViewLocationLabel"
+            tools:text="Река Иртыш, Павлодарская область" />
+
+        <!-- Дата -->
+        <TextView
+            android:id="@+id/textViewDateLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Дата:"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textViewLocation" />
+
+        <TextView
+            android:id="@+id/textViewDate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/textViewDateLabel"
+            app:layout_constraintTop_toTopOf="@+id/textViewDateLabel"
+            tools:text="15.06.2023" />
+
+        <!-- Снасти (с кнопкой редактирования) -->
+        <TextView
+            android:id="@+id/textViewTackleLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Снасти:"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textViewDate" />
+
+        <ImageButton
+            android:id="@+id/btnEditTackle"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="8dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="Редактировать снасти"
+            android:src="@android:drawable/ic_menu_edit"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="@+id/textViewTackleLabel"
+            app:layout_constraintStart_toEndOf="@+id/textViewTackleLabel"
+            app:layout_constraintTop_toTopOf="@+id/textViewTackleLabel"
+            app:tint="@color/primary" />
+
+        <TextView
+            android:id="@+id/textViewTackle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/btnEditTackle"
+            app:layout_constraintTop_toTopOf="@+id/textViewTackleLabel"
+            tools:text="Спиннинг Favorite Arena 702M, катушка Daiwa Legalis LT 3000" />
+
+        <!-- Старая кнопка редактирования снастей (будет скрыта) -->
+        <Button
+            android:id="@+id/buttonEditTackle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Редактировать"
+            android:textSize="12sp"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textViewTackle" />
+
+        <!-- Заметки (с кнопкой редактирования) -->
+        <TextView
+            android:id="@+id/textViewNotesLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Заметки:"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/buttonEditTackle" />
+
+        <ImageButton
+            android:id="@+id/btnEditNotes"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="8dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="Редактировать заметки"
+            android:src="@android:drawable/ic_menu_edit"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="@+id/textViewNotesLabel"
+            app:layout_constraintStart_toEndOf="@+id/textViewNotesLabel"
+            app:layout_constraintTop_toTopOf="@+id/textViewNotesLabel"
+            app:tint="@color/primary" />
+
+        <TextView
+            android:id="@+id/textViewNotes"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/btnEditNotes"
+            app:layout_constraintTop_toTopOf="@+id/textViewNotesLabel"
+            tools:text="Хорошая погода, клевало ближе к вечеру" />
+
+        <!-- Старая кнопка редактирования заметок (будет скрыта) -->
+        <Button
+            android:id="@+id/buttonEditNotes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Редактировать"
+            android:textSize="12sp"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textViewNotes" />
+
+        <!-- Погода -->
+        <TextView
+            android:id="@+id/textViewWeatherLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Погода:"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/buttonEditNotes" />
+
+        <TextView
+            android:id="@+id/textViewWeather"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/textViewWeatherLabel"
+            app:layout_constraintTop_toTopOf="@+id/textViewWeatherLabel"
+            tools:text="Переменная облачность, +23°C" />
+
+        <!-- Кнопка просмотра на карте -->
+        <Button
+            android:id="@+id/buttonViewOnMap"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Посмотреть на карте"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textViewWeather" />
+
+        <!-- Кнопка просмотра маркерной карты -->
+        <Button
+            android:id="@+id/buttonViewMarkerMap"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Карта дна водоема"
+            android:visibility="visible"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/buttonViewOnMap" />
+
+        <!-- Контейнер для выбора дня (для многодневной рыбалки) -->
         <LinearLayout
+            android:id="@+id/spinnerDayContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/buttonViewMarkerMap">
 
-            <!-- ViewPager для фотографий -->
-            <androidx.viewpager2.widget.ViewPager2
-                android:id="@+id/viewPagerPhotos"
-                android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:background="@android:color/darker_gray" />
-
-            <!-- Индикатор страниц (точки) -->
-            <com.tbuonomo.viewpagerdotsindicator.DotsIndicator
-                android:id="@+id/dotsIndicator"
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="8dp"
-                app:dotsColor="@android:color/darker_gray"
-                app:dotsCornerRadius="8dp"
-                app:dotsSize="8dp"
-                app:dotsSpacing="4dp"
-                app:dotsWidthFactor="2.5"
-                app:selectedDotColor="@color/primary" />
-
-            <!-- Информация о рыбалке -->
-            <TextView
-                android:id="@+id/textViewLocation"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                tools:text="Река Иртыш, Павлодарская область" />
-
-            <TextView
-                android:id="@+id/textViewDate"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textSize="16sp"
-                tools:text="15.06.2023 - 18.06.2023" />
-
-            <!-- Контейнер для спиннера выбора дня -->
-            <LinearLayout
-                android:id="@+id/spinnerDayContainer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:visibility="gone"
-                tools:visibility="visible">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Выбрать день:"
-                    android:textStyle="bold"
-                    android:layout_marginEnd="8dp" />
-
-                <Spinner
-                    android:id="@+id/spinnerDay"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
-
-            <!-- Кнопка просмотра места на карте -->
-            <Button
-                android:id="@+id/buttonViewOnMap"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/view_on_map" />
-
-            <!-- Тип рыбалки -->
-            <TextView
-                android:id="@+id/textViewFishingTypeLabel"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@string/fishing_type"
+                android:text="Выберите день:"
                 android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/textViewFishingType"
+            <Spinner
+                android:id="@+id/spinnerDay"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                tools:text="Карповая" />
-
-            <!-- Раздел снастей -->
-            <TextView
-                android:id="@+id/textViewTackleLabel"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@string/tackle"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/textViewTackle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                tools:text="Спиннинг Favorite Arena 702M, катушка Daiwa Legalis LT 3000" />
-
-            <Button
-                android:id="@+id/buttonEditTackle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="Редактировать"
-                style="@style/Widget.MaterialComponents.Button.TextButton" />
-
-            <!-- Раздел заметок -->
-            <TextView
-                android:id="@+id/textViewNotesLabel"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@string/notes"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/textViewNotes"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                tools:text="Рыбалка проходила в хороших условиях, клёв был активный утром и вечером, днем поклевки были редкими." />
-
-            <Button
-                android:id="@+id/buttonEditNotes"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="Редактировать"
-                style="@style/Widget.MaterialComponents.Button.TextButton" />
-
-            <!-- Раздел погоды -->
-            <TextView
-                android:id="@+id/textViewWeatherLabel"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@string/weather"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/textViewWeather"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                tools:text="Переменная облачность, +22°C, ветер С-З 3 м/с" />
-
-            <!-- Раздел поклевок -->
-            <TextView
-                android:id="@+id/textViewBitesLabel"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@string/bites"
-                android:textStyle="bold" />
-
-            <!-- График поклевок -->
-            <HorizontalScrollView
-                android:id="@+id/chartScrollView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:scrollbars="none">
-
-                <com.github.mikephil.charting.charts.BarChart
-                    android:id="@+id/biteChart"
-                    android:layout_width="2400dp"
-                    android:layout_height="200dp"
-                    android:layout_marginTop="8dp" />
-
-            </HorizontalScrollView>
-
-            <!-- Сообщение, когда нет поклевок -->
-            <TextView
-                android:id="@+id/textViewNoBites"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:gravity="center"
-                android:text="@string/no_bites_yet"
-                android:textStyle="italic"
-                android:visibility="gone"
-                tools:visibility="visible" />
-
-            <!-- Кнопка добавления поклевки -->
-            <Button
-                android:id="@+id/buttonAddBite"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/add_bite" />
-
-            <!-- Список поклевок -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerViewBites"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:nestedScrollingEnabled="false"
-                tools:itemCount="3"
-                tools:listitem="@layout/item_bite_record" />
-
-            <!-- Кнопка просмотра маркерной карты (только для карповой рыбалки) -->
-            <Button
-                android:id="@+id/buttonViewMarkerMap"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@string/view_marker_map"
-                android:visibility="gone"
-                tools:visibility="visible" />
-
+                android:layout_marginStart="8dp" />
         </LinearLayout>
-    </ScrollView>
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+        <!-- Секция поклевок -->
+        <TextView
+            android:id="@+id/textViewBitesLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Поклевки:"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:visibility="visible"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/spinnerDayContainer" />
+
+        <TextView
+            android:id="@+id/textViewNoBites"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="Пока нет записей о поклевках"
+            android:visibility="visible"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textViewBitesLabel" />
+
+        <!-- График поклевок в ScrollView -->
+        <HorizontalScrollView
+            android:id="@+id/chartScrollView"
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:layout_marginTop="8dp"
+            android:scrollbars="horizontal"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textViewBitesLabel">
+
+            <com.github.mikephil.charting.charts.BarChart
+                android:id="@+id/biteChart"
+                android:layout_width="2400dp"
+                android:layout_height="match_parent"
+                android:layout_marginTop="8dp"
+                android:padding="8dp" />
+        </HorizontalScrollView>
+
+        <!-- Список поклевок -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewBites"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/chartScrollView"
+            tools:itemCount="2"
+            tools:listitem="@layout/item_bite_record" />
+
+        <!-- Кнопка добавления поклевки -->
+        <Button
+            android:id="@+id/buttonAddBite"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Добавить поклевку"
+            android:visibility="visible"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/recyclerViewBites" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>
