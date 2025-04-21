@@ -528,26 +528,35 @@ class AddFishingNoteActivity : AppCompatActivity() {
         // Показываем основной индикатор загрузки
         mainProgressBar.visibility = View.VISIBLE
 
+        if (selectedPhotos.isEmpty()) {
+            // Если нет фотографий, сразу сохраняем запись
+            saveNoteToFirestore(photoUrls, startDate, endDate)
+            return
+        }
+
         for (i in selectedPhotos.indices) {
             val photoUri = selectedPhotos[i]
 
-            // Создаем уникальный идентификатор для файла
-            val fileUUID = UUID.randomUUID().toString()
-            val fileName = "fishing_photo_${fileUUID}.jpg"
-
-            // Полный путь к файлу в Storage
-            val userId = auth.currentUser?.uid ?: "anonymous"
-            val photoRef = storage.reference.child("users/$userId/photos/$fileName")
-
             try {
-                Log.d("AddFishingNote", "Начинаем загрузку фото $i: $photoUri в $fileName")
+                Log.d("AddFishingNote", "Начинаем загрузку фото $i: $photoUri")
 
-                // Получаем входной поток из Uri
+                // Создаем уникальный идентификатор для файла
+                val fileUUID = UUID.randomUUID().toString()
+                val fileName = "fishing_photo_${fileUUID}.jpg"
+
+                // Полный путь к файлу в Storage
+                val userId = auth.currentUser?.uid ?: "anonymous"
+                val photoRef = storage.reference.child("users/$userId/photos/$fileName")
+
+                // Исправление: создаем новый поток для каждой загрузки
                 val inputStream = contentResolver.openInputStream(photoUri)
-
                 if (inputStream != null) {
-                    // Загружаем фото из потока
-                    val uploadTask = photoRef.putStream(inputStream)
+                    // Создаем буфер для хранения данных
+                    val bytes = inputStream.readBytes()
+                    inputStream.close() // Закрываем поток после чтения
+
+                    // Загружаем из буфера, а не из потока
+                    val uploadTask = photoRef.putBytes(bytes)
 
                     uploadTask.addOnSuccessListener {
                         Log.d("AddFishingNote", "Фото $i загружено успешно")
@@ -565,11 +574,7 @@ class AddFishingNoteActivity : AppCompatActivity() {
                                 saveNoteToFirestore(photoUrls, startDate, endDate)
                             }
                         }.addOnFailureListener { e ->
-                            Log.e(
-                                "AddFishingNote",
-                                "Ошибка получения URL для фото $i: ${e.message}",
-                                e
-                            )
+                            Log.e("AddFishingNote", "Ошибка получения URL для фото $i: ${e.message}", e)
                             errorCount++
 
                             if (uploadedCount + errorCount == selectedPhotos.size) {
@@ -584,9 +589,6 @@ class AddFishingNoteActivity : AppCompatActivity() {
                             saveNoteToFirestore(photoUrls, startDate, endDate)
                         }
                     }
-
-                    // Закрываем поток
-                    inputStream.close()
                 } else {
                     Log.e("AddFishingNote", "Не удалось открыть поток для фото $i")
                     errorCount++

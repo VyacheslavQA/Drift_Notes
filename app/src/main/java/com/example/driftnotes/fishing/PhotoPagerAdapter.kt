@@ -1,3 +1,4 @@
+// Путь: app/src/main/java/com/example/driftnotes/fishing/PhotoPagerAdapter.kt
 package com.example.driftnotes.fishing
 
 import android.util.Log
@@ -27,44 +28,42 @@ class PhotoPagerAdapter(
             try {
                 Log.d(TAG, "Загрузка фото на позиции $position: $photoUrl")
 
-                // Проверяем наличие ProgressBar
-                val progressBar = binding.root.findViewById<View>(R.id.progressBar)
-                progressBar?.visibility = View.VISIBLE
+                // Показываем прогресс при начале загрузки
+                binding.progressBar.visibility = View.VISIBLE
 
-                val requestOptions = if (isFullscreen) {
-                    RequestOptions()
-                        .placeholder(R.drawable.ic_photo_placeholder)
-                        .error(R.drawable.ic_photo_placeholder)
-                        .fitCenter() // для полноэкранного режима используем fitCenter
-                } else {
-                    RequestOptions()
-                        .placeholder(R.drawable.ic_photo_placeholder)
-                        .error(R.drawable.ic_photo_placeholder)
-                        .centerCrop() // для просмотра в карточке используем centerCrop
-                }
-
-                // Улучшенная загрузка изображений с Glide
-                Glide.with(binding.root.context)
-                    .load(photoUrl)
-                    .apply(requestOptions)
-                    .diskCacheStrategy(DiskCacheStrategy.ALL) // Кэшируем изображения
-                    .into(binding.imageViewPhoto)
-
-                // Скрываем прогресс-бар после загрузки
-                progressBar?.visibility = View.GONE
-
-                // Обработчик клика на фото для открытия в полноэкранном режиме
+                // Настраиваем обработчик клика, если не в полноэкранном режиме
                 if (!isFullscreen && onPhotoClick != null) {
                     binding.imageViewPhoto.setOnClickListener {
                         onPhotoClick.invoke(position)
                     }
                 }
+
+                // Простая версия без сложных обработчиков загрузки
+                Glide.with(binding.root.context)
+                    .load(photoUrl)
+                    .placeholder(R.drawable.ic_photo_placeholder)
+                    .error(R.drawable.ic_photo_placeholder)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .apply {
+                        if (isFullscreen) {
+                            fitCenter()
+                        } else {
+                            centerCrop()
+                        }
+                    }
+                    .into(binding.imageViewPhoto)
+
+                // Скрываем индикатор загрузки с небольшой задержкой
+                binding.root.postDelayed({
+                    binding.progressBar.visibility = View.GONE
+                }, 300)
+
             } catch (e: Exception) {
-                Log.e(TAG, "Ошибка при загрузке фото на позиции $position", e)
+                Log.e(TAG, "Ошибка при загрузке фото на позиции $position: ${e.message}", e)
                 // В случае ошибки показываем заполнитель
                 binding.imageViewPhoto.setImageResource(R.drawable.ic_photo_placeholder)
-                // Скрываем прогресс-бар
-                binding.root.findViewById<View>(R.id.progressBar)?.visibility = View.GONE
+                // Скрываем прогресс
+                binding.progressBar.visibility = View.GONE
             }
         }
     }

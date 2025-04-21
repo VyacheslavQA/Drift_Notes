@@ -1,10 +1,10 @@
-// Полный код для файла app/src/main/java/com/example/driftnotes/fishing/FishingNoteDetailActivity.kt
 package com.example.driftnotes.fishing
 
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -42,7 +42,6 @@ import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 import android.widget.HorizontalScrollView
-import android.util.Log
 
 class FishingNoteDetailActivity : AppCompatActivity() {
 
@@ -73,6 +72,9 @@ class FishingNoteDetailActivity : AppCompatActivity() {
     private var chartsContainer: LinearLayout? = null
     private var biteCharts = mutableListOf<BarChart>()
 
+    // Константа для логирования
+    private val TAG = "FishingNoteDetail"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityFishingNoteDetailBinding.inflate(layoutInflater)
@@ -99,10 +101,11 @@ class FishingNoteDetailActivity : AppCompatActivity() {
         )
         binding.viewPagerPhotos.adapter = photoAdapter
 
-        // Устанавливаем слушателя для изменения страницы, чтобы убедиться что фото загружаются
+        // Устанавливаем слушателя для изменения страницы
         binding.viewPagerPhotos.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
+                Log.d(TAG, "Выбрана фотография на позиции: $position")
                 // Принудительно обновляем текущее фото при его отображении
                 photoAdapter.notifyItemChanged(position)
             }
@@ -163,13 +166,7 @@ class FishingNoteDetailActivity : AppCompatActivity() {
                 // Ничего не делаем
             }
         }
-
-        // Обработчик кнопки добавления точки ловли
-        binding.buttonAddSpot.setOnClickListener {
-            showAddSpotDialog()
-        }
-
-        // Обработчик кнопки добавления поклевки
+// Обработчик кнопки добавления поклевки
         binding.buttonAddBite.setOnClickListener {
             currentNote?.let { note ->
                 // Получаем дату для выбранного дня
@@ -188,6 +185,10 @@ class FishingNoteDetailActivity : AppCompatActivity() {
     private fun openPhotoFullscreen(position: Int) {
         currentNote?.let { note ->
             if (note.photoUrls.isNotEmpty()) {
+                // Добавляем логирование для отладки
+                Log.d(TAG, "Открываем фото на позиции $position из ${note.photoUrls.size} фото")
+                Log.d(TAG, "URLs фотографий: ${note.photoUrls}")
+
                 val intent = Intent(this, FullscreenPhotoActivity::class.java)
                 intent.putStringArrayListExtra("photos", ArrayList(note.photoUrls))
                 intent.putExtra("position", position)
@@ -319,7 +320,6 @@ class FishingNoteDetailActivity : AppCompatActivity() {
             }
         }.show()
     }
-
     /**
      * Добавляет новую точку ловли
      */
@@ -422,25 +422,37 @@ class FishingNoteDetailActivity : AppCompatActivity() {
 
     private fun loadNoteData() {
         noteId?.let { id ->
+            Log.d(TAG, "Загрузка заметки с ID: $id")
+
             firestore.collection("fishing_notes")
                 .document(id)
                 .get()
                 .addOnSuccessListener { document ->
                     if (document != null && document.exists()) {
-                        currentNote = document.toObject(FishingNote::class.java)?.copy(id = id)
-                        displayNoteData()
+                        try {
+                            currentNote = document.toObject(FishingNote::class.java)?.copy(id = id)
+                            Log.d(TAG, "Заметка загружена успешно: ${currentNote?.location}")
+                            Log.d(TAG, "Фотографии в заметке: ${currentNote?.photoUrls?.size}")
+
+                            displayNoteData()
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Ошибка при парсинге заметки: ${e.message}", e)
+                            Toast.makeText(this, "Ошибка при загрузке заметки: ${e.message}", Toast.LENGTH_SHORT).show()
+                            AnimationHelper.finishWithAnimation(this)
+                        }
                     } else {
+                        Log.e(TAG, "Заметка не найдена")
                         Toast.makeText(this, "Запись не найдена", Toast.LENGTH_SHORT).show()
                         AnimationHelper.finishWithAnimation(this)
                     }
                 }
                 .addOnFailureListener { e ->
+                    Log.e(TAG, "Ошибка при загрузке заметки: ${e.message}", e)
                     Toast.makeText(this, "Ошибка загрузки: ${e.message}", Toast.LENGTH_SHORT).show()
                     AnimationHelper.finishWithAnimation(this)
                 }
         }
     }
-
     private fun displayNoteData() {
         currentNote?.let { note ->
             // Отображаем тип рыбалки
@@ -455,12 +467,11 @@ class FishingNoteDetailActivity : AppCompatActivity() {
 
             binding.textViewLocation.text = note.location
 
-
-
             // Отображаем дату или диапазон дат
             if (note.isMultiDay && note.endDate != null) {
                 // Используем правильный формат для диапазона дат
                 val formattedDateRange = DateFormatter.formatDateRange(note.date, note.endDate)
+                Log.d(TAG, "Многодневная рыбалка: $formattedDateRange")
                 binding.textViewDate.text = formattedDateRange
 
                 // Вычисляем количество дней
@@ -472,6 +483,7 @@ class FishingNoteDetailActivity : AppCompatActivity() {
                 binding.spinnerDayContainer.visibility = View.VISIBLE
             } else {
                 // Используем правильный формат для одной даты
+                Log.d(TAG, "Однодневная рыбалка: ${DateFormatter.formatDate(note.date)}")
                 binding.textViewDate.text = DateFormatter.formatDate(note.date)
                 dayCount = 1
                 binding.spinnerDayContainer.visibility = View.GONE
@@ -516,14 +528,13 @@ class FishingNoteDetailActivity : AppCompatActivity() {
 
             // Настраиваем ViewPager для фотографий
             if (note.photoUrls.isNotEmpty()) {
-                Log.d("FishingNoteDetail", "Количество фотографий: ${note.photoUrls.size}")
-                Log.d("FishingNoteDetail", "URLs фотографий: ${note.photoUrls}")
-
+                Log.d(TAG, "Количество фотографий: ${note.photoUrls.size}")
                 for (url in note.photoUrls) {
-                    Log.d("FishingNoteDetail", "URL фото: $url")
+                    Log.d(TAG, "URL фото: $url")
                 }
+
                 try {
-                    // Обновляем адаптер
+                    // Обновляем адаптер с новыми фотографиями
                     photoAdapter = PhotoPagerAdapter(
                         note.photoUrls,
                         false,
@@ -531,11 +542,14 @@ class FishingNoteDetailActivity : AppCompatActivity() {
                     )
                     binding.viewPagerPhotos.adapter = photoAdapter
 
+                    // Перезагружаем индикатор
+                    binding.dotsIndicator.attachTo(binding.viewPagerPhotos)
+
                     // Показываем ViewPager
                     binding.viewPagerPhotos.visibility = View.VISIBLE
                     binding.dotsIndicator.visibility = if (note.photoUrls.size > 1) View.VISIBLE else View.GONE
                 } catch (e: Exception) {
-                    Log.e("FishingNoteDetail", "Ошибка при настройке отображения фотографий", e)
+                    Log.e(TAG, "Ошибка при настройке отображения фотографий", e)
                     binding.viewPagerPhotos.visibility = View.GONE
                     binding.dotsIndicator.visibility = View.GONE
                 }
@@ -566,12 +580,12 @@ class FishingNoteDetailActivity : AppCompatActivity() {
 
             // Настраиваем спиннер для выбора точки ловли
             setupSpotSpinner()
-
             // Отображаем секцию поклевок только для карповой рыбалки
             if (note.fishingType == getString(R.string.fishing_type_carp)) {
                 binding.textViewBitesLabel.visibility = View.VISIBLE
                 binding.buttonAddBite.visibility = View.VISIBLE
                 binding.spinnerSpotContainer.visibility = View.VISIBLE
+                binding.buttonAddBite.visibility = View.VISIBLE
 
                 // Загружаем все поклевки
                 biteRecords.clear()
@@ -595,7 +609,6 @@ class FishingNoteDetailActivity : AppCompatActivity() {
             }
         }
     }
-
     /**
      * Настраивает спиннер для выбора дня
      */
@@ -828,7 +841,6 @@ class FishingNoteDetailActivity : AppCompatActivity() {
                 }
         }
     }
-
     private fun updateBiteChart() {
         if (biteRecords.isEmpty()) {
             binding.chartScrollView.visibility = View.GONE
@@ -919,7 +931,6 @@ class FishingNoteDetailActivity : AppCompatActivity() {
         xAxis.gridColor = Color.DKGRAY // Тёмно-серая сетка для тёмной темы
         xAxis.axisLineColor = Color.WHITE
         xAxis.axisLineWidth = 1.5f
-
         // Форматирование меток времени
         xAxis.valueFormatter = object : ValueFormatter() {
             override fun getFormattedValue(value: Float): String {
@@ -971,7 +982,7 @@ class FishingNoteDetailActivity : AppCompatActivity() {
         binding.biteChart.animateY(500)
         binding.biteChart.invalidate()
 
-        // ИСПРАВЛЕНО: Центрируем график по умолчанию
+        // Центрируем график по умолчанию
         binding.chartScrollView.post {
             // Находим первый час с поклёвками или используем текущее время
             val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)

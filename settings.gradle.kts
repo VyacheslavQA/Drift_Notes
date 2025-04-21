@@ -23,3 +23,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "Drift Notes"
 include(":app")
+include(":feature-auth")
+include(":feature-auth")
