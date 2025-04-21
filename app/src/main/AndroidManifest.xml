@@ -132,5 +132,10 @@
             android:label="Таймеры"
             android:theme="@style/Theme.DriftNotes" />
 
+        <activity
+            android:name=".fishing.FullscreenPhotoActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+
     </application>
 </manifest>

@@ -1,4 +1,3 @@
-// Путь: app/src/main/java/com/example/driftnotes/fishing/BiteDialog.kt
 package com.example.driftnotes.fishing
 
 import android.app.Dialog
@@ -22,6 +21,7 @@ class BiteDialog(
     context: Context,
     private val date: Date, // Дата рыбалки (конкретный день)
     private val existingBite: BiteRecord? = null, // Существующая поклевка для редактирования
+    private val spotIndex: Int = 0, // Индекс точки ловли
     private val onBiteAdded: (BiteRecord) -> Unit
 ) : Dialog(context) {
 
@@ -35,7 +35,7 @@ class BiteDialog(
         // Убираем заголовок диалога
         requestWindowFeature(Window.FEATURE_NO_TITLE)
 
-// Инициализация привязки
+        // Инициализация привязки
         binding = DialogAddBiteBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -114,7 +114,6 @@ class BiteDialog(
             true // 24-часовой формат
         ).show()
     }
-
     private fun saveBite() {
         // Получаем данные с формы
         val fishType = binding.editTextFishType.text.toString()
@@ -132,18 +131,20 @@ class BiteDialog(
             0f
         }
 
-        // Сохраняем индекс дня из существующей поклевки или используем 0 по умолчанию
+        // Сохраняем индекс дня и точки из существующей поклевки или используем текущие
         val dayIndex = existingBite?.dayIndex ?: 0
+        val spotIndex = existingBite?.spotIndex ?: this.spotIndex
 
         // Создаем или обновляем объект поклевки
         val biteRecord = if (existingBite != null) {
-            // Обновляем существующую, сохраняя ID и dayIndex
+            // Обновляем существующую, сохраняя ID, dayIndex и spotIndex
             existingBite.copy(
                 time = calendar.time,
                 fishType = fishType,
                 weight = weight,
                 notes = notes,
-                dayIndex = dayIndex
+                dayIndex = dayIndex,
+                spotIndex = spotIndex
             )
         } else {
             // Создаем новую
@@ -153,7 +154,8 @@ class BiteDialog(
                 fishType = fishType,
                 weight = weight,
                 notes = notes,
-                dayIndex = dayIndex
+                dayIndex = dayIndex,
+                spotIndex = spotIndex
             )
         }
 

@@ -1,4 +1,3 @@
-// Путь: app/src/main/java/com/example/driftnotes/fishing/FishingNoteDetailActivity.kt
 package com.example.driftnotes.fishing
 
 import android.content.Intent
@@ -10,8 +9,9 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.ImageButton
+import android.widget.LinearLayout
 import android.widget.Spinner
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -25,6 +25,7 @@ import com.example.driftnotes.maps.MapActivity
 import com.example.driftnotes.models.BiteRecord
 import com.example.driftnotes.models.FishingNote
 import com.example.driftnotes.utils.AnimationHelper
+import com.example.driftnotes.utils.DateFormatter
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.BarData
@@ -38,6 +39,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
+import android.widget.HorizontalScrollView
 
 class FishingNoteDetailActivity : AppCompatActivity() {
 
@@ -61,6 +63,13 @@ class FishingNoteDetailActivity : AppCompatActivity() {
     private var dayCount: Int = 1
     private lateinit var daySpinner: Spinner
 
+    // Для работы с несколькими графиками поклевок
+    private var fishingSpots = listOf("Основная точка")
+    private var currentSpotIndex: Int = 0
+    private lateinit var spotSpinner: Spinner
+    private var chartsContainer: LinearLayout? = null
+    private var biteCharts = mutableListOf<BarChart>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityFishingNoteDetailBinding.inflate(layoutInflater)
@@ -80,7 +89,11 @@ class FishingNoteDetailActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         // Настраиваем адаптер для фотографий
-        photoAdapter = PhotoPagerAdapter(emptyList())
+        photoAdapter = PhotoPagerAdapter(
+            emptyList(),
+            false,
+            { position -> openPhotoFullscreen(position) }
+        )
         binding.viewPagerPhotos.adapter = photoAdapter
 
         // Устанавливаем слушателя для изменения страницы, чтобы убедиться что фото загружаются
@@ -115,6 +128,9 @@ class FishingNoteDetailActivity : AppCompatActivity() {
         // Получаем ссылку на BarChart
         biteChart = binding.biteChart
 
+        // Инициализируем контейнер для графиков
+        chartsContainer = binding.chartsContainer
+
         // Настраиваем спиннер для выбора дня
         daySpinner = binding.spinnerDay
         daySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -130,17 +146,52 @@ class FishingNoteDetailActivity : AppCompatActivity() {
             }
         }
 
+        // Настраиваем спиннер для выбора точки ловли
+        spotSpinner = binding.spinnerSpot
+        spotSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                if (currentSpotIndex != position) {
+                    currentSpotIndex = position
+                    updateBitesForSelectedSpot()
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                // Ничего не делаем
+            }
+        }
+
+        // Обработчик кнопки добавления точки ловли
+        binding.buttonAddSpot.setOnClickListener {
+            showAddSpotDialog()
+        }
+
         // Обработчик кнопки добавления поклевки
         binding.buttonAddBite.setOnClickListener {
             currentNote?.let { note ->
                 // Получаем дату для выбранного дня
                 val selectedDate = getDateForDayIndex(note.date, note.endDate, currentDayIndex)
-                showAddBiteDialog(selectedDate)
+                showAddBiteDialog(selectedDate, currentSpotIndex)
             }
         }
 
         // Загружаем данные записи
         loadNoteData()
+    }
+
+    /**
+     * Открывает фотографию в полноэкранном режиме
+     */
+    private fun openPhotoFullscreen(position: Int) {
+        currentNote?.let { note ->
+            if (note.photoUrls.isNotEmpty()) {
+                val intent = Intent(this, FullscreenPhotoActivity::class.java)
+                intent.putStringArrayListExtra("photos", ArrayList(note.photoUrls))
+                intent.putExtra("position", position)
+                startActivity(intent)
+                overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+            }
+        }
     }
 
     /**
@@ -179,12 +230,21 @@ class FishingNoteDetailActivity : AppCompatActivity() {
     }
 
     /**
+     * Обновляет список поклевок для выбранной точки ловли
+     */
+    private fun updateBitesForSelectedSpot() {
+        updateBitesForSelectedDay() // Переиспользуем тот же код, так как он фильтрует и по дню, и по точке
+    }
+
+    /**
      * Обновляет список поклевок для выбранного дня
      */
     private fun updateBitesForSelectedDay() {
         currentNote?.let { note ->
-            // Фильтруем поклевки по выбранному дню
-            val filteredBites = note.biteRecords.filter { it.dayIndex == currentDayIndex }
+            // Фильтруем поклевки по выбранному дню и точке ловли
+            val filteredBites = note.biteRecords.filter {
+                it.dayIndex == currentDayIndex && it.spotIndex == currentSpotIndex
+            }
 
             // Обновляем список
             biteRecords.clear()
@@ -238,6 +298,59 @@ class FishingNoteDetailActivity : AppCompatActivity() {
                 // Обновляем текст заметок
                 updateNotes(newText)
             }.show()
+        }
+    }
+
+    /**
+     * Показывает диалог добавления новой точки ловли
+     */
+    private fun showAddSpotDialog() {
+        EditTextDialog(
+            context = this,
+            title = "Добавить точку ловли",
+            hint = "Введите название точки",
+            initialText = ""
+        ) { newSpotName ->
+            if (newSpotName.isNotEmpty()) {
+                addNewFishingSpot(newSpotName)
+            }
+        }.show()
+    }
+
+    /**
+     * Добавляет новую точку ловли
+     */
+    private fun addNewFishingSpot(spotName: String) {
+        // Добавляем новую точку ловли в список
+        val updatedSpots = fishingSpots.toMutableList()
+        updatedSpots.add(spotName)
+        fishingSpots = updatedSpots.toList()
+
+        // Обновляем спиннер
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, fishingSpots)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spotSpinner.adapter = adapter
+
+        // Выбираем новую точку
+        spotSpinner.setSelection(fishingSpots.size - 1)
+        currentSpotIndex = fishingSpots.size - 1
+
+        // Сохраняем изменения в Firestore
+        currentNote?.let { note ->
+            noteId?.let { id ->
+                val updatedNote = note.copy(fishingSpots = fishingSpots)
+                currentNote = updatedNote
+
+                firestore.collection("fishing_notes")
+                    .document(id)
+                    .update("fishingSpots", fishingSpots)
+                    .addOnSuccessListener {
+                        Toast.makeText(this, "Точка ловли добавлена", Toast.LENGTH_SHORT).show()
+                    }
+                    .addOnFailureListener { e ->
+                        Toast.makeText(this, "Ошибка при сохранении: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+            }
         }
     }
 
@@ -341,9 +454,9 @@ class FishingNoteDetailActivity : AppCompatActivity() {
 
             // Отображаем дату или диапазон дат
             if (note.isMultiDay && note.endDate != null) {
-                val startDateStr = dateFormat.format(note.date)
-                val endDateStr = dateFormat.format(note.endDate)
-                binding.textViewDate.text = "$startDateStr - $endDateStr"
+                // Используем правильный формат для диапазона дат
+                val formattedDateRange = DateFormatter.formatDateRange(note.date, note.endDate)
+                binding.textViewDate.text = formattedDateRange
 
                 // Вычисляем количество дней
                 val diffInMillis = note.endDate.time - note.date.time
@@ -353,7 +466,8 @@ class FishingNoteDetailActivity : AppCompatActivity() {
                 setupDaySpinner(dayCount)
                 binding.spinnerDayContainer.visibility = View.VISIBLE
             } else {
-                binding.textViewDate.text = dateFormat.format(note.date)
+                // Используем правильный формат для одной даты
+                binding.textViewDate.text = DateFormatter.formatDate(note.date)
                 dayCount = 1
                 binding.spinnerDayContainer.visibility = View.GONE
             }
@@ -388,6 +502,7 @@ class FishingNoteDetailActivity : AppCompatActivity() {
             // Отображаем погоду, если она доступна
             if (note.weather != null) {
                 binding.textViewWeatherLabel.visibility = View.VISIBLE
+                binding.textViewWeatherLabel.visibility = View.VISIBLE
                 binding.textViewWeather.visibility = View.VISIBLE
                 binding.textViewWeather.text = note.weather.weatherDescription
             } else {
@@ -397,7 +512,15 @@ class FishingNoteDetailActivity : AppCompatActivity() {
 
             // Настраиваем ViewPager для фотографий
             if (note.photoUrls.isNotEmpty()) {
-                photoAdapter.updatePhotos(note.photoUrls)
+                // Обновляем адаптер
+                photoAdapter = PhotoPagerAdapter(
+                    note.photoUrls,
+                    false,
+                    { position -> openPhotoFullscreen(position) }
+                )
+                binding.viewPagerPhotos.adapter = photoAdapter
+
+                // Показываем ViewPager
                 binding.viewPagerPhotos.visibility = View.VISIBLE
                 binding.dotsIndicator.visibility = if (note.photoUrls.size > 1) {
                     View.VISIBLE
@@ -422,15 +545,26 @@ class FishingNoteDetailActivity : AppCompatActivity() {
                 binding.buttonViewMarkerMap.visibility = View.GONE
             }
 
+            // Загружаем список точек ловли
+            fishingSpots = if (note.fishingSpots.isNotEmpty()) {
+                note.fishingSpots
+            } else {
+                listOf("Основная точка")
+            }
+
+            // Настраиваем спиннер для выбора точки ловли
+            setupSpotSpinner()
+
             // Отображаем секцию поклевок только для карповой рыбалки
             if (note.fishingType == getString(R.string.fishing_type_carp)) {
                 binding.textViewBitesLabel.visibility = View.VISIBLE
                 binding.buttonAddBite.visibility = View.VISIBLE
+                binding.spinnerSpotContainer.visibility = View.VISIBLE
 
                 // Загружаем все поклевки
                 biteRecords.clear()
                 if (note.biteRecords.isNotEmpty()) {
-                    // Если есть поклевки, показываем их для текущего дня
+                    // Если есть поклевки, показываем их для текущего дня и точки
                     updateBitesForSelectedDay()
                 } else {
                     // Если поклевок нет, показываем сообщение
@@ -445,6 +579,7 @@ class FishingNoteDetailActivity : AppCompatActivity() {
                 binding.chartScrollView.visibility = View.GONE
                 binding.recyclerViewBites.visibility = View.GONE
                 binding.spinnerDayContainer.visibility = View.GONE
+                binding.spinnerSpotContainer.visibility = View.GONE
             }
         }
     }
@@ -470,14 +605,28 @@ class FishingNoteDetailActivity : AppCompatActivity() {
     }
 
     /**
+     * Настраивает спиннер для выбора точки ловли
+     */
+    private fun setupSpotSpinner() {
+        // Настраиваем адаптер
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, fishingSpots)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spotSpinner.adapter = adapter
+
+        // Выбираем первую точку по умолчанию
+        spotSpinner.setSelection(0)
+        currentSpotIndex = 0
+    }
+
+    /**
      * Показывает диалог добавления поклевки
      */
-    private fun showAddBiteDialog(date: Date) {
-        BiteDialog(this, date, null) { newBite ->
-            // Создаем новую поклевку с указанием дня
-            val biteWithDay = newBite.copy(dayIndex = currentDayIndex)
+    private fun showAddBiteDialog(date: Date, spotIndex: Int = 0) {
+        BiteDialog(this, date, null, spotIndex) { newBite ->
+            // Создаем новую поклевку с указанием дня и точки
+            val biteWithDayAndSpot = newBite.copy(dayIndex = currentDayIndex, spotIndex = spotIndex)
             // Добавляем новую поклевку
-            addBiteRecord(biteWithDay)
+            addBiteRecord(biteWithDayAndSpot)
         }.show()
     }
 
@@ -488,11 +637,14 @@ class FishingNoteDetailActivity : AppCompatActivity() {
         currentNote?.let { note ->
             // Получаем дату для текущего дня
             val dayDate = getDateForDayIndex(note.date, note.endDate, bite.dayIndex)
-            BiteDialog(this, dayDate, bite) { updatedBite ->
-                // Сохраняем индекс дня
-                val biteWithDay = updatedBite.copy(dayIndex = bite.dayIndex)
+            BiteDialog(this, dayDate, bite, bite.spotIndex) { updatedBite ->
+                // Сохраняем индекс дня и точки
+                val biteWithDayAndSpot = updatedBite.copy(
+                    dayIndex = bite.dayIndex,
+                    spotIndex = bite.spotIndex
+                )
                 // Обновляем поклевку
-                updateBiteRecord(biteWithDay)
+                updateBiteRecord(biteWithDayAndSpot)
             }.show()
         }
     }
@@ -522,13 +674,17 @@ class FishingNoteDetailActivity : AppCompatActivity() {
             // Добавляем новую поклевку
             currentBites.add(bite)
 
-            // Сортируем по времени в пределах дня
-            val sortedBites = currentBites.sortedWith(compareBy({ it.dayIndex }, { it.time }))
+            // Сортируем по времени в пределах дня и точки
+            val sortedBites = currentBites.sortedWith(
+                compareBy({ it.dayIndex }, { it.spotIndex }, { it.time })
+            )
 
-            // Обновляем список для текущего дня
-            val currentDayBites = sortedBites.filter { it.dayIndex == currentDayIndex }
+            // Обновляем список для текущего дня и точки
+            val filteredBites = sortedBites.filter {
+                it.dayIndex == currentDayIndex && it.spotIndex == currentSpotIndex
+            }
             biteRecords.clear()
-            biteRecords.addAll(currentDayBites)
+            biteRecords.addAll(filteredBites)
 
             // Обновляем адаптер
             biteAdapter.updateBites(biteRecords)
@@ -566,13 +722,17 @@ class FishingNoteDetailActivity : AppCompatActivity() {
                 // Обновляем поклевку в списке
                 currentBites[index] = bite
 
-                // Сортируем по времени в пределах дня
-                val sortedBites = currentBites.sortedWith(compareBy({ it.dayIndex }, { it.time }))
+                // Сортируем по времени в пределах дня и точки
+                val sortedBites = currentBites.sortedWith(
+                    compareBy({ it.dayIndex }, { it.spotIndex }, { it.time })
+                )
 
-                // Обновляем список для текущего дня
-                val currentDayBites = sortedBites.filter { it.dayIndex == currentDayIndex }
+                // Обновляем список для текущего дня и точки
+                val filteredBites = sortedBites.filter {
+                    it.dayIndex == currentDayIndex && it.spotIndex == currentSpotIndex
+                }
                 biteRecords.clear()
-                biteRecords.addAll(currentDayBites)
+                biteRecords.addAll(filteredBites)
 
                 // Обновляем адаптер
                 biteAdapter.updateBites(biteRecords)
@@ -603,10 +763,12 @@ class FishingNoteDetailActivity : AppCompatActivity() {
             // Удаляем поклевку
             currentBites.removeAll { it.id == bite.id }
 
-            // Обновляем список для текущего дня
-            val currentDayBites = currentBites.filter { it.dayIndex == currentDayIndex }
+            // Обновляем список для текущего дня и точки
+            val filteredBites = currentBites.filter {
+                it.dayIndex == currentDayIndex && it.spotIndex == currentSpotIndex
+            }
             biteRecords.clear()
-            biteRecords.addAll(currentDayBites)
+            biteRecords.addAll(filteredBites)
 
             // Обновляем адаптер
             biteAdapter.updateBites(biteRecords)
@@ -615,7 +777,7 @@ class FishingNoteDetailActivity : AppCompatActivity() {
             updateBiteChart()
 
             // Обновляем интерфейс, если список пуст
-            if (currentDayBites.isEmpty()) {
+            if (filteredBites.isEmpty()) {
                 binding.textViewNoBites.visibility = View.VISIBLE
                 binding.chartScrollView.visibility = View.GONE
                 binding.recyclerViewBites.visibility = View.GONE
@@ -656,29 +818,36 @@ class FishingNoteDetailActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Обновляет график поклевок
-     */
     private fun updateBiteChart() {
-        if (biteRecords.isEmpty()) return
+        if (biteRecords.isEmpty()) {
+            binding.chartScrollView.visibility = View.GONE
+            binding.chartTitle.visibility = View.GONE
+            return
+        }
+
+        binding.chartScrollView.visibility = View.VISIBLE
+        binding.chartTitle.visibility = View.VISIBLE
 
         // Добавляем рамку для графика
         val borderColor = ContextCompat.getColor(this, R.color.primary)
         val border = GradientDrawable()
-        border.setColor(Color.WHITE)
+        border.setColor(Color.BLACK) // Используем чёрный фон для тёмной темы
         border.setStroke(2, borderColor)
         border.cornerRadius = 8f
-        binding.biteChart.setBackground(border)
+        binding.biteChart.background = border
 
-        // Исправляем ширину графика - устанавливаем адекватный размер для видимости
+        // Настраиваем размеры графика
+        val displayMetrics = resources.displayMetrics
+        val screenWidth = displayMetrics.widthPixels
+
         val layoutParams = binding.biteChart.layoutParams
-        layoutParams.width = resources.displayMetrics.widthPixels * 2 // Два экрана по ширине
+        layoutParams.width = screenWidth * 2 // Делаем график в 2 экрана шириной для скроллинга
         binding.biteChart.layoutParams = layoutParams
 
         // Подготавливаем данные для графика
         val entries = ArrayList<BarEntry>()
 
-        // Группируем поклевки по получасам (30-минутным интервалам)
+        // Группируем поклевки по получасам
         val bitesByHalfHour = mutableMapOf<Float, Int>()
 
         // Инициализируем все получасовые интервалы нулями (0.0, 0.5, 1.0, 1.5, ... 23.5)
@@ -699,99 +868,108 @@ class FishingNoteDetailActivity : AppCompatActivity() {
             bitesByHalfHour[halfHour] = (bitesByHalfHour[halfHour] ?: 0) + 1
         }
 
-        // Создаем записи для графика - отображаем все получасовые интервалы
-        // Сортируем по времени, чтобы интервалы шли в правильном порядке
+        // Создаем записи для графика
         bitesByHalfHour.entries
             .sortedBy { it.key }
             .forEach { (time, count) ->
-                entries.add(BarEntry(time, count.toFloat()))
+                if (count > 0) { // Добавляем только интервалы с поклёвками
+                    entries.add(BarEntry(time, count.toFloat()))
+                }
             }
 
-        // Цвет для столбцов графика - фирменный цвет приложения
+        // Цвет для столбцов - используем основной цвет приложения
         val barColor = ContextCompat.getColor(this, R.color.primary)
 
         // Создаем датасет
         val dataSet = BarDataSet(entries, "Поклевки")
         dataSet.color = barColor
-        dataSet.setDrawValues(true)  // Показываем значения над столбцами только для ненулевых значений
+        dataSet.valueTextColor = Color.WHITE // Белый текст для тёмной темы
+        dataSet.valueTextSize = 12f
+        dataSet.setDrawValues(true)
+
+        // Настройка отображения значений
         dataSet.valueFormatter = object : ValueFormatter() {
             override fun getFormattedValue(value: Float): String {
                 return if (value > 0) value.toInt().toString() else ""
             }
         }
 
-        // Цвет текста значений
-        dataSet.valueTextColor = Color.BLACK
-        dataSet.valueTextSize = 12f
-
         // Создаем данные графика
         val barData = BarData(dataSet)
-        barData.barWidth = 0.4f  // Уменьшаем ширину столбцов для лучшей видимости
+        barData.barWidth = 0.4f // Уже полосы для лучшей читаемости
 
-        // Настраиваем форматер для оси X (чтобы отображать время вертикально)
-        val xAxis = biteChart.xAxis
-        xAxis.position = XAxis.XAxisPosition.BOTTOM
+        // Настраиваем ось X (время)
+        val xAxis = binding.biteChart.xAxis
+        xAxis.position = XAxis.XAxisPosition.BOTTOM // Метки внизу
+        xAxis.textColor = Color.WHITE // Белый цвет текста для тёмной темы
         xAxis.granularity = 0.5f // Шаг для получасовых интервалов
-        xAxis.labelCount = 48  // 24 часа * 2 (получасовые интервалы)
+        xAxis.setDrawGridLines(true)
+        xAxis.gridColor = Color.DKGRAY // Тёмно-серая сетка для тёмной темы
+        xAxis.axisLineColor = Color.WHITE
+        xAxis.axisLineWidth = 1.5f
+
+        // Форматирование меток времени
         xAxis.valueFormatter = object : ValueFormatter() {
             override fun getFormattedValue(value: Float): String {
+                if (value < 0f || value > 24f) return ""
                 val hour = value.toInt()
                 val minute = if ((value - hour) >= 0.5f) "30" else "00"
-                return "${hour}:${minute}"
+                return String.format("%02d:%s", hour, minute)
             }
         }
+        xAxis.labelRotationAngle = 90f // Вертикальные метки для лучшей читаемости
 
-        // Отображаем метки оси X вертикально
-        xAxis.labelRotationAngle = 90f
+        // Настраиваем ось Y (количество поклёвок)
+        val leftAxis = binding.biteChart.axisLeft
+        leftAxis.textColor = Color.WHITE // Белый цвет текста для тёмной темы
+        leftAxis.setDrawGridLines(true)
+        leftAxis.gridColor = Color.DKGRAY // Тёмно-серая сетка
+        leftAxis.axisLineColor = Color.WHITE
+        leftAxis.axisMinimum = 0f
 
-        // Увеличиваем отступы для осей X, чтобы значения по краям не обрезались
-        xAxis.setDrawAxisLine(true)
-        xAxis.setDrawGridLines(false)
-        xAxis.setAvoidFirstLastClipping(true)
-        xAxis.spaceMin = 0.5f
-        xAxis.spaceMax = 0.5f
+        // Находим максимальное значение для масштаба оси Y
+        val maxValue = bitesByHalfHour.values.maxOrNull() ?: 0
+        leftAxis.axisMaximum = (maxValue * 1.2f).coerceAtLeast(1f) // Минимум 1, максимум на 20% больше
 
-        // Убираем значения с оси Y слева
-        val leftAxis = biteChart.axisLeft
-        leftAxis.axisMinimum = 0f  // Минимальное значение 0
-        leftAxis.setDrawZeroLine(true)  // Рисуем линию нуля
-        leftAxis.setDrawLabels(false)  // Скрываем значения слева
+        // Устанавливаем метки только на целые значения
+        leftAxis.granularity = 1f
+        leftAxis.isGranularityEnabled = true
 
-        // Настраиваем внешний вид графика
-        biteChart.data = barData
-        biteChart.description.isEnabled = false  // Убираем описание
-        biteChart.legend.isEnabled = false  // Убираем легенду
-        biteChart.axisRight.isEnabled = false  // Убираем правую ось Y
+        // Отключаем правую ось Y
+        binding.biteChart.axisRight.isEnabled = false
 
-        // Отключаем масштабирование и скроллинг в самом графике
-        // (скроллинг будет через HorizontalScrollView)
-        biteChart.setScaleEnabled(false)
-        biteChart.setPinchZoom(false)
-        biteChart.setTouchEnabled(false)
+        // Общие настройки графика
+        binding.biteChart.setDrawBorders(false)
+        binding.biteChart.description.isEnabled = false
+        binding.biteChart.legend.isEnabled = false
+        binding.biteChart.setTouchEnabled(false)
+        binding.biteChart.setScaleEnabled(false)
+        binding.biteChart.data = barData
 
-        // Устанавливаем видимую область графика
-        biteChart.setVisibleXRangeMinimum(5f)   // минимум 5 часов видимо
-        biteChart.setVisibleXRangeMaximum(24f)  // максимум 24 часа видимо
+        // Обновляем название графика
+        val spotName = fishingSpots[currentSpotIndex]
+        val title = if (dayCount > 1) {
+            "День ${currentDayIndex + 1}, $spotName"
+        } else {
+            spotName
+        }
+        binding.chartTitle.text = title
 
-        // Устанавливаем отступы для графика внутри chart view
-        biteChart.setExtraOffsets(5f, 10f, 20f, 70f) // Увеличиваем нижний отступ для вертикальных меток времени
+        // Обновляем график с анимацией
+        binding.biteChart.animateY(500)
+        binding.biteChart.invalidate()
 
-        // Анимация
-        biteChart.animateY(500)
-
-        // Обновляем график
-        biteChart.invalidate()
-
-        // Прокручиваем HorizontalScrollView к началу
+        // Прокручиваем к актуальному времени
         binding.chartScrollView.post {
-            binding.chartScrollView.fullScroll(View.FOCUS_LEFT)
+            // Находим первый час с поклёвками или используем текущий час
+            val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+            val firstBiteHour = bitesByHalfHour.entries
+                .filter { it.value > 0 }
+                .minByOrNull { it.key }?.key?.toInt() ?: currentHour
 
-            // Затем прокручиваем к текущему времени с небольшой задержкой
-            binding.chartScrollView.postDelayed({
-                val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-                val scrollPosition = (currentHour * 50).toInt() // 50 пикселей на час
-                binding.chartScrollView.smoothScrollTo(scrollPosition, 0)
-            }, 300)
+            val scrollToHour = firstBiteHour.coerceAtMost(currentHour)
+            val scrollPosition = (scrollToHour * screenWidth / 6)
+            binding.chartScrollView.smoothScrollTo(scrollPosition.toInt(), 0)
         }
     }
 

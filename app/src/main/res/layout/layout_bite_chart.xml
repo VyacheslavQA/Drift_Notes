@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/chartsContainer"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_marginTop="8dp">
+
+    <TextView
+        android:id="@+id/chartTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="График поклевок"
+        android:textSize="16sp"
+        android:textColor="@color/primary"
+        android:textAlignment="center"
+        android:padding="8dp"/>
+
+    <HorizontalScrollView
+        android:id="@+id/chartScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.github.mikephil.charting.charts.BarChart
+            android:id="@+id/biteChart"
+            android:layout_width="wrap_content"
+            android:layout_height="200dp"
+            android:layout_marginBottom="16dp" />
+    </HorizontalScrollView>
+</LinearLayout>
