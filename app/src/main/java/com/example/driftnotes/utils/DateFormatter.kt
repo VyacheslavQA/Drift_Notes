@@ -1,3 +1,4 @@
+// Полный код для файла app/src/main/java/com/example/driftnotes/utils/DateFormatter.kt
 package com.example.driftnotes.utils
 
 import java.text.SimpleDateFormat

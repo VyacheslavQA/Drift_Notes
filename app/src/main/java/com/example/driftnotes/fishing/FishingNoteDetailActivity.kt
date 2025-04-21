@@ -1,3 +1,4 @@
+// Полный код для файла app/src/main/java/com/example/driftnotes/fishing/FishingNoteDetailActivity.kt
 package com.example.driftnotes.fishing
 
 import android.content.Intent
@@ -18,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager2.widget.ViewPager2
+import com.bumptech.glide.Glide
 import com.example.driftnotes.R
 import com.example.driftnotes.databinding.ActivityFishingNoteDetailBinding
 import com.example.driftnotes.fishing.markermap.MarkerMapActivity
@@ -40,6 +42,7 @@ import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 import android.widget.HorizontalScrollView
+import android.util.Log
 
 class FishingNoteDetailActivity : AppCompatActivity() {
 
@@ -452,6 +455,8 @@ class FishingNoteDetailActivity : AppCompatActivity() {
 
             binding.textViewLocation.text = note.location
 
+
+
             // Отображаем дату или диапазон дат
             if (note.isMultiDay && note.endDate != null) {
                 // Используем правильный формат для диапазона дат
@@ -502,7 +507,6 @@ class FishingNoteDetailActivity : AppCompatActivity() {
             // Отображаем погоду, если она доступна
             if (note.weather != null) {
                 binding.textViewWeatherLabel.visibility = View.VISIBLE
-                binding.textViewWeatherLabel.visibility = View.VISIBLE
                 binding.textViewWeather.visibility = View.VISIBLE
                 binding.textViewWeather.text = note.weather.weatherDescription
             } else {
@@ -512,20 +516,28 @@ class FishingNoteDetailActivity : AppCompatActivity() {
 
             // Настраиваем ViewPager для фотографий
             if (note.photoUrls.isNotEmpty()) {
-                // Обновляем адаптер
-                photoAdapter = PhotoPagerAdapter(
-                    note.photoUrls,
-                    false,
-                    { position -> openPhotoFullscreen(position) }
-                )
-                binding.viewPagerPhotos.adapter = photoAdapter
+                Log.d("FishingNoteDetail", "Количество фотографий: ${note.photoUrls.size}")
+                Log.d("FishingNoteDetail", "URLs фотографий: ${note.photoUrls}")
 
-                // Показываем ViewPager
-                binding.viewPagerPhotos.visibility = View.VISIBLE
-                binding.dotsIndicator.visibility = if (note.photoUrls.size > 1) {
-                    View.VISIBLE
-                } else {
-                    View.GONE
+                for (url in note.photoUrls) {
+                    Log.d("FishingNoteDetail", "URL фото: $url")
+                }
+                try {
+                    // Обновляем адаптер
+                    photoAdapter = PhotoPagerAdapter(
+                        note.photoUrls,
+                        false,
+                        { position -> openPhotoFullscreen(position) }
+                    )
+                    binding.viewPagerPhotos.adapter = photoAdapter
+
+                    // Показываем ViewPager
+                    binding.viewPagerPhotos.visibility = View.VISIBLE
+                    binding.dotsIndicator.visibility = if (note.photoUrls.size > 1) View.VISIBLE else View.GONE
+                } catch (e: Exception) {
+                    Log.e("FishingNoteDetail", "Ошибка при настройке отображения фотографий", e)
+                    binding.viewPagerPhotos.visibility = View.GONE
+                    binding.dotsIndicator.visibility = View.GONE
                 }
             } else {
                 binding.viewPagerPhotos.visibility = View.GONE
@@ -707,7 +719,6 @@ class FishingNoteDetailActivity : AppCompatActivity() {
             Toast.makeText(this, "Поклевка добавлена", Toast.LENGTH_SHORT).show()
         }
     }
-
     /**
      * Обновляет существующую запись о поклевке
      */
@@ -836,12 +847,13 @@ class FishingNoteDetailActivity : AppCompatActivity() {
         border.cornerRadius = 8f
         binding.biteChart.background = border
 
-        // Настраиваем размеры графика
+        // Настраиваем размеры графика - ИСПРАВЛЕНО: отцентрировано и не сдвинуто влево
         val displayMetrics = resources.displayMetrics
         val screenWidth = displayMetrics.widthPixels
 
         val layoutParams = binding.biteChart.layoutParams
-        layoutParams.width = screenWidth * 2 // Делаем график в 2 экрана шириной для скроллинга
+        // Делаем график шириной 1.6 экрана для лучшего отображения и центрирования
+        layoutParams.width = (screenWidth * 1.6).toInt()
         binding.biteChart.layoutParams = layoutParams
 
         // Подготавливаем данные для графика
@@ -959,17 +971,29 @@ class FishingNoteDetailActivity : AppCompatActivity() {
         binding.biteChart.animateY(500)
         binding.biteChart.invalidate()
 
-        // Прокручиваем к актуальному времени
+        // ИСПРАВЛЕНО: Центрируем график по умолчанию
         binding.chartScrollView.post {
-            // Находим первый час с поклёвками или используем текущий час
+            // Находим первый час с поклёвками или используем текущее время
             val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
             val firstBiteHour = bitesByHalfHour.entries
                 .filter { it.value > 0 }
                 .minByOrNull { it.key }?.key?.toInt() ?: currentHour
 
-            val scrollToHour = firstBiteHour.coerceAtMost(currentHour)
-            val scrollPosition = (scrollToHour * screenWidth / 6)
-            binding.chartScrollView.smoothScrollTo(scrollPosition.toInt(), 0)
+            // Вычисляем позицию для скролла, чтобы показать первую поклевку в начале экрана
+            val totalWidth = layoutParams.width
+            val hourWidth = totalWidth / 24.0
+
+            // Находим центр скроллвью
+            val scrollCenter = screenWidth / 2
+
+            // Позиция прокрутки должна быть такой, чтобы столбец с первой поклевкой был в центре
+            val scrollPosition = (firstBiteHour * hourWidth - scrollCenter + hourWidth/2).toInt()
+
+            // Ограничиваем scrollPosition, чтобы она не выходила за границы
+            val clampedScrollPosition = scrollPosition.coerceIn(0, totalWidth - screenWidth)
+
+            // Плавный скролл к рассчитанной позиции
+            binding.chartScrollView.smoothScrollTo(clampedScrollPosition.coerceAtLeast(0), 0)
         }
     }
 
