@@ -310,11 +310,13 @@
         </LinearLayout>
 
         <!-- Текст "Нет поклевок" -->
+
+        <!-- Контейнер для графиков -->
         <TextView
             android:id="@+id/textViewNoBites"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="8dp"
             android:text="Нет записей о поклевках"
             android:textStyle="italic"
             android:visibility="visible"
@@ -322,7 +324,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/spinnerSpotContainer" />
 
-        <!-- Контейнер для графиков -->
         <LinearLayout
             android:id="@+id/chartsContainer"
             android:layout_width="match_parent"
