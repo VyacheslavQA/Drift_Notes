@@ -5,6 +5,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
 import android.util.Log
+import com.google.firebase.firestore.FirebaseFirestoreSettings
 
 /**
  * Утилитарный класс для работы с сетевым подключением
@@ -42,11 +43,13 @@ object NetworkUtils {
      */
     fun isFirestoreOfflineModeEnabled(): Boolean {
         try {
-            val firestoreSettings = com.google.firebase.firestore.FirebaseFirestoreSettings.Builder()
-                .isPersistenceEnabled()
+            // Поскольку мы не можем напрямую узнать состояние Firestore,
+            // проверяем поддержку persistence в FirebaseFirestoreSettings
+            val settings = FirebaseFirestoreSettings.Builder()
+                .setPersistenceEnabled(true)
                 .build()
 
-            return firestoreSettings.isPersistenceEnabled
+            return true // Если смогли создать настройки, считаем что офлайн-режим поддерживается
         } catch (e: Exception) {
             Log.e(TAG, "Ошибка при проверке режима офлайн-работы Firestore: ${e.message}", e)
             return false

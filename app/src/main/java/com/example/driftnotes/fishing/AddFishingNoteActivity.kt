@@ -1,4 +1,3 @@
-// Путь: app/src/main/java/com/example/driftnotes/fishing/AddFishingNoteActivity.kt
 package com.example.driftnotes.fishing
 
 import android.app.Activity
@@ -31,6 +30,8 @@ import com.example.driftnotes.models.FishingNote
 import com.example.driftnotes.models.FishingWeather
 import com.example.driftnotes.repository.WeatherRepository
 import com.example.driftnotes.utils.AnimationHelper
+import com.example.driftnotes.utils.FirebaseManager
+import com.example.driftnotes.utils.NetworkUtils
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -45,7 +46,6 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 class AddFishingNoteActivity : AppCompatActivity() {
-
 
     private lateinit var binding: ActivityAddFishingNoteBinding
     private lateinit var auth: FirebaseAuth
@@ -92,6 +92,8 @@ class AddFishingNoteActivity : AppCompatActivity() {
     private var selectedFishingType: String = ""
     private var isMultiDayFishing: Boolean = false
 
+    // Флаг для отслеживания состояния сети
+    private var isOfflineMode = false
 
     // ID маркерной карты (если создана)
     private var markerMapId: String = ""
@@ -125,6 +127,9 @@ class AddFishingNoteActivity : AppCompatActivity() {
 
         auth = FirebaseAuth.getInstance()
 
+        // Проверяем доступность сети и устанавливаем режим работы
+        checkNetworkAndUpdateUI()
+
         // Добавляем кнопку "назад" в ActionBar
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = getString(R.string.add_note)
@@ -147,6 +152,25 @@ class AddFishingNoteActivity : AppCompatActivity() {
 
         // Настройка обработчиков событий
         setupEventListeners()
+    }
+
+    /**
+     * Проверяет доступность сети и обновляет UI соответственно
+     */
+    private fun checkNetworkAndUpdateUI() {
+        isOfflineMode = !NetworkUtils.isNetworkAvailable(this)
+
+        // Если сеть недоступна, включаем офлайн-режим в FirebaseManager
+        FirebaseManager.checkNetworkAndSwitchToOfflineModeIfNeeded(this)
+
+        // Показываем сообщение о режиме работы
+        if (isOfflineMode) {
+            Toast.makeText(
+                this,
+                "Приложение работает в офлайн-режиме. Ваши заметки будут синхронизированы позже.",
+                Toast.LENGTH_LONG
+            ).show()
+        }
     }
 
     private fun initViews() {
@@ -177,6 +201,12 @@ class AddFishingNoteActivity : AppCompatActivity() {
         findViewById<View>(R.id.layoutEndDate).visibility = View.GONE
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Проверяем состояние сети при возвращении к активности
+        checkNetworkAndUpdateUI()
+    }
+
     private fun setupEventListeners() {
         // Обработчик выбора дат
         editTextStartDate.setOnClickListener {
@@ -203,9 +233,13 @@ class AddFishingNoteActivity : AppCompatActivity() {
             }
         }
 
-        // Обработчик добавления фото
+        // Обработчик добавления фото - отключаем в офлайн-режиме
         buttonAddPhoto.setOnClickListener {
-            showPhotoSourceDialog()
+            if (isOfflineMode) {
+                showOfflineModeDialog("добавления фотографий")
+            } else {
+                showPhotoSourceDialog()
+            }
         }
 
         // Обработчик сохранения
@@ -234,10 +268,25 @@ class AddFishingNoteActivity : AppCompatActivity() {
             openMarkerMap()
         }
 
-        // Обработчик загрузки погоды
+        // Обработчик загрузки погоды - отключаем в офлайн-режиме
         buttonLoadWeather.setOnClickListener {
-            loadWeatherData()
+            if (isOfflineMode) {
+                showOfflineModeDialog("загрузки погоды")
+            } else {
+                loadWeatherData()
+            }
         }
+    }
+
+    /**
+     * Показывает диалог о недоступности функции в офлайн-режиме
+     */
+    private fun showOfflineModeDialog(featureName: String) {
+        AlertDialog.Builder(this)
+            .setTitle("Офлайн-режим")
+            .setMessage("Функция $featureName недоступна в офлайн-режиме. Пожалуйста, подключитесь к интернету.")
+            .setPositiveButton("OK", null)
+            .show()
     }
 
     private fun setupFishingTypeDropdown() {
@@ -393,7 +442,11 @@ class AddFishingNoteActivity : AppCompatActivity() {
 
                 // Проверяем, что конечная дата не раньше начальной
                 if (tempCalendar.before(startCalendar)) {
-                    Toast.makeText(this, "Конечная дата не может быть раньше начальной", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this,
+                        "Конечная дата не может быть раньше начальной",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 } else {
                     endCalendar.time = tempCalendar.time
                     editTextEndDate.setText(dateFormat.format(endCalendar.time))
@@ -464,6 +517,16 @@ class AddFishingNoteActivity : AppCompatActivity() {
             return
         }
 
+        // Проверяем наличие сети
+        if (!NetworkUtils.isNetworkAvailable(this)) {
+            Toast.makeText(
+                this,
+                "Невозможно загрузить погоду: отсутствует подключение к интернету",
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
         progressBarWeather.visibility = View.VISIBLE
         textViewWeatherStatus.text = getString(R.string.weather_loading)
         buttonLoadWeather.isEnabled = false
@@ -513,16 +576,46 @@ class AddFishingNoteActivity : AppCompatActivity() {
         val startDate = startCalendar.time
         val endDate = if (isMultiDayFishing) endCalendar.time else null
 
+        // Отключаем кнопку сохранения, чтобы избежать двойного нажатия
         buttonSave.isEnabled = false
 
-        if (selectedPhotos.isEmpty()) {
+        // Проверяем режим работы
+        if (isOfflineMode && selectedPhotos.isNotEmpty()) {
+            // В офлайн-режиме фотографии не доступны
+            showOfflinePhotosDialog(startDate, endDate)
+        } else if (selectedPhotos.isEmpty()) {
+            // Если нет фотографий, просто сохраняем заметку
             saveNoteToFirestore(emptyList(), startDate, endDate)
         } else {
+            // Если есть фотографии и мы в онлайн-режиме, загружаем их и сохраняем заметку
             uploadPhotosAndSaveNote(startDate, endDate)
         }
     }
 
+    /**
+     * Показывает диалог о невозможности сохранения фотографий в офлайн-режиме
+     */
+    private fun showOfflinePhotosDialog(startDate: Date, endDate: Date?) {
+        AlertDialog.Builder(this)
+            .setTitle("Офлайн-режим")
+            .setMessage("В офлайн-режиме невозможно загрузить фотографии. Вы хотите сохранить заметку без фотографий?")
+            .setPositiveButton("Сохранить без фото") { _, _ ->
+                saveNoteToFirestore(emptyList(), startDate, endDate)
+            }
+            .setNegativeButton("Отмена") { _, _ ->
+                buttonSave.isEnabled = true
+            }
+            .show()
+    }
+
     private fun uploadPhotosAndSaveNote(startDate: Date, endDate: Date?) {
+        // Проверяем подключение к сети перед загрузкой
+        if (!NetworkUtils.isNetworkAvailable(this)) {
+            // Если сети нет, предлагаем сохранить без фото
+            showOfflinePhotosDialog(startDate, endDate)
+            return
+        }
+
         val photoUrls = mutableListOf<String>()
         var uploadedCount = 0
         var errorCount = 0
@@ -535,6 +628,34 @@ class AddFishingNoteActivity : AppCompatActivity() {
             saveNoteToFirestore(photoUrls, startDate, endDate)
             return
         }
+
+        // Устанавливаем максимальное время ожидания
+        val maxWaitTime = 30000L // 30 секунд
+        val startTime = System.currentTimeMillis()
+
+        // Механизм для отслеживания тайм-аута загрузки
+        val timeoutRunnable = Runnable {
+            if (uploadedCount + errorCount < selectedPhotos.size) {
+                // Если процесс не завершен, считаем это тайм-аутом
+                Log.e("AddFishingNote", "Тайм-аут загрузки фотографий")
+                runOnUiThread {
+                    AlertDialog.Builder(this)
+                        .setTitle("Проблема с сетью")
+                        .setMessage("Возникли проблемы при загрузке фотографий. Хотите сохранить заметку без фото?")
+                        .setPositiveButton("Сохранить без фото") { _, _ ->
+                            saveNoteToFirestore(emptyList(), startDate, endDate)
+                        }
+                        .setNegativeButton("Отмена") { _, _ ->
+                            mainProgressBar.visibility = View.GONE
+                            buttonSave.isEnabled = true
+                        }
+                        .show()
+                }
+            }
+        }
+
+        // Планируем проверку тайм-аута
+        binding.root.postDelayed(timeoutRunnable, maxWaitTime)
 
         for (i in selectedPhotos.indices) {
             val photoUri = selectedPhotos[i]
@@ -553,41 +674,94 @@ class AddFishingNoteActivity : AppCompatActivity() {
                 // Исправление: создаем новый поток для каждой загрузки
                 val inputStream = contentResolver.openInputStream(photoUri)
                 if (inputStream != null) {
-                    // Создаем буфер для хранения данных
-                    val bytes = inputStream.readBytes()
-                    inputStream.close() // Закрываем поток после чтения
+                    try {
+                        // Создаем буфер для хранения данных
+                        val bytes = inputStream.readBytes()
+                        inputStream.close() // Закрываем поток после чтения
 
-                    // Загружаем из буфера, а не из потока
-                    val uploadTask = photoRef.putBytes(bytes)
+                        // Загружаем из буфера, а не из потока
+                        val uploadTask = photoRef.putBytes(bytes)
 
-                    uploadTask.addOnSuccessListener {
-                        Log.d("AddFishingNote", "Фото $i загружено успешно")
+                        uploadTask.addOnSuccessListener {
+                            Log.d("AddFishingNote", "Фото $i загружено успешно")
 
-                        // Получаем URL для загруженного файла
-                        photoRef.downloadUrl.addOnSuccessListener { downloadUri ->
-                            photoUrls.add(downloadUri.toString())
-                            uploadedCount++
+                            // Получаем URL для загруженного файла
+                            photoRef.downloadUrl.addOnSuccessListener { downloadUri ->
+                                photoUrls.add(downloadUri.toString())
+                                uploadedCount++
 
-                            Log.d("AddFishingNote", "Получен URL $downloadUri для фото $i")
+                                Log.d("AddFishingNote", "Получен URL $downloadUri для фото $i")
 
-                            // Если все фотографии обработаны, сохраняем запись
-                            if (uploadedCount + errorCount == selectedPhotos.size) {
-                                Log.d("AddFishingNote", "Все фото обработаны. Сохраняем запись.")
-                                saveNoteToFirestore(photoUrls, startDate, endDate)
+                                // Если все фотографии обработаны, сохраняем запись
+                                if (uploadedCount + errorCount == selectedPhotos.size) {
+                                    // Отменяем проверку тайм-аута
+                                    binding.root.removeCallbacks(timeoutRunnable)
+
+                                    Log.d(
+                                        "AddFishingNote",
+                                        "Все фото обработаны. Сохраняем запись."
+                                    )
+                                    saveNoteToFirestore(photoUrls, startDate, endDate)
+                                }
+                            }.addOnFailureListener { e ->
+                                Log.e(
+                                    "AddFishingNote",
+                                    "Ошибка получения URL для фото $i: ${e.message}",
+                                    e
+                                )
+                                errorCount++
+
+                                if (uploadedCount + errorCount == selectedPhotos.size) {
+                                    // Отменяем проверку тайм-аута
+                                    binding.root.removeCallbacks(timeoutRunnable)
+
+                                    saveNoteToFirestore(photoUrls, startDate, endDate)
+                                }
                             }
                         }.addOnFailureListener { e ->
-                            Log.e("AddFishingNote", "Ошибка получения URL для фото $i: ${e.message}", e)
+                            Log.e("AddFishingNote", "Ошибка загрузки фото $i: ${e.message}", e)
                             errorCount++
 
+                            // Проверяем, не истекло ли время ожидания
+                            if (System.currentTimeMillis() - startTime > maxWaitTime) {
+                                // Если время истекло, отменяем загрузку
+                                binding.root.removeCallbacks(timeoutRunnable)
+
+                                runOnUiThread {
+                                    AlertDialog.Builder(this)
+                                        .setTitle("Превышено время ожидания")
+                                        .setMessage("Загрузка фотографий занимает слишком много времени. Хотите сохранить заметку без фото?")
+                                        .setPositiveButton("Сохранить без фото") { _, _ ->
+                                            saveNoteToFirestore(emptyList(), startDate, endDate)
+                                        }
+                                        .setNegativeButton("Отмена") { _, _ ->
+                                            mainProgressBar.visibility = View.GONE
+                                            buttonSave.isEnabled = true
+                                        }
+                                        .show()
+                                }
+                                return@addOnFailureListener
+                            }
+
                             if (uploadedCount + errorCount == selectedPhotos.size) {
+                                // Отменяем проверку тайм-аута
+                                binding.root.removeCallbacks(timeoutRunnable)
+
                                 saveNoteToFirestore(photoUrls, startDate, endDate)
                             }
                         }
-                    }.addOnFailureListener { e ->
-                        Log.e("AddFishingNote", "Ошибка загрузки фото $i: ${e.message}", e)
+                    } catch (e: Exception) {
+                        Log.e(
+                            "AddFishingNote",
+                            "Исключение при обработке потока для фото $i: ${e.message}",
+                            e
+                        )
                         errorCount++
 
                         if (uploadedCount + errorCount == selectedPhotos.size) {
+                            // Отменяем проверку тайм-аута
+                            binding.root.removeCallbacks(timeoutRunnable)
+
                             saveNoteToFirestore(photoUrls, startDate, endDate)
                         }
                     }
@@ -596,6 +770,9 @@ class AddFishingNoteActivity : AppCompatActivity() {
                     errorCount++
 
                     if (uploadedCount + errorCount == selectedPhotos.size) {
+                        // Отменяем проверку тайм-аута
+                        binding.root.removeCallbacks(timeoutRunnable)
+
                         saveNoteToFirestore(photoUrls, startDate, endDate)
                     }
                 }
@@ -604,10 +781,31 @@ class AddFishingNoteActivity : AppCompatActivity() {
                 errorCount++
 
                 if (uploadedCount + errorCount == selectedPhotos.size) {
+                    // Отменяем проверку тайм-аута
+                    binding.root.removeCallbacks(timeoutRunnable)
+
                     saveNoteToFirestore(photoUrls, startDate, endDate)
                 }
             }
         }
+
+        // Устанавливаем таймер для отслеживания общего времени загрузки
+        binding.root.postDelayed({
+            if (uploadedCount + errorCount < selectedPhotos.size) {
+                // Если не все фотографии обработаны, показываем диалог
+                AlertDialog.Builder(this)
+                    .setTitle("Проблема с загрузкой")
+                    .setMessage("Загрузка фотографий занимает слишком много времени. Хотите продолжить ожидание или сохранить заметку без фото?")
+                    .setPositiveButton("Продолжить ожидание", null)
+                    .setNegativeButton("Сохранить без фото") { _, _ ->
+                        // Отменяем проверку тайм-аута
+                        binding.root.removeCallbacks(timeoutRunnable)
+
+                        saveNoteToFirestore(emptyList(), startDate, endDate)
+                    }
+                    .show()
+            }
+        }, 15000) // Через 15 секунд показываем диалог
     }
 
     private fun saveNoteToFirestore(photoUrls: List<String>, startDate: Date, endDate: Date?) {
@@ -642,11 +840,27 @@ class AddFishingNoteActivity : AppCompatActivity() {
             markerMapId = markerMapId // Добавляем ID маркерной карты
         )
 
-        /// Сохраняем запись в Firestore
+        // Проверяем доступность Firestore (мог измениться режим работы)
+        if (!NetworkUtils.isNetworkAvailable(this)) {
+            // Включаем офлайн-режим в Firebase
+            FirebaseManager.checkNetworkAndSwitchToOfflineModeIfNeeded(this)
+        }
+
+        // Сохраняем запись в Firestore
         firestore.collection("fishing_notes")
             .add(fishingNote)
             .addOnSuccessListener {
-                Toast.makeText(this, R.string.note_saved, Toast.LENGTH_SHORT).show()
+                // Показываем соответствующее сообщение в зависимости от режима работы
+                if (NetworkUtils.isNetworkAvailable(this)) {
+                    Toast.makeText(this, R.string.note_saved, Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(
+                        this,
+                        "Заметка сохранена локально и будет синхронизирована при подключении к интернету",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+
                 mainProgressBar.visibility = View.GONE
                 finish()
                 overridePendingTransition(R.anim.slide_in_top, R.anim.slide_out_bottom)
@@ -654,11 +868,30 @@ class AddFishingNoteActivity : AppCompatActivity() {
             .addOnFailureListener { e ->
                 buttonSave.isEnabled = true
                 mainProgressBar.visibility = View.GONE
-                Toast.makeText(
-                    this,
-                    getString(R.string.error_saving, e.message),
-                    Toast.LENGTH_SHORT
-                ).show()
+
+                // Более подробное сообщение об ошибке
+                val errorMessage = if (e.message?.contains("network") == true ||
+                    e.message?.contains("connect") == true ||
+                    e.message?.contains("timeout") == true
+                ) {
+                    "Ошибка сети при сохранении. " +
+                            "Заметка будет сохранена локально и синхронизирована позже."
+                } else {
+                    getString(R.string.error_saving, e.message)
+                }
+
+                Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show()
+
+                // Если это ошибка сети, но Firestore в офлайн-режиме, то заметка все равно
+                // должна быть сохранена локально, поэтому закрываем активность
+                if (FirebaseManager.isOfflineModeEnabled() &&
+                    (e.message?.contains("network") == true ||
+                            e.message?.contains("connect") == true ||
+                            e.message?.contains("timeout") == true)
+                ) {
+                    finish()
+                    overridePendingTransition(R.anim.slide_in_top, R.anim.slide_out_bottom)
+                }
             }
     }
 
