@@ -7,7 +7,6 @@ import com.example.driftnotes.models.FishingNote
 import com.example.driftnotes.models.PlannedTrip
 import com.example.driftnotes.utils.FirebaseManager
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 import kotlinx.coroutines.tasks.await
 import java.util.Calendar
 import java.util.Date
@@ -112,48 +111,34 @@ class CalendarRepository {
             // Создаем список для хранения заметок
             val fishingNotes = mutableListOf<FishingNote>()
 
-            // Запрос на заметки, которые начинаются в указанном периоде
+            // Изменяем запрос, чтобы избежать необходимости в составном индексе
+            // Получаем все заметки пользователя
             val snapshot = firestore.collection("fishing_notes")
                 .whereEqualTo("userId", userId)
-                .whereGreaterThanOrEqualTo("date", startDate)
-                .whereLessThanOrEqualTo("date", endDate)
-                .orderBy("date", Query.Direction.ASCENDING)
                 .get()
                 .await()
 
-            // Добавляем найденные заметки в список
+            // Фильтруем заметки на стороне клиента
             for (doc in snapshot.documents) {
                 try {
                     val note = doc.toObject(FishingNote::class.java)?.copy(id = doc.id)
                     if (note != null) {
-                        Log.d(TAG, "Найдена заметка: $note")
-                        fishingNotes.add(note)
+                        // Проверяем, попадает ли заметка в запрашиваемый период
+                        if (
+                            (note.date >= startDate && note.date <= endDate) || // Заметка начинается в периоде
+                            (note.isMultiDay && note.endDate != null &&
+                                    ((note.date <= startDate && note.endDate >= startDate) || // Заметка пересекает начало периода
+                                            (note.date <= endDate && note.endDate >= endDate))) // Заметка пересекает конец периода
+                        ) {
+                            Log.d(TAG, "Найдена заметка в периоде: $note")
+                            fishingNotes.add(note)
+                        }
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "Ошибка при преобразовании заметки: ${e.message}", e)
                 }
             }
 
-            // Для многодневных рыбалок, которые начинаются до startDate, но заканчиваются после
-            val secondQuery = firestore.collection("fishing_notes")
-                .whereEqualTo("userId", userId)
-                .whereLessThan("date", startDate)
-                .get()
-                .await()
-
-            for (doc in secondQuery.documents) {
-                try {
-                    val note = doc.toObject(FishingNote::class.java)?.copy(id = doc.id)
-                    if (note != null && note.endDate != null && note.endDate.after(startDate)) {
-                        Log.d(TAG, "Найдена многодневная заметка, пересекающаяся с периодом: $note")
-                        fishingNotes.add(note)
-                    }
-                } catch (e: Exception) {
-                    Log.e(TAG, "Ошибка при преобразовании заметки (второй запрос): ${e.message}", e)
-                }
-            }
-
-            Log.d(TAG, "Всего найдено заметок: ${fishingNotes.size}")
             fishingNotes
         } catch (e: Exception) {
             Log.e(TAG, "Ошибка при получении заметок о рыбалке: ${e.message}", e)
@@ -166,35 +151,28 @@ class CalendarRepository {
      */
     private suspend fun getPlannedTrips(userId: String, startDate: Date, endDate: Date): List<PlannedTrip> {
         return try {
-            // Запрос на планы, которые попадают в указанный период
+            // Изменяем запрос, чтобы избежать необходимости в составном индексе
+            // Получаем все планы пользователя
             val snapshot = firestore.collection("planned_trips")
                 .whereEqualTo("userId", userId)
-                .whereGreaterThanOrEqualTo("date", startDate)
-                .whereLessThanOrEqualTo("date", endDate)
-                .orderBy("date", Query.Direction.ASCENDING)
                 .get()
                 .await()
 
             val plannedTrips = mutableListOf<PlannedTrip>()
+
+            // Фильтруем планы на стороне клиента
             for (doc in snapshot.documents) {
                 val trip = doc.toObject(PlannedTrip::class.java)?.copy(id = doc.id)
                 if (trip != null) {
-                    plannedTrips.add(trip)
-                }
-            }
-
-            // Для многодневных планов, которые начинаются до startDate, но заканчиваются после
-            val secondQuery = firestore.collection("planned_trips")
-                .whereEqualTo("userId", userId)
-                .whereLessThan("date", startDate)
-                .whereEqualTo("isMultiDay", true)
-                .get()
-                .await()
-
-            for (doc in secondQuery.documents) {
-                val trip = doc.toObject(PlannedTrip::class.java)?.copy(id = doc.id)
-                if (trip != null && trip.endDate != null && trip.endDate.after(startDate)) {
-                    plannedTrips.add(trip)
+                    // Проверяем, попадает ли план в запрашиваемый период
+                    if (
+                        (trip.date >= startDate && trip.date <= endDate) || // План начинается в периоде
+                        (trip.isMultiDay && trip.endDate != null &&
+                                ((trip.date <= startDate && trip.endDate >= startDate) || // План пересекает начало периода
+                                        (trip.date <= endDate && trip.endDate >= endDate))) // План пересекает конец периода
+                    ) {
+                        plannedTrips.add(trip)
+                    }
                 }
             }
 
@@ -210,17 +188,17 @@ class CalendarRepository {
      */
     private suspend fun getBiteForecasts(startDate: Date, endDate: Date): List<BiteForecast> {
         return try {
+            // Для прогнозов клёва используем простой запрос без сортировки
             val snapshot = firestore.collection("bite_forecasts")
-                .whereGreaterThanOrEqualTo("date", startDate)
-                .whereLessThanOrEqualTo("date", endDate)
-                .orderBy("date", Query.Direction.ASCENDING)
                 .get()
                 .await()
 
             val forecasts = mutableListOf<BiteForecast>()
+
+            // Фильтруем на стороне клиента
             for (doc in snapshot.documents) {
                 val forecast = doc.toObject(BiteForecast::class.java)?.copy(id = doc.id)
-                if (forecast != null) {
+                if (forecast != null && forecast.date >= startDate && forecast.date <= endDate) {
                     forecasts.add(forecast)
                 }
             }

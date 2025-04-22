@@ -20,6 +20,7 @@ import com.example.driftnotes.R
 import com.example.driftnotes.databinding.ActivityCalendarBinding
 import com.example.driftnotes.fishing.FishingNoteDetailActivity
 import com.example.driftnotes.models.CalendarDay
+import com.example.driftnotes.models.PlannedTrip
 import com.example.driftnotes.repository.CalendarRepository
 import com.example.driftnotes.utils.AnimationHelper
 import kotlinx.coroutines.launch
