@@ -146,6 +146,12 @@
             android:label="Календарь"
             android:theme="@style/Theme.DriftNotes" />
 
+        <activity
+            android:name=".stats.StatsActivity"
+            android:exported="false"
+            android:label="@string/statistics_title"
+            android:theme="@style/Theme.DriftNotes" />
+
 
     </application>
 </manifest>

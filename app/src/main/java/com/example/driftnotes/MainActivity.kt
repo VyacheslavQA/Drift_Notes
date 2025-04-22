@@ -16,6 +16,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.example.driftnotes.profile.ProfileActivity
 import com.example.driftnotes.timer.TimerActivity
 import com.example.driftnotes.calendar.CalendarActivity
+import com.example.driftnotes.stats.StatsActivity
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
@@ -39,6 +40,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             return
         }
 
+        // После проверки авторизации сразу открываем экран статистики
+        openStatsScreen()
+
         // Настраиваем боковое меню
         setupDrawerMenu()
 
@@ -47,6 +51,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         // Настраиваем Bottom Navigation
         setupBottomNavigation()
+    }
+
+    /**
+     * Открывает экран статистики
+     */
+    private fun openStatsScreen() {
+        val intent = Intent(this, StatsActivity::class.java)
+        startActivity(intent)
+        // Не используем finish(), чтобы MainActivity оставалась в стеке
     }
 
     private fun setupDrawerMenu() {
@@ -185,8 +198,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 AnimationHelper.startActivityWithAnimation(this, intent)
             }
             R.id.nav_stats -> {
-                // Обработка нажатия на пункт "Статистика"
-                Toast.makeText(this, "Раздел Статистика находится в разработке", Toast.LENGTH_SHORT).show()
+                // Открываем экран статистики
+                val intent = Intent(this, StatsActivity::class.java)
+                AnimationHelper.startActivityWithAnimation(this, intent)
             }
             R.id.nav_settings -> {
                 // Обработка нажатия на пункт "Настройки"

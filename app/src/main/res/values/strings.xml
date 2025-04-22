@@ -337,4 +337,6 @@
     <string name="plan_deleted">План рыбалки удален</string>
     <string name="confirm_delete_plan">Вы уверены, что хотите удалить этот план рыбалки?</string>
 
+    <string name="statistics_title">Моя статистика</string>
+
 </resources>
