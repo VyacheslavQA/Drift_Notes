@@ -46,6 +46,7 @@ import java.util.concurrent.TimeUnit
 
 class AddFishingNoteActivity : AppCompatActivity() {
 
+
     private lateinit var binding: ActivityAddFishingNoteBinding
     private lateinit var auth: FirebaseAuth
     private val firestore = FirebaseFirestore.getInstance()
@@ -90,6 +91,7 @@ class AddFishingNoteActivity : AppCompatActivity() {
     private var selectedLongitude: Double = 0.0
     private var selectedFishingType: String = ""
     private var isMultiDayFishing: Boolean = false
+
 
     // ID маркерной карты (если создана)
     private var markerMapId: String = ""
