@@ -61,8 +61,15 @@ class CalendarActivity : AppCompatActivity() {
         binding = ActivityCalendarBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setSupportActionBar(binding.calendarToolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        // УБИРАЕМ эту строку, которая вызывает ошибку
+        // setSupportActionBar(binding.calendarToolbar)
+
+        // Просто настраиваем заголовок в Toolbar и кнопку "Назад"
+        binding.calendarToolbar.title = getString(R.string.calendar_title)
+        binding.calendarToolbar.setNavigationIcon(androidx.appcompat.R.drawable.abc_ic_ab_back_material)
+        binding.calendarToolbar.setNavigationOnClickListener {
+            AnimationHelper.finishWithAnimation(this)
+        }
 
         // Инициализация текущего месяца и года
         calendar.time = Date()
