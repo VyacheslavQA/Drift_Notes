@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp"
+    android:background="@color/surface">
+
+    <TextView
+        android:id="@+id/textViewTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Фильтр по периоду"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@color/primary"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chipGroupPeriods"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:singleSelection="true"
+        app:layout_constraintTop_toBottomOf="@+id/textViewTitle">
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipWeek"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Неделя"
+            android:textColor="@color/white"
+            app:chipBackgroundColor="@color/secondary" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipMonth"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Месяц"
+            android:textColor="@color/white"
+            app:chipBackgroundColor="@color/secondary" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipYear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Год"
+            android:textColor="@color/white"
+            app:chipBackgroundColor="@color/secondary" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipAllTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Всё время"
+            android:textColor="@color/white"
+            app:chipBackgroundColor="@color/secondary"
+            android:checked="true" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipCustom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Свой период"
+            android:textColor="@color/white"
+            app:chipBackgroundColor="@color/secondary" />
+    </com.google.android.material.chip.ChipGroup>
+
+    <LinearLayout
+        android:id="@+id/layoutCustomDateRange"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="16dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@+id/chipGroupPeriods">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Укажите диапазон дат:"
+            android:textColor="@color/primary"
+            android:textSize="14sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <Button
+                android:id="@+id/buttonStartDate"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="C: 01.01.2025"
+                android:textSize="12sp"
+                android:backgroundTint="@color/secondary_variant" />
+
+            <Button
+                android:id="@+id/buttonEndDate"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="По: 22.04.2025"
+                android:textSize="12sp"
+                android:layout_marginStart="8dp"
+                android:backgroundTint="@color/secondary_variant" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/buttonApply"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Применить"
+        android:layout_marginTop="24dp"
+        android:backgroundTint="@color/primary"
+        android:textColor="@color/on_primary"
+        app:layout_constraintTop_toBottomOf="@+id/layoutCustomDateRange" />
+
+    <Button
+        android:id="@+id/buttonCancel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Отмена"
+        android:layout_marginTop="8dp"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:textColor="@color/primary"
+        app:layout_constraintTop_toBottomOf="@+id/buttonApply" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

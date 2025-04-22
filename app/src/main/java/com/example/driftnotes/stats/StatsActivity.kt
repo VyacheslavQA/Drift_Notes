@@ -5,14 +5,13 @@ import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
-import android.widget.ProgressBar
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.example.driftnotes.R
 import com.example.driftnotes.databinding.ActivityStatsBinding
+import com.example.driftnotes.models.FishingStats
 import com.example.driftnotes.repository.StatsRepository
 import com.example.driftnotes.utils.AnimationHelper
 import com.example.driftnotes.utils.DateFormatter
@@ -35,6 +34,14 @@ class StatsActivity : AppCompatActivity() {
     // Форматтер для отображения дат
     private val dateFormat = SimpleDateFormat("d MMMM", Locale("ru"))
     private val monthFormat = SimpleDateFormat("MMMM", Locale("ru"))
+    private val simpleDateFormat = SimpleDateFormat("dd.MM.yyyy", Locale("ru"))
+
+    // Календари для хранения диапазона дат
+    private val startDateCalendar = Calendar.getInstance()
+    private val endDateCalendar = Calendar.getInstance()
+
+    // Текущий тип фильтра
+    private var currentFilterType = "all_time"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,12 +52,203 @@ class StatsActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = getString(R.string.statistics_title)
 
+        // Инициализируем даты фильтрации
+        initDateRange()
+
+        // Настраиваем обработчики нажатий на фильтры
+        setupFilterListeners()
+
         // Загружаем данные
         loadStatistics()
     }
 
     /**
-     * Загружает статистику рыбалок
+     * Инициализирует начальный диапазон дат
+     */
+    private fun initDateRange() {
+        // По умолчанию, настраиваем диапазон "Всё время"
+        // Для начальной даты берем 1 января 2000 года
+        startDateCalendar.set(2000, 0, 1, 0, 0, 0)
+
+        // Для конечной даты устанавливаем текущую дату
+        endDateCalendar.time = Date()
+
+        // Устанавливаем выбранный фильтр "Всё время" по умолчанию
+        binding.chipAllTime.isChecked = true
+
+        // Обновляем текст на кнопках
+        updateDateButtonsText()
+    }
+
+    /**
+     * Настраивает обработчики нажатий на кнопки фильтров
+     */
+    private fun setupFilterListeners() {
+        // Настраиваем обработчик для кнопки применения фильтра
+        binding.buttonApplyFilter.setOnClickListener {
+            loadStatistics()
+        }
+
+        // Обработчики для чипов с периодами
+        binding.chipWeek.setOnClickListener { applyWeekFilter() }
+        binding.chipMonth.setOnClickListener { applyMonthFilter() }
+        binding.chipYear.setOnClickListener { applyYearFilter() }
+        binding.chipAllTime.setOnClickListener { applyAllTimeFilter() }
+
+        // Обработчики для кнопок выбора даты
+        binding.buttonStartDate.setOnClickListener { showDateFilterDialog() }
+        binding.buttonEndDate.setOnClickListener { showDateFilterDialog() }
+    }
+
+    /**
+     * Применяет фильтр "Неделя"
+     */
+    private fun applyWeekFilter() {
+        currentFilterType = "week"
+        updateSelectedChips()
+
+        // Устанавливаем конец недели на текущую дату
+        endDateCalendar.time = Date()
+
+        // Устанавливаем начало недели на 7 дней назад
+        startDateCalendar.time = Date()
+        startDateCalendar.add(Calendar.DAY_OF_YEAR, -7)
+
+        // Обновляем текст на кнопках
+        updateDateButtonsText()
+
+        // Загружаем статистику с новым фильтром
+        loadStatistics()
+    }
+
+    /**
+     * Применяет фильтр "Месяц"
+     */
+    private fun applyMonthFilter() {
+        currentFilterType = "month"
+        updateSelectedChips()
+
+        // Устанавливаем конец месяца на текущую дату
+        endDateCalendar.time = Date()
+
+        // Устанавливаем начало месяца на 30 дней назад
+        startDateCalendar.time = Date()
+        startDateCalendar.add(Calendar.DAY_OF_YEAR, -30)
+
+        // Обновляем текст на кнопках
+        updateDateButtonsText()
+
+        // Загружаем статистику с новым фильтром
+        loadStatistics()
+    }
+
+    /**
+     * Применяет фильтр "Год"
+     */
+    private fun applyYearFilter() {
+        currentFilterType = "year"
+        updateSelectedChips()
+
+        // Устанавливаем конец года на текущую дату
+        endDateCalendar.time = Date()
+
+        // Устанавливаем начало года на 365 дней назад
+        startDateCalendar.time = Date()
+        startDateCalendar.add(Calendar.DAY_OF_YEAR, -365)
+
+        // Обновляем текст на кнопках
+        updateDateButtonsText()
+
+        // Загружаем статистику с новым фильтром
+        loadStatistics()
+    }
+
+    /**
+     * Применяет фильтр "Всё время"
+     */
+    private fun applyAllTimeFilter() {
+        currentFilterType = "all_time"
+        updateSelectedChips()
+
+        // Устанавливаем начало на 1 января 2000 года
+        startDateCalendar.set(2000, 0, 1, 0, 0, 0)
+
+        // Устанавливаем конец на текущую дату
+        endDateCalendar.time = Date()
+
+        // Обновляем текст на кнопках
+        updateDateButtonsText()
+
+        // Загружаем статистику с новым фильтром
+        loadStatistics()
+    }
+
+    /**
+     * Обновляет выделение чипов фильтров
+     */
+    private fun updateSelectedChips() {
+        // Сбрасываем выделение у всех чипов
+        binding.chipWeek.isChecked = false
+        binding.chipMonth.isChecked = false
+        binding.chipYear.isChecked = false
+        binding.chipAllTime.isChecked = false
+
+        // Устанавливаем выделение у активного фильтра
+        when (currentFilterType) {
+            "week" -> binding.chipWeek.isChecked = true
+            "month" -> binding.chipMonth.isChecked = true
+            "year" -> binding.chipYear.isChecked = true
+            "all_time" -> binding.chipAllTime.isChecked = true
+            "custom" -> {
+                // Для пользовательского диапазона ничего не выделяем
+            }
+        }
+    }
+
+    /**
+     * Обновляет текст на кнопках выбора даты
+     */
+    private fun updateDateButtonsText() {
+        // Форматируем даты в строки для кнопок
+        val startDateText = simpleDateFormat.format(startDateCalendar.time)
+        val endDateText = simpleDateFormat.format(endDateCalendar.time)
+
+        // Обновляем текст на кнопках
+        binding.buttonStartDate.text = "C: $startDateText"
+        binding.buttonEndDate.text = "По: $endDateText"
+    }
+
+    /**
+     * Показывает диалог фильтрации по датам
+     */
+    private fun showDateFilterDialog() {
+        val dialog = DateFilterDialog(
+            this,
+            startDateCalendar.time,
+            endDateCalendar.time
+        ) { startDate, endDate, filterType ->
+            // Обновляем даты
+            startDateCalendar.time = startDate
+            endDateCalendar.time = endDate
+
+            // Обновляем тип фильтра
+            currentFilterType = filterType
+
+            // Обновляем выделение чипов
+            updateSelectedChips()
+
+            // Обновляем текст на кнопках
+            updateDateButtonsText()
+
+            // Загружаем статистику с новым фильтром
+            loadStatistics()
+        }
+
+        dialog.show()
+    }
+
+    /**
+     * Загружает статистику рыбалок с применением текущего фильтра
      */
     private fun loadStatistics() {
         // Показываем индикатор загрузки
@@ -58,7 +256,12 @@ class StatsActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                val result = statsRepository.getFishingStats()
+                // Получаем даты из календарей
+                val startDate = startDateCalendar.time
+                val endDate = endDateCalendar.time
+
+                // Запрашиваем статистику с фильтром по датам
+                val result = statsRepository.getFishingStats(startDate, endDate)
 
                 if (result.isSuccess) {
                     val stats = result.getOrNull()
@@ -96,7 +299,7 @@ class StatsActivity : AppCompatActivity() {
     /**
      * Обновляет UI с данными статистики
      */
-    private fun updateUI(stats: com.example.driftnotes.models.FishingStats) {
+    private fun updateUI(stats: FishingStats) {
         try {
             // Блок "Всего рыбалок"
             binding.textViewTotalTripsValue.text = stats.totalFishingTrips.toString()
@@ -121,11 +324,6 @@ class StatsActivity : AppCompatActivity() {
                 binding.textViewBiggestFishValue.text = decimalFormat.format(biggestFish.weight)
                 binding.textViewBiggestFishDate.text = formatDate(biggestFish.date)
                 binding.textViewBiggestFishLocation.text = biggestFish.location
-
-                // Если есть фото, загружаем его
-                if (biggestFish.photoUrl.isNotEmpty()) {
-                    loadImageWithGlide(biggestFish.photoUrl, binding.imageBigFish)
-                }
             } ?: run {
                 // Если нет данных о самой большой рыбе
                 binding.textViewBiggestFishValue.text = "0,0"
@@ -302,6 +500,17 @@ class StatsActivity : AppCompatActivity() {
             .error(R.drawable.ic_fish) // Изображение при ошибке загрузки
             .centerCrop()
             .into(imageView)
+    }
+
+    /**
+     * Расширение для капитализации первой буквы строки
+     */
+    private fun String.capitalize(): String {
+        return if (this.isNotEmpty()) {
+            this.substring(0, 1).uppercase() + this.substring(1)
+        } else {
+            this
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
