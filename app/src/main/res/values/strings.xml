@@ -316,6 +316,25 @@
     <!-- Добавь эти строки в файл app/src/main/res/values/strings.xml -->
     <string name="no_bites_yet">Поклевок еще нет. Добавьте первую!</string>
 
-
+    <!-- Строки для календаря -->
+    <string name="calendar_title">Календарь</string>
+    <string name="planned_trips">Запланированные рыбалки</string>
+    <string name="bite_forecast">Прогноз клёва</string>
+    <string name="add_planned_trip">Запланировать рыбалку</string>
+    <string name="edit_planned_trip">Редактировать план</string>
+    <string name="delete_planned_trip">Удалить план</string>
+    <string name="today">Сегодня</string>
+    <string name="calendar_no_events">Нет событий на этот день</string>
+    <string name="forecast_rating">Прогноз клёва: %1$d из 5</string>
+    <string name="forecast_excellent">Исключительные условия для клёва</string>
+    <string name="forecast_good">Хорошие условия для клёва</string>
+    <string name="forecast_average">Средние условия для клёва</string>
+    <string name="forecast_below_average">Ниже среднего. Клёв слабый</string>
+    <string name="forecast_poor">Плохие условия для клёва</string>
+    <string name="prev_month">Предыдущий месяц</string>
+    <string name="next_month">Следующий месяц</string>
+    <string name="plan_saved">План рыбалки сохранен</string>
+    <string name="plan_deleted">План рыбалки удален</string>
+    <string name="confirm_delete_plan">Вы уверены, что хотите удалить этот план рыбалки?</string>
 
 </resources>

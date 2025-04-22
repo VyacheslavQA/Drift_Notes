@@ -139,7 +139,12 @@
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
 
-
+        <!-- Активность календаря -->
+        <activity
+            android:name=".calendar.CalendarActivity"
+            android:exported="false"
+            android:label="Календарь"
+            android:theme="@style/Theme.DriftNotes" />
 
 
     </application>

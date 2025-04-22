@@ -15,6 +15,7 @@ import com.google.android.material.navigation.NavigationView
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.example.driftnotes.profile.ProfileActivity
 import com.example.driftnotes.timer.TimerActivity
+import com.example.driftnotes.calendar.CalendarActivity
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
@@ -154,8 +155,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     true
                 }
                 R.id.navigation_calendar -> {
-                    // Обработка нажатия на "Календарь"
-                    Toast.makeText(this, "Раздел Календарь находится в разработке", Toast.LENGTH_SHORT).show()
+                    // Кнопка "Календарь" - открываем CalendarActivity
+                    val intent = Intent(this, CalendarActivity::class.java)
+                    AnimationHelper.startActivityWithAnimation(this, intent)
                     true
                 }
                 R.id.navigation_notifications -> {
