@@ -1,3 +1,4 @@
+// app/src/main/java/com/example/driftnotes/models/FishingNote.kt
 package com.example.driftnotes.models
 
 import java.util.Date
@@ -11,8 +12,8 @@ data class FishingNote(
     val date: Date = Date(),         // Начальная дата рыбалки
     val endDate: Date? = null,       // Конечная дата рыбалки (null для однодневной)
     val isMultiDay: Boolean = false, // Флаг многодневной рыбалки
-    val tackle: String = "",         // Теперь необязательное поле
-    val notes: String = "",          // Теперь необязательное поле
+    val tackle: String = "",         // Снасти (необязательное поле)
+    val notes: String = "",          // Заметки (необязательное поле)
     val photoUrls: List<String> = listOf(),
     val fishingType: String = "",    // Тип рыбалки
     val weather: FishingWeather? = null, // Информация о погоде

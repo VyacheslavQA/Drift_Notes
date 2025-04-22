@@ -606,40 +606,40 @@ class CalendarActivity : AppCompatActivity() {
      * Показывает диалог добавления запланированной рыбалки
      */
     private fun showPlannedTripDialog(initialDate: Date? = null) {
-        // Если дата не указана, используем выбранный день или сегодня
-        val date = when {
-            initialDate != null -> initialDate
-            selectedDay > 0 -> {
-                calendar.set(currentYear, currentMonth, selectedDay)
-                calendar.time
+        try {
+            // Если дата не указана, используем выбранный день или сегодня
+            val date = when {
+                initialDate != null -> initialDate
+                selectedDay > 0 -> {
+                    calendar.set(currentYear, currentMonth, selectedDay)
+                    calendar.time
+                }
+                else -> Date()
             }
-            else -> Date()
-        }
 
-        val dialog = PlannedTripDialog(
-            context = this,
-            initialDate = date
-        ) { trip ->
-            savePlannedTrip(trip)
+            val dialog = PlannedTripDialog(
+                context = this,
+                initialDate = date
+            ) { trip ->
+                savePlannedTrip(trip)
+            }
+            dialog.show()
+        } catch (e: Exception) {
+            Toast.makeText(this, "Ошибка при открытии диалога: ${e.message}", Toast.LENGTH_SHORT).show()
+            Log.e(TAG, "Ошибка при открытии диалога: ${e.message}", e)
         }
-        dialog.show()
     }
 
     /**
      * Сохраняет запланированную рыбалку
      */
-    private fun savePlannedTrip(trip: com.example.driftnotes.models.PlannedTrip) {
+    private fun savePlannedTrip(trip: PlannedTrip) {
         binding.progressBar.visibility = View.VISIBLE
 
         lifecycleScope.launch {
             try {
-                val result = if (trip.id.isEmpty()) {
-                    // Добавляем новый план
-                    calendarRepository.addPlannedTrip(trip)
-                } else {
-                    // Обновляем существующий план
-                    calendarRepository.updatePlannedTrip(trip).map { trip.id }
-                }
+                // Всегда используем addPlannedTrip - он сам определит, новый это план или обновление
+                val result = calendarRepository.addPlannedTrip(trip)
 
                 if (result.isSuccess) {
                     val action = if (trip.id.isEmpty()) "добавлена" else "обновлена"

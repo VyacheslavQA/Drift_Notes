@@ -109,8 +109,10 @@ class CalendarRepository {
      */
     private suspend fun getFishingNotes(userId: String, startDate: Date, endDate: Date): List<FishingNote> {
         return try {
-            // Запрос на заметки, которые попадают в указанный период
-            // Учитываем как начальную дату, так и конечную для многодневных рыбалок
+            // Создаем список для хранения заметок
+            val fishingNotes = mutableListOf<FishingNote>()
+
+            // Запрос на заметки, которые начинаются в указанном периоде
             val snapshot = firestore.collection("fishing_notes")
                 .whereEqualTo("userId", userId)
                 .whereGreaterThanOrEqualTo("date", startDate)
@@ -119,11 +121,16 @@ class CalendarRepository {
                 .get()
                 .await()
 
-            val fishingNotes = mutableListOf<FishingNote>()
+            // Добавляем найденные заметки в список
             for (doc in snapshot.documents) {
-                val note = doc.toObject(FishingNote::class.java)?.copy(id = doc.id)
-                if (note != null) {
-                    fishingNotes.add(note)
+                try {
+                    val note = doc.toObject(FishingNote::class.java)?.copy(id = doc.id)
+                    if (note != null) {
+                        Log.d(TAG, "Найдена заметка: $note")
+                        fishingNotes.add(note)
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Ошибка при преобразовании заметки: ${e.message}", e)
                 }
             }
 
@@ -131,17 +138,22 @@ class CalendarRepository {
             val secondQuery = firestore.collection("fishing_notes")
                 .whereEqualTo("userId", userId)
                 .whereLessThan("date", startDate)
-                .whereEqualTo("isMultiDay", true)
                 .get()
                 .await()
 
             for (doc in secondQuery.documents) {
-                val note = doc.toObject(FishingNote::class.java)?.copy(id = doc.id)
-                if (note != null && note.endDate != null && note.endDate.after(startDate)) {
-                    fishingNotes.add(note)
+                try {
+                    val note = doc.toObject(FishingNote::class.java)?.copy(id = doc.id)
+                    if (note != null && note.endDate != null && note.endDate.after(startDate)) {
+                        Log.d(TAG, "Найдена многодневная заметка, пересекающаяся с периодом: $note")
+                        fishingNotes.add(note)
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Ошибка при преобразовании заметки (второй запрос): ${e.message}", e)
                 }
             }
 
+            Log.d(TAG, "Всего найдено заметок: ${fishingNotes.size}")
             fishingNotes
         } catch (e: Exception) {
             Log.e(TAG, "Ошибка при получении заметок о рыбалке: ${e.message}", e)
@@ -309,9 +321,17 @@ class CalendarRepository {
             val tripWithUserId = trip.copy(userId = userId)
 
             // Сохраняем в Firestore
-            val documentRef = firestore.collection("planned_trips").add(tripWithUserId).await()
+            val documentRef = if (trip.id.isNotEmpty()) {
+                // Если ID уже есть, обновляем существующий документ
+                firestore.collection("planned_trips").document(trip.id).set(tripWithUserId).await()
+                trip.id
+            } else {
+                // Иначе создаем новый документ
+                val doc = firestore.collection("planned_trips").add(tripWithUserId).await()
+                doc.id
+            }
 
-            Result.success(documentRef.id)
+            Result.success(documentRef.toString())
         } catch (e: Exception) {
             Log.e(TAG, "Ошибка при добавлении запланированной рыбалки: ${e.message}", e)
             Result.failure(e)

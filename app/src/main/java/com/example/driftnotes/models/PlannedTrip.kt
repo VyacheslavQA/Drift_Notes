@@ -1,3 +1,4 @@
+// app/src/main/java/com/example/driftnotes/models/PlannedTrip.kt
 package com.example.driftnotes.models
 
 import java.util.Date

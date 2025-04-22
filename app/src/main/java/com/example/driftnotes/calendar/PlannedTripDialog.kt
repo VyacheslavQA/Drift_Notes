@@ -1,3 +1,4 @@
+// app/src/main/java/com/example/driftnotes/calendar/PlannedTripDialog.kt
 package com.example.driftnotes.calendar
 
 import android.app.DatePickerDialog
@@ -5,7 +6,6 @@ import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
 import android.view.View
-import android.view.Window
 import android.view.WindowManager
 import android.widget.ArrayAdapter
 import com.example.driftnotes.R
@@ -46,14 +46,11 @@ class PlannedTripDialog(
         binding = DialogPlannedTripBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Настраиваем размер диалога
-        window?.apply {
-            requestFeature(Window.FEATURE_NO_TITLE)
-            setLayout(
-                WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.WRAP_CONTENT
-            )
-        }
+        // Настраиваем размер диалога после установки контента
+        window?.setLayout(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.WRAP_CONTENT
+        )
 
         // Настраиваем заголовок
         binding.dialogTitle.text = if (initialTrip != null) {
@@ -267,7 +264,7 @@ class PlannedTripDialog(
 
         // Создаем объект запланированной рыбалки
         val trip = PlannedTrip(
-            id = initialTrip?.id ?: "",
+            id = initialTrip?.id ?: UUID.randomUUID().toString(),
             userId = initialTrip?.userId ?: "",
             date = startCalendar.time,
             endDate = if (isMultiDay) endCalendar.time else null,
