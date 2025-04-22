@@ -166,13 +166,19 @@ class FishingNoteDetailActivity : AppCompatActivity() {
                 // Ничего не делаем
             }
         }
-// Обработчик кнопки добавления поклевки
+
+        // Обработчик кнопки добавления поклевки
         binding.buttonAddBite.setOnClickListener {
             currentNote?.let { note ->
                 // Получаем дату для выбранного дня
                 val selectedDate = getDateForDayIndex(note.date, note.endDate, currentDayIndex)
                 showAddBiteDialog(selectedDate, currentSpotIndex)
             }
+        }
+
+        // Обработчик для кнопки добавления новой точки ловли
+        binding.buttonAddSpot.setOnClickListener {
+            showAddSpotDialog()
         }
 
         // Загружаем данные записи
@@ -580,6 +586,7 @@ class FishingNoteDetailActivity : AppCompatActivity() {
 
             // Настраиваем спиннер для выбора точки ловли
             setupSpotSpinner()
+
             // Отображаем секцию поклевок только для карповой рыбалки
             if (note.fishingType == getString(R.string.fishing_type_carp)) {
                 binding.textViewBitesLabel.visibility = View.VISIBLE
@@ -687,7 +694,6 @@ class FishingNoteDetailActivity : AppCompatActivity() {
             .setNegativeButton("Отмена", null)
             .show()
     }
-
     /**
      * Добавляет новую запись о поклевке
      */
