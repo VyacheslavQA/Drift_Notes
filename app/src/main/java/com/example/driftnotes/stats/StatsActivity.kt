@@ -43,6 +43,22 @@ class StatsActivity : AppCompatActivity() {
     // Текущий тип фильтра
     private var currentFilterType = "all_time"
 
+    // Карта месяцев в именительном падеже
+    private val monthsInNominative = mapOf(
+        0 to "Январь",
+        1 to "Февраль",
+        2 to "Март",
+        3 to "Апрель",
+        4 to "Май",
+        5 to "Июнь",
+        6 to "Июль",
+        7 to "Август",
+        8 to "Сентябрь",
+        9 to "Октябрь",
+        10 to "Ноябрь",
+        11 to "Декабрь"
+    )
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityStatsBinding.inflate(layoutInflater)
@@ -303,6 +319,7 @@ class StatsActivity : AppCompatActivity() {
         try {
             // Блок "Всего рыбалок"
             binding.textViewTotalTripsValue.text = stats.totalFishingTrips.toString()
+            binding.textViewTotalTripsLabel.text = getFishingTripsText(stats.totalFishingTrips)
 
             // Блок "Поймано рыб и среднее"
             binding.textViewTotalFishValue.text = stats.totalFishCaught.toString()
@@ -323,12 +340,12 @@ class StatsActivity : AppCompatActivity() {
             stats.biggestFish?.let { biggestFish ->
                 binding.textViewBiggestFishValue.text = decimalFormat.format(biggestFish.weight)
                 binding.textViewBiggestFishDate.text = formatDate(biggestFish.date)
-                binding.textViewBiggestFishLocation.text = biggestFish.location
+
             } ?: run {
                 // Если нет данных о самой большой рыбе
                 binding.textViewBiggestFishValue.text = "0,0"
                 binding.textViewBiggestFishDate.text = "Нет данных"
-                binding.textViewBiggestFishLocation.text = ""
+
             }
 
             // Блок "Самая долгая рыбалка"
@@ -353,10 +370,8 @@ class StatsActivity : AppCompatActivity() {
 
             // Блок "Лучший месяц"
             stats.bestMonth?.let { bestMonth ->
-                // Получаем название месяца
-                val calendar = Calendar.getInstance()
-                calendar.set(Calendar.MONTH, bestMonth.month - 1) // -1 т.к. месяц начинается с 0
-                val monthName = monthFormat.format(calendar.time).capitalize()
+                // Получаем название месяца в именительном падеже
+                val monthName = getMonthInNominative(bestMonth.month - 1)
 
                 binding.textViewBestMonthValue.text = monthName
                 binding.textViewBestMonthCount.text = "${bestMonth.fishCount} ${getFishText(bestMonth.fishCount)}"
@@ -389,6 +404,13 @@ class StatsActivity : AppCompatActivity() {
     }
 
     /**
+     * Получает месяц в именительном падеже по индексу
+     */
+    private fun getMonthInNominative(monthIndex: Int): String {
+        return monthsInNominative[monthIndex] ?: "Неизвестный месяц"
+    }
+
+    /**
      * Форматирует дату в формате "31 декабря"
      */
     private fun formatDate(date: Date): String {
@@ -414,6 +436,17 @@ class StatsActivity : AppCompatActivity() {
             count % 10 == 1 && count % 100 != 11 -> "рыба"
             count % 10 in 2..4 && (count % 100 < 10 || count % 100 > 20) -> "рыбы"
             else -> "рыб"
+        }
+    }
+
+    /**
+     * Возвращает правильную форму слова "рыбалка" в зависимости от количества
+     */
+    private fun getFishingTripsText(count: Int): String {
+        return when {
+            count % 10 == 1 && count % 100 != 11 -> "рыбалка"
+            count % 10 in 2..4 && (count % 100 < 10 || count % 100 > 20) -> "рыбалки"
+            else -> "рыбалок"
         }
     }
 
@@ -500,17 +533,6 @@ class StatsActivity : AppCompatActivity() {
             .error(R.drawable.ic_fish) // Изображение при ошибке загрузки
             .centerCrop()
             .into(imageView)
-    }
-
-    /**
-     * Расширение для капитализации первой буквы строки
-     */
-    private fun String.capitalize(): String {
-        return if (this.isNotEmpty()) {
-            this.substring(0, 1).uppercase() + this.substring(1)
-        } else {
-            this
-        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
