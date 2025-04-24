@@ -65,12 +65,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // Настраиваем Bottom Navigation
         setupBottomNavigation()
 
-        // Настраиваем кнопку добавления заметки
-        binding.fabAddNote?.setOnClickListener {
-            val intent = Intent(this, AddFishingNoteActivity::class.java)
-            startActivity(intent)
-            overridePendingTransition(R.anim.slide_in_bottom, R.anim.slide_out_top)
-        }
+        // Удален код настройки FAB кнопки
 
         // Загружаем статистику
         loadStatistics()
