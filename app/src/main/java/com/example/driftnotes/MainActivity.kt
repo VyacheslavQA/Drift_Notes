@@ -2,6 +2,7 @@ package com.example.driftnotes
 
 import androidx.appcompat.app.AppCompatActivity
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
@@ -36,6 +37,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private lateinit var toggle: ActionBarDrawerToggle
     private val statsRepository = StatsRepository()
 
+    // URL для перехода по клику на баннер - замените на свой URL
+    private val externalResourceUrl = "https://www.youtube.com/@Carpediem_hunting_fishing"
+    // Текст для баннера
+    private val bannerTitle = "Посетите наш YouTube канал"
+
     // Форматтер для отображения десятичных чисел
     private val decimalFormat = DecimalFormat("#0.0")
 
@@ -59,16 +65,45 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             return
         }
 
+        // Настраиваем баннер со внешней ссылкой
+        setupBanner()
+
         // Настраиваем боковое меню
         setupDrawerMenu()
 
         // Настраиваем Bottom Navigation
         setupBottomNavigation()
 
-        // Удален код настройки FAB кнопки
-
         // Загружаем статистику
         loadStatistics()
+    }
+
+    private fun setupBanner() {
+        // Устанавливаем текст на баннере
+        binding.textBannerTitle?.text = bannerTitle
+
+        // Настраиваем обработчик нажатия на баннер
+        binding.cardExternalLink?.setOnClickListener {
+            openExternalLink(externalResourceUrl)
+        }
+        // Также можно добавить обработчик на изображение отдельно
+        binding.imageBanner?.setOnClickListener {
+            openExternalLink(externalResourceUrl)
+        }
+    }
+
+    private fun openExternalLink(url: String) {
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(
+                this,
+                "Не удалось открыть ссылку: ${e.message}",
+                Toast.LENGTH_SHORT
+            ).show()
+            Log.e("MainActivity", "Ошибка при открытии ссылки: ${e.message}", e)
+        }
     }
 
     private fun setupDrawerMenu() {

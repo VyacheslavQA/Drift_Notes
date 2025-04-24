@@ -30,17 +30,63 @@
                 android:layout_height="wrap_content"
                 android:padding="16dp">
 
+                <!-- Блок со ссылкой на сторонние ресурсы -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cardExternalLink"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="4dp"
+                    app:cardBackgroundColor="@color/surface"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:id="@+id/imageBanner"
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/youtube_channel"
+                            android:contentDescription="Переход на внешний ресурс"
+                            app:layout_constraintDimensionRatio="16:9"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent" />
+
+                        <TextView
+                            android:id="@+id/textBannerTitle"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Посетите наш канал"
+                            android:textColor="@color/primary"
+                            android:textSize="16sp"
+                            android:padding="8dp"
+                            android:gravity="center"
+                            android:background="#80000000"
+                            app:layout_constraintBottom_toBottomOf="@id/imageBanner"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </androidx.cardview.widget.CardView>
+
                 <!-- Заголовок -->
                 <TextView
                     android:id="@+id/textViewWelcome"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
                     android:text="Моя статистика"
                     android:textSize="24sp"
                     android:textStyle="bold"
                     android:textColor="@color/primary"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintTop_toBottomOf="@+id/cardExternalLink" />
 
                 <!-- Блок "Всего рыбалок" -->
                 <androidx.cardview.widget.CardView
@@ -57,6 +103,7 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/textViewWelcome">
 
+                    <!-- Содержимое карточки "Всего рыбалок" - оставляем без изменений -->
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
@@ -139,6 +186,7 @@
                     </androidx.constraintlayout.widget.ConstraintLayout>
                 </androidx.cardview.widget.CardView>
 
+                <!-- Здесь остальные блоки/карточки - их оставляем как есть -->
                 <!-- Блок "Самая большая рыба" -->
                 <androidx.cardview.widget.CardView
                     android:id="@+id/cardBiggestFish"
@@ -486,8 +534,6 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
-
-                <!-- Плавающая кнопка удалена -->
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.core.widget.NestedScrollView>
