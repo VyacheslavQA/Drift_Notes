@@ -3,13 +3,15 @@ package com.example.driftnotes
 import androidx.appcompat.app.AppCompatActivity
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.MenuItem
 import android.view.View
-import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.GravityCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.driftnotes.databinding.ActivityMainBinding
 import com.example.driftnotes.models.FishingStats
@@ -17,9 +19,10 @@ import com.example.driftnotes.repository.StatsRepository
 import com.example.driftnotes.utils.DateFormatter
 import com.example.driftnotes.utils.FirebaseManager
 import com.example.driftnotes.fishing.AddFishingNoteActivity
+import com.example.driftnotes.fishing.FishingNoteAdapter
 import com.example.driftnotes.utils.AnimationHelper
 import com.google.android.material.navigation.NavigationView
-import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.firestore.Query
 import com.example.driftnotes.profile.ProfileActivity
 import com.example.driftnotes.timer.TimerActivity
 import com.example.driftnotes.calendar.CalendarActivity
@@ -60,16 +63,23 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             return
         }
 
+        // Настраиваем RecyclerView
+        binding.recyclerView?.layoutManager = LinearLayoutManager(this)
+
         // Настраиваем боковое меню
         setupDrawerMenu()
-
-        // Настраиваем основной экран приложения
-        setupUI()
 
         // Настраиваем Bottom Navigation
         setupBottomNavigation()
 
-        // Загружаем статистику
+        // Настраиваем кнопку добавления заметки
+        binding.fabAddNote?.setOnClickListener {
+            val intent = Intent(this, AddFishingNoteActivity::class.java)
+            startActivity(intent)
+            overridePendingTransition(R.anim.slide_in_bottom, R.anim.slide_out_top)
+        }
+
+        // Загружаем статистику и заметки
         loadStatistics()
     }
 
@@ -92,25 +102,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         // Обновляем информацию в шапке меню
         val headerView = binding.navigationView.getHeaderView(0)
-        val userEmail = headerView.findViewById<android.widget.TextView>(R.id.textViewUserEmail)
-        val userName = headerView.findViewById<android.widget.TextView>(R.id.textViewUsername)
+        val userEmail = headerView.findViewById<TextView>(R.id.textViewUserEmail)
+        val userName = headerView.findViewById<TextView>(R.id.textViewUsername)
 
         // Заполняем информацию о пользователе, если он авторизован
         FirebaseManager.auth.currentUser?.let { user ->
             userName.text = user.displayName ?: getString(R.string.app_name)
             userEmail.text = user.email ?: "Журнал рыбалки"
         }
-    }
-
-    private fun setupUI() {
-        // Настраиваем карточки статистики для лучшей видимости
-        binding.cardTotalTrips?.visibility = View.VISIBLE
-        binding.cardBiggestFish?.visibility = View.VISIBLE
-        binding.cardFishCount?.visibility = View.VISIBLE
-        binding.cardLongestTrip?.visibility = View.VISIBLE
-        binding.cardBestMonth?.visibility = View.VISIBLE
-        binding.cardLastTrip?.visibility = View.VISIBLE
-        binding.scrollTrophies?.visibility = View.VISIBLE
     }
 
     /**
@@ -177,7 +176,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             binding.textViewAverageFishValue?.text = decimalFormat.format(stats.averageFishPerTrip)
 
             // Прогресс бар
-            // Устанавливаем прогресс на 70% от максимального значения для визуального эффекта
             val maxProgress = 100
             val progress = if (stats.totalFishCaught > 0) {
                 minOf((stats.totalFishCaught / 2.0).toInt(), maxProgress)
@@ -191,12 +189,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             stats.biggestFish?.let { biggestFish ->
                 binding.textViewBiggestFishValue?.text = decimalFormat.format(biggestFish.weight)
                 binding.textViewBiggestFishDate?.text = formatDate(biggestFish.date)
-
             } ?: run {
                 // Если нет данных о самой большой рыбе
                 binding.textViewBiggestFishValue?.text = "0,0"
                 binding.textViewBiggestFishDate?.text = "Нет данных"
-
             }
 
             // Блок "Самая долгая рыбалка"
@@ -245,6 +241,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             // Блок "Последние трофеи (фото)"
             handleTrophies(stats.lastTrophies)
         } catch (e: Exception) {
+            Log.e("MainActivity", "Ошибка при обновлении UI: ${e.message}", e)
             Toast.makeText(
                 this,
                 "Ошибка отображения: ${e.message}",
@@ -335,35 +332,40 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             binding.textViewTrophiesTitle?.visibility = View.VISIBLE
             binding.scrollTrophies?.visibility = View.VISIBLE
 
-            // Заполняем данные о трофеях (максимум 3)
-            if (trophies.size > 0 && trophies[0].photoUrl.isNotEmpty()) {
+            // Отображение первого трофея, если он есть
+            if (trophies.size > 0) {
+                val trophy1 = trophies[0]
                 binding.cardTrophy1?.visibility = View.VISIBLE
-                binding.textTrophy1Date?.text = formatShortDate(trophies[0].date)
-                loadImageWithGlide(trophies[0].photoUrl, binding.imageTrophy1)
-            } else if (trophies.size > 0) {
-                binding.cardTrophy1?.visibility = View.VISIBLE
-                binding.textTrophy1Date?.text = formatShortDate(trophies[0].date)
-                binding.imageTrophy1?.setImageResource(R.drawable.ic_fish)
+                binding.textTrophy1Date?.text = formatShortDate(trophy1.date)
+                if (trophy1.photoUrl.isNotEmpty()) {
+                    binding.imageTrophy1?.let { loadImageWithGlide(trophy1.photoUrl, it) }
+                } else {
+                    binding.imageTrophy1?.setImageResource(R.drawable.ic_fish)
+                }
             }
 
-            if (trophies.size > 1 && trophies[1].photoUrl.isNotEmpty()) {
+            // Отображение второго трофея, если он есть
+            if (trophies.size > 1) {
+                val trophy2 = trophies[1]
                 binding.cardTrophy2?.visibility = View.VISIBLE
-                binding.textTrophy2Date?.text = formatShortDate(trophies[1].date)
-                loadImageWithGlide(trophies[1].photoUrl, binding.imageTrophy2)
-            } else if (trophies.size > 1) {
-                binding.cardTrophy2?.visibility = View.VISIBLE
-                binding.textTrophy2Date?.text = formatShortDate(trophies[1].date)
-                binding.imageTrophy2?.setImageResource(R.drawable.ic_fish)
+                binding.textTrophy2Date?.text = formatShortDate(trophy2.date)
+                if (trophy2.photoUrl.isNotEmpty()) {
+                    binding.imageTrophy2?.let { loadImageWithGlide(trophy2.photoUrl, it) }
+                } else {
+                    binding.imageTrophy2?.setImageResource(R.drawable.ic_fish)
+                }
             }
 
-            if (trophies.size > 2 && trophies[2].photoUrl.isNotEmpty()) {
+            // Отображение третьего трофея, если он есть
+            if (trophies.size > 2) {
+                val trophy3 = trophies[2]
                 binding.cardTrophy3?.visibility = View.VISIBLE
-                binding.textTrophy3Date?.text = formatShortDate(trophies[2].date)
-                loadImageWithGlide(trophies[2].photoUrl, binding.imageTrophy3)
-            } else if (trophies.size > 2) {
-                binding.cardTrophy3?.visibility = View.VISIBLE
-                binding.textTrophy3Date?.text = formatShortDate(trophies[2].date)
-                binding.imageTrophy3?.setImageResource(R.drawable.ic_fish)
+                binding.textTrophy3Date?.text = formatShortDate(trophy3.date)
+                if (trophy3.photoUrl.isNotEmpty()) {
+                    binding.imageTrophy3?.let { loadImageWithGlide(trophy3.photoUrl, it) }
+                } else {
+                    binding.imageTrophy3?.setImageResource(R.drawable.ic_fish)
+                }
             }
         } catch (e: Exception) {
             Log.e("MainActivity", "Ошибка при отображении трофеев: ${e.message}", e)
@@ -389,7 +391,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     /**
      * Загружает изображение с помощью Glide
      */
-    private fun loadImageWithGlide(url: String, imageView: ImageView) {
+    private fun loadImageWithGlide(url: String, imageView: android.widget.ImageView) {
         Glide.with(this)
             .load(url)
             .placeholder(R.drawable.ic_fish) // Плейсхолдер, пока загружается
@@ -398,20 +400,23 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             .into(imageView)
     }
 
+    /**
+     * Загружает список заметок о рыбалке
+     */
     private fun loadFishingNotes() {
         val userId = FirebaseManager.getCurrentUserId() ?: return
 
         // Показываем индикатор загрузки
-        binding.progressBar?.visibility = android.view.View.VISIBLE
-        binding.textNoNotes?.visibility = android.view.View.GONE
+        binding.progressBar?.visibility = View.VISIBLE
+        binding.textNoNotes?.visibility = View.GONE
 
         FirebaseManager.firestore.collection("fishing_notes")
             .whereEqualTo("userId", userId)
-            .orderBy("date", com.google.firebase.firestore.Query.Direction.DESCENDING)
+            .orderBy("date", Query.Direction.DESCENDING)
             .get()
             .addOnSuccessListener { documents ->
                 // Скрываем индикатор загрузки
-                binding.progressBar?.visibility = android.view.View.GONE
+                binding.progressBar?.visibility = View.GONE
 
                 val fishingNotes = mutableListOf<com.example.driftnotes.models.FishingNote>()
                 for (document in documents) {
@@ -421,7 +426,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 }
 
                 // Создаем и настраиваем адаптер
-                val adapter = com.example.driftnotes.fishing.FishingNoteAdapter(fishingNotes) { note ->
+                val adapter = FishingNoteAdapter(fishingNotes) { note ->
                     val intent = Intent(this, com.example.driftnotes.fishing.FishingNoteDetailActivity::class.java)
                     intent.putExtra("note_id", note.id)
                     AnimationHelper.startActivityWithAnimation(this, intent)
@@ -430,14 +435,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
                 // Показываем сообщение, если нет записей
                 if (fishingNotes.isEmpty()) {
-                    binding.textNoNotes?.visibility = android.view.View.VISIBLE
+                    binding.textNoNotes?.visibility = View.VISIBLE
                 } else {
-                    binding.textNoNotes?.visibility = android.view.View.GONE
+                    binding.textNoNotes?.visibility = View.GONE
                 }
             }
             .addOnFailureListener { e ->
                 // Скрываем индикатор загрузки
-                binding.progressBar?.visibility = android.view.View.GONE
+                binding.progressBar?.visibility = View.GONE
 
                 // Обработка ошибки - показываем сообщение пользователю
                 Toast.makeText(
@@ -448,6 +453,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
     }
 
+    /**
+     * Настраивает нижнюю навигационную панель
+     */
     private fun setupBottomNavigation() {
         binding.bottomNavView?.setOnItemSelectedListener { item ->
             when (item.itemId) {

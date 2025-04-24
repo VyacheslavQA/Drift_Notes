@@ -9,684 +9,697 @@
     android:background="@color/background"
     tools:context=".MainActivity">
 
-    <!-- Основной контент -->
-    <androidx.core.widget.NestedScrollView
+    <!-- Основной контент (включая BottomNavigationView) -->
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true">
+        android:layout_height="match_parent">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/mainContent"
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/nestedScrollView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="16dp">
+            android:layout_height="0dp"
+            android:fillViewport="true"
+            app:layout_constraintBottom_toTopOf="@+id/bottomNavView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-            <!-- Заголовок -->
-            <TextView
-                android:id="@+id/textViewWelcome"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Моя статистика"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:textColor="@color/primary"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <!-- Блок "Всего рыбалок" -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cardTotalTrips"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginEnd="8dp"
-                app:cardBackgroundColor="@color/surface"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
-                app:layout_constraintDimensionRatio="1:1"
-                app:layout_constraintEnd_toStartOf="@+id/guideline"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textViewWelcome">
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:id="@+id/textViewTotalTripsValue"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="4"
-                        android:textColor="@color/white"
-                        android:textSize="42sp"
-                        android:textStyle="bold"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <TextView
-                        android:id="@+id/textViewTotalTripsLabel"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:text="рыбалок"
-                        android:textColor="@color/white"
-                        android:textSize="18sp"
-                        app:layout_constraintBottom_toBottomOf="@+id/textViewTotalTripsValue"
-                        app:layout_constraintStart_toEndOf="@+id/textViewTotalTripsValue" />
-
-                    <!-- Мини-график -->
-                    <LinearLayout
-                        android:id="@+id/miniChartTrips"
-                        android:layout_width="match_parent"
-                        android:layout_height="40dp"
-                        android:layout_marginTop="16dp"
-                        android:gravity="bottom"
-                        android:orientation="horizontal"
-                        app:layout_constraintTop_toBottomOf="@+id/textViewTotalTripsValue">
-
-                        <View
-                            android:layout_width="0dp"
-                            android:layout_height="20dp"
-                            android:layout_marginHorizontal="2dp"
-                            android:layout_weight="1"
-                            android:background="@color/primary" />
-
-                        <View
-                            android:layout_width="0dp"
-                            android:layout_height="30dp"
-                            android:layout_marginHorizontal="2dp"
-                            android:layout_weight="1"
-                            android:background="@color/primary" />
-
-                        <View
-                            android:layout_width="0dp"
-                            android:layout_height="15dp"
-                            android:layout_marginHorizontal="2dp"
-                            android:layout_weight="1"
-                            android:background="@color/primary" />
-
-                        <View
-                            android:layout_width="0dp"
-                            android:layout_height="25dp"
-                            android:layout_marginHorizontal="2dp"
-                            android:layout_weight="1"
-                            android:background="@color/primary" />
-
-                        <View
-                            android:layout_width="0dp"
-                            android:layout_height="35dp"
-                            android:layout_marginHorizontal="2dp"
-                            android:layout_weight="1"
-                            android:background="@color/primary" />
-
-                        <View
-                            android:layout_width="0dp"
-                            android:layout_height="18dp"
-                            android:layout_marginHorizontal="2dp"
-                            android:layout_weight="1"
-                            android:background="@color/primary" />
-                    </LinearLayout>
-                </androidx.constraintlayout.widget.ConstraintLayout>
-            </androidx.cardview.widget.CardView>
-
-            <!-- Блок "Самая большая рыба" -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cardBiggestFish"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_marginStart="8dp"
-                app:cardBackgroundColor="@color/surface"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
-                app:layout_constraintBottom_toBottomOf="@+id/cardTotalTrips"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="@+id/guideline"
-                app:layout_constraintTop_toTopOf="@+id/cardTotalTrips">
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:id="@+id/textViewBiggestFishTitle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="САМАЯ БОЛЬШАЯ РЫБА"
-                        android:textColor="@color/primary"
-                        android:textSize="14sp"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <TextView
-                        android:id="@+id/textViewBiggestFishValue"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="7,6"
-                        android:textColor="@color/white"
-                        android:textSize="42sp"
-                        android:textStyle="bold"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/textViewBiggestFishTitle" />
-
-                    <TextView
-                        android:id="@+id/textViewBiggestFishWeight"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:text="кг"
-                        android:textColor="@color/white"
-                        android:textSize="18sp"
-                        app:layout_constraintBottom_toBottomOf="@+id/textViewBiggestFishValue"
-                        app:layout_constraintStart_toEndOf="@+id/textViewBiggestFishValue" />
-
-                    <TextView
-                        android:id="@+id/textViewBiggestFishDate"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="22 июня"
-                        android:textColor="@color/white"
-                        android:textSize="14sp"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/textViewBiggestFishValue" />
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
-            </androidx.cardview.widget.CardView>
-
-            <!-- Блок "Поймано рыб и среднее" -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cardFishCount"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginEnd="8dp"
-                app:cardBackgroundColor="@color/surface"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
-                app:layout_constraintDimensionRatio="1:1"
-                app:layout_constraintEnd_toStartOf="@+id/guideline"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/cardTotalTrips">
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:id="@+id/textViewTotalFishValue"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="5"
-                        android:textColor="@color/white"
-                        android:textSize="42sp"
-                        android:textStyle="bold"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <TextView
-                        android:id="@+id/textViewTotalFishLabel"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:text="рыб"
-                        android:textColor="@color/white"
-                        android:textSize="18sp"
-                        app:layout_constraintBottom_toBottomOf="@+id/textViewTotalFishValue"
-                        app:layout_constraintStart_toEndOf="@+id/textViewTotalFishValue" />
-
-                    <!-- Прогресс-бар -->
-                    <ProgressBar
-                        android:id="@+id/progressBarFish"
-                        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:progress="70"
-                        android:progressTint="@color/primary"
-                        app:layout_constraintTop_toBottomOf="@+id/textViewTotalFishValue" />
-
-                    <TextView
-                        android:id="@+id/textViewAverageFishValue"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="1,2"
-                        android:textColor="@color/white"
-                        android:textSize="34sp"
-                        android:textStyle="bold"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/progressBarFish" />
-
-                    <TextView
-                        android:id="@+id/textViewAverageFishLabel"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:text="за рыбалку"
-                        android:textColor="@color/white"
-                        android:textSize="14sp"
-                        app:layout_constraintBottom_toBottomOf="@+id/textViewAverageFishValue"
-                        app:layout_constraintStart_toEndOf="@+id/textViewAverageFishValue" />
-                </androidx.constraintlayout.widget.ConstraintLayout>
-            </androidx.cardview.widget.CardView>
-
-            <!-- Блок "Самая долгая рыбалка" -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cardLongestTrip"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_marginStart="8dp"
-                app:cardBackgroundColor="@color/surface"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
-                app:layout_constraintBottom_toBottomOf="@+id/cardFishCount"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="@+id/guideline"
-                app:layout_constraintTop_toTopOf="@+id/cardFishCount">
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:id="@+id/textViewLongestTripTitle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="САМАЯ ДОЛГАЯ РЫБАЛКА"
-                        android:textColor="@color/primary"
-                        android:textSize="14sp"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <TextView
-                        android:id="@+id/textViewLongestTripValue"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="0"
-                        android:textColor="@color/white"
-                        android:textSize="42sp"
-                        android:textStyle="bold"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/textViewLongestTripTitle" />
-
-                    <TextView
-                        android:id="@+id/textViewLongestTripDays"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:text="дней"
-                        android:textColor="@color/white"
-                        android:textSize="18sp"
-                        app:layout_constraintBottom_toBottomOf="@+id/textViewLongestTripValue"
-                        app:layout_constraintStart_toEndOf="@+id/textViewLongestTripValue" />
-
-                    <TextView
-                        android:id="@+id/textViewLongestTripDate"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Нет данных"
-                        android:textColor="@color/white"
-                        android:textSize="14sp"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/textViewLongestTripValue" />
-
-                    <TextView
-                        android:id="@+id/textViewLongestTripLocation"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text=""
-                        android:textColor="@color/white"
-                        android:textSize="14sp"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/textViewLongestTripDate" />
-                </androidx.constraintlayout.widget.ConstraintLayout>
-            </androidx.cardview.widget.CardView>
-
-            <!-- Блок "Лучший месяц" -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cardBestMonth"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginEnd="8dp"
-                app:cardBackgroundColor="@color/surface"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
-                app:layout_constraintDimensionRatio="1:1"
-                app:layout_constraintEnd_toStartOf="@+id/guideline"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/cardFishCount">
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:id="@+id/textViewBestMonthTitle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="ЛУЧШИЙ МЕСЯЦ"
-                        android:textColor="@color/primary"
-                        android:textSize="14sp"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <TextView
-                        android:id="@+id/textViewBestMonthValue"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Апрель"
-                        android:textColor="@color/white"
-                        android:textSize="26sp"
-                        android:textStyle="bold"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/textViewBestMonthTitle" />
-
-                    <TextView
-                        android:id="@+id/textViewBestMonthCount"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="5 рыб"
-                        android:textColor="@color/white"
-                        android:textSize="24sp"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/textViewBestMonthValue" />
-                </androidx.constraintlayout.widget.ConstraintLayout>
-            </androidx.cardview.widget.CardView>
-
-            <!-- Блок "Последний выезд" -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cardLastTrip"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_marginStart="8dp"
-                app:cardBackgroundColor="@color/surface"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
-                app:layout_constraintBottom_toBottomOf="@+id/cardBestMonth"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="@+id/guideline"
-                app:layout_constraintTop_toTopOf="@+id/cardBestMonth">
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:id="@+id/textViewLastTripTitle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="ПОСЛЕДНИЙ ВЫЕЗД"
-                        android:textColor="@color/primary"
-                        android:textSize="14sp"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <TextView
-                        android:id="@+id/textViewLastTripLocation"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Река тест"
-                        android:textColor="@color/white"
-                        android:textSize="28sp"
-                        android:textStyle="bold"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/textViewLastTripTitle" />
-
-                    <TextView
-                        android:id="@+id/textViewLastTripDate"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="22 апреля"
-                        android:textColor="@color/white"
-                        android:textSize="14sp"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/textViewLastTripLocation" />
-                </androidx.constraintlayout.widget.ConstraintLayout>
-            </androidx.cardview.widget.CardView>
-
-            <!-- Блок "Последние трофеи (фото)" -->
-            <TextView
-                android:id="@+id/textViewTrophiesTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="ПОСЛЕДНИЕ ТРОФЕИ"
-                android:textColor="@color/primary"
-                android:textSize="14sp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/cardBestMonth" />
-
-            <HorizontalScrollView
-                android:id="@+id/scrollTrophies"
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/mainContent"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:scrollbars="none"
-                app:layout_constraintTop_toBottomOf="@+id/textViewTrophiesTitle">
+                android:padding="16dp">
 
-                <LinearLayout
+                <!-- Заголовок -->
+                <TextView
+                    android:id="@+id/textViewWelcome"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:text="Моя статистика"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/primary"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-                    <!-- Фото трофея 1 -->
-                    <androidx.cardview.widget.CardView
-                        android:id="@+id/cardTrophy1"
-                        android:layout_width="120dp"
-                        android:layout_height="120dp"
-                        android:layout_marginEnd="8dp"
-                        app:cardBackgroundColor="@color/surface"
-                        app:cardCornerRadius="8dp"
-                        app:cardElevation="2dp">
+                <!-- Блок "Всего рыбалок" -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cardTotalTrips"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginEnd="8dp"
+                    app:cardBackgroundColor="@color/surface"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="4dp"
+                    app:layout_constraintDimensionRatio="1:1"
+                    app:layout_constraintEnd_toStartOf="@+id/guideline"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textViewWelcome">
 
-                        <androidx.constraintlayout.widget.ConstraintLayout
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:id="@+id/textViewTotalTripsValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="4"
+                            android:textColor="@color/white"
+                            android:textSize="42sp"
+                            android:textStyle="bold"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:id="@+id/textViewTotalTripsLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="рыбалок"
+                            android:textColor="@color/white"
+                            android:textSize="18sp"
+                            app:layout_constraintBottom_toBottomOf="@+id/textViewTotalTripsValue"
+                            app:layout_constraintStart_toEndOf="@+id/textViewTotalTripsValue" />
+
+                        <!-- Мини-график -->
+                        <LinearLayout
+                            android:id="@+id/miniChartTrips"
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent">
+                            android:layout_height="40dp"
+                            android:layout_marginTop="16dp"
+                            android:gravity="bottom"
+                            android:orientation="horizontal"
+                            app:layout_constraintTop_toBottomOf="@+id/textViewTotalTripsValue">
 
-                            <ImageView
-                                android:id="@+id/imageTrophy1"
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:scaleType="centerCrop"
-                                app:layout_constraintBottom_toBottomOf="parent"
-                                app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintTop_toTopOf="parent" />
+                            <View
+                                android:layout_width="0dp"
+                                android:layout_height="20dp"
+                                android:layout_marginHorizontal="2dp"
+                                android:layout_weight="1"
+                                android:background="@color/primary" />
 
-                            <TextView
-                                android:id="@+id/textTrophy1Date"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_margin="4dp"
-                                android:background="#80000000"
-                                android:padding="2dp"
-                                android:text="1 сент."
-                                android:textColor="@color/white"
-                                android:textSize="12sp"
-                                app:layout_constraintBottom_toBottomOf="parent"
-                                app:layout_constraintStart_toStartOf="parent" />
-                        </androidx.constraintlayout.widget.ConstraintLayout>
-                    </androidx.cardview.widget.CardView>
+                            <View
+                                android:layout_width="0dp"
+                                android:layout_height="30dp"
+                                android:layout_marginHorizontal="2dp"
+                                android:layout_weight="1"
+                                android:background="@color/primary" />
 
-                    <!-- Фото трофея 2 -->
-                    <androidx.cardview.widget.CardView
-                        android:id="@+id/cardTrophy2"
-                        android:layout_width="120dp"
-                        android:layout_height="120dp"
-                        android:layout_marginEnd="8dp"
-                        app:cardBackgroundColor="@color/surface"
-                        app:cardCornerRadius="8dp"
-                        app:cardElevation="2dp">
+                            <View
+                                android:layout_width="0dp"
+                                android:layout_height="15dp"
+                                android:layout_marginHorizontal="2dp"
+                                android:layout_weight="1"
+                                android:background="@color/primary" />
 
-                        <androidx.constraintlayout.widget.ConstraintLayout
+                            <View
+                                android:layout_width="0dp"
+                                android:layout_height="25dp"
+                                android:layout_marginHorizontal="2dp"
+                                android:layout_weight="1"
+                                android:background="@color/primary" />
+
+                            <View
+                                android:layout_width="0dp"
+                                android:layout_height="35dp"
+                                android:layout_marginHorizontal="2dp"
+                                android:layout_weight="1"
+                                android:background="@color/primary" />
+
+                            <View
+                                android:layout_width="0dp"
+                                android:layout_height="18dp"
+                                android:layout_marginHorizontal="2dp"
+                                android:layout_weight="1"
+                                android:background="@color/primary" />
+                        </LinearLayout>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Блок "Самая большая рыба" -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cardBiggestFish"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_marginStart="8dp"
+                    app:cardBackgroundColor="@color/surface"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="4dp"
+                    app:layout_constraintBottom_toBottomOf="@+id/cardTotalTrips"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="@+id/guideline"
+                    app:layout_constraintTop_toTopOf="@+id/cardTotalTrips">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:id="@+id/textViewBiggestFishTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="САМАЯ БОЛЬШАЯ РЫБА"
+                            android:textColor="@color/primary"
+                            android:textSize="14sp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:id="@+id/textViewBiggestFishValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="7,6"
+                            android:textColor="@color/white"
+                            android:textSize="42sp"
+                            android:textStyle="bold"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/textViewBiggestFishTitle" />
+
+                        <TextView
+                            android:id="@+id/textViewBiggestFishWeight"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="кг"
+                            android:textColor="@color/white"
+                            android:textSize="18sp"
+                            app:layout_constraintBottom_toBottomOf="@+id/textViewBiggestFishValue"
+                            app:layout_constraintStart_toEndOf="@+id/textViewBiggestFishValue" />
+
+                        <TextView
+                            android:id="@+id/textViewBiggestFishDate"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="22 июня"
+                            android:textColor="@color/white"
+                            android:textSize="14sp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/textViewBiggestFishValue" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Блок "Поймано рыб и среднее" -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cardFishCount"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginEnd="8dp"
+                    app:cardBackgroundColor="@color/surface"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="4dp"
+                    app:layout_constraintDimensionRatio="1:1"
+                    app:layout_constraintEnd_toStartOf="@+id/guideline"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/cardTotalTrips">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:id="@+id/textViewTotalFishValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="5"
+                            android:textColor="@color/white"
+                            android:textSize="42sp"
+                            android:textStyle="bold"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:id="@+id/textViewTotalFishLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="рыб"
+                            android:textColor="@color/white"
+                            android:textSize="18sp"
+                            app:layout_constraintBottom_toBottomOf="@+id/textViewTotalFishValue"
+                            app:layout_constraintStart_toEndOf="@+id/textViewTotalFishValue" />
+
+                        <!-- Прогресс-бар -->
+                        <ProgressBar
+                            android:id="@+id/progressBarFish"
+                            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent">
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:progress="70"
+                            android:progressTint="@color/primary"
+                            app:layout_constraintTop_toBottomOf="@+id/textViewTotalFishValue" />
 
-                            <ImageView
-                                android:id="@+id/imageTrophy2"
+                        <TextView
+                            android:id="@+id/textViewAverageFishValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="1,2"
+                            android:textColor="@color/white"
+                            android:textSize="34sp"
+                            android:textStyle="bold"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/progressBarFish" />
+
+                        <TextView
+                            android:id="@+id/textViewAverageFishLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="за рыбалку"
+                            android:textColor="@color/white"
+                            android:textSize="14sp"
+                            app:layout_constraintBottom_toBottomOf="@+id/textViewAverageFishValue"
+                            app:layout_constraintStart_toEndOf="@+id/textViewAverageFishValue" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Блок "Самая долгая рыбалка" -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cardLongestTrip"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_marginStart="8dp"
+                    app:cardBackgroundColor="@color/surface"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="4dp"
+                    app:layout_constraintBottom_toBottomOf="@+id/cardFishCount"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="@+id/guideline"
+                    app:layout_constraintTop_toTopOf="@+id/cardFishCount">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:id="@+id/textViewLongestTripTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="САМАЯ ДОЛГАЯ РЫБАЛКА"
+                            android:textColor="@color/primary"
+                            android:textSize="14sp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:id="@+id/textViewLongestTripValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="0"
+                            android:textColor="@color/white"
+                            android:textSize="42sp"
+                            android:textStyle="bold"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/textViewLongestTripTitle" />
+
+                        <TextView
+                            android:id="@+id/textViewLongestTripDays"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="дней"
+                            android:textColor="@color/white"
+                            android:textSize="18sp"
+                            app:layout_constraintBottom_toBottomOf="@+id/textViewLongestTripValue"
+                            app:layout_constraintStart_toEndOf="@+id/textViewLongestTripValue" />
+
+                        <TextView
+                            android:id="@+id/textViewLongestTripDate"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="Нет данных"
+                            android:textColor="@color/white"
+                            android:textSize="14sp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/textViewLongestTripValue" />
+
+                        <TextView
+                            android:id="@+id/textViewLongestTripLocation"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text=""
+                            android:textColor="@color/white"
+                            android:textSize="14sp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/textViewLongestTripDate" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Блок "Лучший месяц" -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cardBestMonth"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginEnd="8dp"
+                    app:cardBackgroundColor="@color/surface"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="4dp"
+                    app:layout_constraintDimensionRatio="1:1"
+                    app:layout_constraintEnd_toStartOf="@+id/guideline"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/cardFishCount">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:id="@+id/textViewBestMonthTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ЛУЧШИЙ МЕСЯЦ"
+                            android:textColor="@color/primary"
+                            android:textSize="14sp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:id="@+id/textViewBestMonthValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="Апрель"
+                            android:textColor="@color/white"
+                            android:textSize="26sp"
+                            android:textStyle="bold"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/textViewBestMonthTitle" />
+
+                        <TextView
+                            android:id="@+id/textViewBestMonthCount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="5 рыб"
+                            android:textColor="@color/white"
+                            android:textSize="24sp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/textViewBestMonthValue" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Блок "Последний выезд" -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cardLastTrip"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_marginStart="8dp"
+                    app:cardBackgroundColor="@color/surface"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="4dp"
+                    app:layout_constraintBottom_toBottomOf="@+id/cardBestMonth"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="@+id/guideline"
+                    app:layout_constraintTop_toTopOf="@+id/cardBestMonth">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:id="@+id/textViewLastTripTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ПОСЛЕДНИЙ ВЫЕЗД"
+                            android:textColor="@color/primary"
+                            android:textSize="14sp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:id="@+id/textViewLastTripLocation"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="Река тест"
+                            android:textColor="@color/white"
+                            android:textSize="28sp"
+                            android:textStyle="bold"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/textViewLastTripTitle" />
+
+                        <TextView
+                            android:id="@+id/textViewLastTripDate"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="22 апреля"
+                            android:textColor="@color/white"
+                            android:textSize="14sp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/textViewLastTripLocation" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Блок "Последние трофеи (фото)" -->
+                <TextView
+                    android:id="@+id/textViewTrophiesTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:text="ПОСЛЕДНИЕ ТРОФЕИ"
+                    android:textColor="@color/primary"
+                    android:textSize="14sp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/cardBestMonth" />
+
+                <HorizontalScrollView
+                    android:id="@+id/scrollTrophies"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:scrollbars="none"
+                    app:layout_constraintTop_toBottomOf="@+id/textViewTrophiesTitle">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <!-- Фото трофея 1 -->
+                        <androidx.cardview.widget.CardView
+                            android:id="@+id/cardTrophy1"
+                            android:layout_width="120dp"
+                            android:layout_height="120dp"
+                            android:layout_marginEnd="8dp"
+                            app:cardBackgroundColor="@color/surface"
+                            app:cardCornerRadius="8dp"
+                            app:cardElevation="2dp">
+
+                            <androidx.constraintlayout.widget.ConstraintLayout
                                 android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:scaleType="centerCrop"
-                                app:layout_constraintBottom_toBottomOf="parent"
-                                app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintTop_toTopOf="parent" />
+                                android:layout_height="match_parent">
 
-                            <TextView
-                                android:id="@+id/textTrophy2Date"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_margin="4dp"
-                                android:background="#80000000"
-                                android:padding="2dp"
-                                android:text="24 авг."
-                                android:textColor="@color/white"
-                                android:textSize="12sp"
-                                app:layout_constraintBottom_toBottomOf="parent"
-                                app:layout_constraintStart_toStartOf="parent" />
-                        </androidx.constraintlayout.widget.ConstraintLayout>
-                    </androidx.cardview.widget.CardView>
+                                <ImageView
+                                    android:id="@+id/imageTrophy1"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:scaleType="centerCrop"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    app:layout_constraintEnd_toEndOf="parent"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    app:layout_constraintTop_toTopOf="parent" />
 
-                    <!-- Фото трофея 3 -->
-                    <androidx.cardview.widget.CardView
-                        android:id="@+id/cardTrophy3"
-                        android:layout_width="120dp"
-                        android:layout_height="120dp"
-                        app:cardBackgroundColor="@color/surface"
-                        app:cardCornerRadius="8dp"
-                        app:cardElevation="2dp">
+                                <TextView
+                                    android:id="@+id/textTrophy1Date"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_margin="4dp"
+                                    android:background="#80000000"
+                                    android:padding="2dp"
+                                    android:text="1 сент."
+                                    android:textColor="@color/white"
+                                    android:textSize="12sp"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    app:layout_constraintStart_toStartOf="parent" />
+                            </androidx.constraintlayout.widget.ConstraintLayout>
+                        </androidx.cardview.widget.CardView>
 
-                        <androidx.constraintlayout.widget.ConstraintLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent">
+                        <!-- Фото трофея 2 -->
+                        <androidx.cardview.widget.CardView
+                            android:id="@+id/cardTrophy2"
+                            android:layout_width="120dp"
+                            android:layout_height="120dp"
+                            android:layout_marginEnd="8dp"
+                            app:cardBackgroundColor="@color/surface"
+                            app:cardCornerRadius="8dp"
+                            app:cardElevation="2dp">
 
-                            <ImageView
-                                android:id="@+id/imageTrophy3"
+                            <androidx.constraintlayout.widget.ConstraintLayout
                                 android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:scaleType="centerCrop"
-                                app:layout_constraintBottom_toBottomOf="parent"
-                                app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintTop_toTopOf="parent" />
+                                android:layout_height="match_parent">
 
-                            <TextView
-                                android:id="@+id/textTrophy3Date"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_margin="4dp"
-                                android:background="#80000000"
-                                android:padding="2dp"
-                                android:text="8 авг."
-                                android:textColor="@color/white"
-                                android:textSize="12sp"
-                                app:layout_constraintBottom_toBottomOf="parent"
-                                app:layout_constraintStart_toStartOf="parent" />
-                        </androidx.constraintlayout.widget.ConstraintLayout>
-                    </androidx.cardview.widget.CardView>
-                </LinearLayout>
-            </HorizontalScrollView>
+                                <ImageView
+                                    android:id="@+id/imageTrophy2"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:scaleType="centerCrop"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    app:layout_constraintEnd_toEndOf="parent"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    app:layout_constraintTop_toTopOf="parent" />
 
-            <!-- Заголовок списка заметок -->
-            <TextView
-                android:id="@+id/textViewMyNotesTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="Мои заметки"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="@color/primary"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/scrollTrophies" />
+                                <TextView
+                                    android:id="@+id/textTrophy2Date"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_margin="4dp"
+                                    android:background="#80000000"
+                                    android:padding="2dp"
+                                    android:text="24 авг."
+                                    android:textColor="@color/white"
+                                    android:textSize="12sp"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    app:layout_constraintStart_toStartOf="parent" />
+                            </androidx.constraintlayout.widget.ConstraintLayout>
+                        </androidx.cardview.widget.CardView>
 
-            <!-- Список заметок -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerView"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:clipToPadding="false"
-                android:padding="8dp"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textViewMyNotesTitle"
-                tools:listitem="@layout/item_fishing_note" />
+                        <!-- Фото трофея 3 -->
+                        <androidx.cardview.widget.CardView
+                            android:id="@+id/cardTrophy3"
+                            android:layout_width="120dp"
+                            android:layout_height="120dp"
+                            app:cardBackgroundColor="@color/surface"
+                            app:cardCornerRadius="8dp"
+                            app:cardElevation="2dp">
 
-            <TextView
-                android:id="@+id/textNoNotes"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:gravity="center"
-                android:text="@string/no_notes_yet"
-                android:textColor="#CCCCCC"
-                android:visibility="gone"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textViewMyNotesTitle" />
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent">
 
-            <!-- Направляющая для разделения экрана на две колонки -->
-            <androidx.constraintlayout.widget.Guideline
-                android:id="@+id/guideline"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                app:layout_constraintGuide_percent="0.5" />
+                                <ImageView
+                                    android:id="@+id/imageTrophy3"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:scaleType="centerCrop"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    app:layout_constraintEnd_toEndOf="parent"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    app:layout_constraintTop_toTopOf="parent" />
 
-            <!-- Индикатор загрузки -->
-            <ProgressBar
-                android:id="@+id/progressBar"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:visibility="gone"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                                <TextView
+                                    android:id="@+id/textTrophy3Date"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_margin="4dp"
+                                    android:background="#80000000"
+                                    android:padding="2dp"
+                                    android:text="8 авг."
+                                    android:textColor="@color/white"
+                                    android:textSize="12sp"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    app:layout_constraintStart_toStartOf="parent" />
+                            </androidx.constraintlayout.widget.ConstraintLayout>
+                        </androidx.cardview.widget.CardView>
+                    </LinearLayout>
+                </HorizontalScrollView>
 
-            <!-- Кнопка добавления заметки -->
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/fabAddNote"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="16dp"
-                android:contentDescription="@string/add_note"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:srcCompat="@android:drawable/ic_input_add"
-                app:fabSize="normal" />
+                <!-- Заголовок списка заметок -->
+                <TextView
+                    android:id="@+id/textViewMyNotesTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:text="Мои заметки"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/primary"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/scrollTrophies" />
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </androidx.core.widget.NestedScrollView>
+                <!-- Список заметок -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerView"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:clipToPadding="false"
+                    android:padding="8dp"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textViewMyNotesTitle"
+                    tools:listitem="@layout/item_fishing_note" />
 
-    <!-- Нижняя навигационная панель -->
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottomNavView"
-        android:layout_width="match_parent"
-        android:layout_height="54dp"
-        android:layout_gravity="bottom"
-        android:background="@color/surface"
-        app:itemIconTint="@color/bottom_nav_colors"
-        app:itemTextColor="@color/bottom_nav_text_colors"
-        app:labelVisibilityMode="labeled"
-        app:menu="@menu/bottom_nav_menu" />
+                <TextView
+                    android:id="@+id/textNoNotes"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:gravity="center"
+                    android:text="@string/no_notes_yet"
+                    android:textColor="#CCCCCC"
+                    android:visibility="gone"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textViewMyNotesTitle" />
+
+                <!-- Направляющая для разделения экрана на две колонки -->
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/guideline"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.5" />
+
+                <!-- Индикатор загрузки -->
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <!-- Кнопка добавления заметки -->
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/fabAddNote"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:contentDescription="@string/add_note"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:srcCompat="@android:drawable/ic_input_add"
+                    app:fabSize="normal" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <!-- Нижняя навигационная панель -->
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottomNavView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/surface"
+            app:itemIconTint="@color/bottom_nav_colors"
+            app:itemTextColor="@color/bottom_nav_text_colors"
+            app:labelVisibilityMode="labeled"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:menu="@menu/bottom_nav_menu" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- Боковое навигационное меню -->
     <com.google.android.material.navigation.NavigationView
