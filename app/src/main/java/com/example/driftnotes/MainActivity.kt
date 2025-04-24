@@ -11,18 +11,14 @@ import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.GravityCompat
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.bumptech.glide.Glide
 import com.example.driftnotes.databinding.ActivityMainBinding
 import com.example.driftnotes.models.FishingStats
 import com.example.driftnotes.repository.StatsRepository
 import com.example.driftnotes.utils.DateFormatter
 import com.example.driftnotes.utils.FirebaseManager
 import com.example.driftnotes.fishing.AddFishingNoteActivity
-import com.example.driftnotes.fishing.FishingNoteAdapter
 import com.example.driftnotes.utils.AnimationHelper
 import com.google.android.material.navigation.NavigationView
-import com.google.firebase.firestore.Query
 import com.example.driftnotes.profile.ProfileActivity
 import com.example.driftnotes.timer.TimerActivity
 import com.example.driftnotes.calendar.CalendarActivity
@@ -63,9 +59,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             return
         }
 
-        // Настраиваем RecyclerView
-        binding.recyclerView?.layoutManager = LinearLayoutManager(this)
-
         // Настраиваем боковое меню
         setupDrawerMenu()
 
@@ -79,7 +72,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             overridePendingTransition(R.anim.slide_in_bottom, R.anim.slide_out_top)
         }
 
-        // Загружаем статистику и заметки
+        // Загружаем статистику
         loadStatistics()
     }
 
@@ -155,9 +148,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             } finally {
                 // Скрываем индикатор загрузки
                 binding.progressBar?.visibility = View.GONE
-
-                // После загрузки статистики, загружаем список заметок
-                loadFishingNotes()
             }
         }
     }
@@ -237,9 +227,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 binding.textViewLastTripLocation?.text = "Нет данных"
                 binding.textViewLastTripDate?.text = ""
             }
-
-            // Блок "Последние трофеи (фото)"
-            handleTrophies(stats.lastTrophies)
         } catch (e: Exception) {
             Log.e("MainActivity", "Ошибка при обновлении UI: ${e.message}", e)
             Toast.makeText(
@@ -309,148 +296,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             count % 10 in 2..4 && (count % 100 < 10 || count % 100 > 20) -> "рыбалки"
             else -> "рыбалок"
         }
-    }
-
-    /**
-     * Обрабатывает отображение трофеев
-     */
-    private fun handleTrophies(trophies: List<com.example.driftnotes.models.TrophyInfo>) {
-        try {
-            // Скрываем все карточки трофеев по умолчанию
-            binding.cardTrophy1?.visibility = View.GONE
-            binding.cardTrophy2?.visibility = View.GONE
-            binding.cardTrophy3?.visibility = View.GONE
-
-            // Если список трофеев пуст, скрываем весь блок
-            if (trophies.isEmpty()) {
-                binding.textViewTrophiesTitle?.visibility = View.GONE
-                binding.scrollTrophies?.visibility = View.GONE
-                return
-            }
-
-            // Показываем блок трофеев
-            binding.textViewTrophiesTitle?.visibility = View.VISIBLE
-            binding.scrollTrophies?.visibility = View.VISIBLE
-
-            // Отображение первого трофея, если он есть
-            if (trophies.size > 0) {
-                val trophy1 = trophies[0]
-                binding.cardTrophy1?.visibility = View.VISIBLE
-                binding.textTrophy1Date?.text = formatShortDate(trophy1.date)
-                if (trophy1.photoUrl.isNotEmpty()) {
-                    binding.imageTrophy1?.let { loadImageWithGlide(trophy1.photoUrl, it) }
-                } else {
-                    binding.imageTrophy1?.setImageResource(R.drawable.ic_fish)
-                }
-            }
-
-            // Отображение второго трофея, если он есть
-            if (trophies.size > 1) {
-                val trophy2 = trophies[1]
-                binding.cardTrophy2?.visibility = View.VISIBLE
-                binding.textTrophy2Date?.text = formatShortDate(trophy2.date)
-                if (trophy2.photoUrl.isNotEmpty()) {
-                    binding.imageTrophy2?.let { loadImageWithGlide(trophy2.photoUrl, it) }
-                } else {
-                    binding.imageTrophy2?.setImageResource(R.drawable.ic_fish)
-                }
-            }
-
-            // Отображение третьего трофея, если он есть
-            if (trophies.size > 2) {
-                val trophy3 = trophies[2]
-                binding.cardTrophy3?.visibility = View.VISIBLE
-                binding.textTrophy3Date?.text = formatShortDate(trophy3.date)
-                if (trophy3.photoUrl.isNotEmpty()) {
-                    binding.imageTrophy3?.let { loadImageWithGlide(trophy3.photoUrl, it) }
-                } else {
-                    binding.imageTrophy3?.setImageResource(R.drawable.ic_fish)
-                }
-            }
-        } catch (e: Exception) {
-            Log.e("MainActivity", "Ошибка при отображении трофеев: ${e.message}", e)
-        }
-    }
-
-    /**
-     * Форматирует дату в коротком формате "1 сен."
-     */
-    private fun formatShortDate(date: Date): String {
-        val calendar = Calendar.getInstance()
-        calendar.time = date
-
-        val day = calendar.get(Calendar.DAY_OF_MONTH)
-
-        // Получаем первые три буквы месяца
-        val monthFormat = SimpleDateFormat("MMMM", Locale("ru"))
-        val month = monthFormat.format(date).substring(0, 3)
-
-        return "$day $month."
-    }
-
-    /**
-     * Загружает изображение с помощью Glide
-     */
-    private fun loadImageWithGlide(url: String, imageView: android.widget.ImageView) {
-        Glide.with(this)
-            .load(url)
-            .placeholder(R.drawable.ic_fish) // Плейсхолдер, пока загружается
-            .error(R.drawable.ic_fish) // Изображение при ошибке загрузки
-            .centerCrop()
-            .into(imageView)
-    }
-
-    /**
-     * Загружает список заметок о рыбалке
-     */
-    private fun loadFishingNotes() {
-        val userId = FirebaseManager.getCurrentUserId() ?: return
-
-        // Показываем индикатор загрузки
-        binding.progressBar?.visibility = View.VISIBLE
-        binding.textNoNotes?.visibility = View.GONE
-
-        FirebaseManager.firestore.collection("fishing_notes")
-            .whereEqualTo("userId", userId)
-            .orderBy("date", Query.Direction.DESCENDING)
-            .get()
-            .addOnSuccessListener { documents ->
-                // Скрываем индикатор загрузки
-                binding.progressBar?.visibility = View.GONE
-
-                val fishingNotes = mutableListOf<com.example.driftnotes.models.FishingNote>()
-                for (document in documents) {
-                    val note = document.toObject(com.example.driftnotes.models.FishingNote::class.java)
-                        .copy(id = document.id)
-                    fishingNotes.add(note)
-                }
-
-                // Создаем и настраиваем адаптер
-                val adapter = FishingNoteAdapter(fishingNotes) { note ->
-                    val intent = Intent(this, com.example.driftnotes.fishing.FishingNoteDetailActivity::class.java)
-                    intent.putExtra("note_id", note.id)
-                    AnimationHelper.startActivityWithAnimation(this, intent)
-                }
-                binding.recyclerView?.adapter = adapter
-
-                // Показываем сообщение, если нет записей
-                if (fishingNotes.isEmpty()) {
-                    binding.textNoNotes?.visibility = View.VISIBLE
-                } else {
-                    binding.textNoNotes?.visibility = View.GONE
-                }
-            }
-            .addOnFailureListener { e ->
-                // Скрываем индикатор загрузки
-                binding.progressBar?.visibility = View.GONE
-
-                // Обработка ошибки - показываем сообщение пользователю
-                Toast.makeText(
-                    this,
-                    getString(R.string.error_loading_notes, e.message),
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
     }
 
     /**
