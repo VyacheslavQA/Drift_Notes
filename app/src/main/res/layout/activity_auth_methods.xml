@@ -8,12 +8,24 @@
     android:background="@drawable/auth_gradient_background"
     tools:context=".auth.AuthMethodsActivity">
 
-    <!-- Название приложения -->
+    <!-- Картинка с логотипом рыбки (перемещена наверх) -->
+    <ImageView
+        android:id="@+id/logoImageView"
+        android:layout_width="190dp"
+        android:layout_height="190dp"
+        android:layout_marginTop="40dp"
+        android:padding="5dp"
+        android:src="@drawable/ic_fishing_hook"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Название приложения (перемещено под логотип) -->
     <TextView
         android:id="@+id/textAppName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="60dp"
+        android:layout_marginTop="8dp"
         android:text="@string/app_name"
         android:textColor="#D7CCA1"
         android:textSize="48sp"
@@ -21,7 +33,7 @@
         android:alpha="0.9"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/logoImageView" />
 
     <!-- Заголовок выбора способа входа -->
     <TextView
@@ -56,29 +68,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewTitle" />
 
-    <!-- Картинка с логотипом рыбки -->
-    <ImageView
-        android:id="@+id/logoImageView"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:layout_marginTop="4dp"
-        android:padding="5dp"
-
-        android:src="@drawable/ic_fishing_hook"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textViewDescription" />
-
     <!-- Кнопка входа по email с новым стилем -->
-
-    <!-- Кнопка входа по телефону с новым стилем -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonEmailLogin"
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         android:layout_width="0dp"
         android:layout_height="64dp"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="16dp"
         android:layout_marginEnd="32dp"
         android:backgroundTint="#0A1710"
         android:text="@string/login_with_email"
@@ -90,12 +87,12 @@
         app:iconPadding="16dp"
         app:iconTint="#D7CCA1"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/logoImageView"
+        app:layout_constraintTop_toBottomOf="@+id/textViewDescription"
         app:strokeColor="#D7CCA1"
         app:strokeWidth="1dp" />
 
+    <!-- Кнопка входа по телефону с новым стилем -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonPhoneLogin"
         android:layout_width="0dp"
@@ -141,9 +138,6 @@
         app:layout_constraintTop_toBottomOf="@+id/buttonPhoneLogin" />
 
     <!-- Текст регистрации нового аккаунта -->
-
-    <!-- Кнопка назад -->
-
     <TextView
         android:id="@+id/textViewCreateAccount"
         android:layout_width="wrap_content"
@@ -159,6 +153,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/buttonGoogleLogin" />
 
+    <!-- Кнопка назад -->
     <TextView
         android:id="@+id/textViewBack"
         android:layout_width="wrap_content"
