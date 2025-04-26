@@ -122,6 +122,13 @@
             android:label="Личный кабинет"
             android:theme="@style/Theme.DriftNotes" />
 
+        <!-- Добавляем активность для обрезки изображений -->
+        <activity
+            android:name=".profile.ImageCropperActivity"
+            android:exported="false"
+            android:label="Обрезка изображения"
+            android:theme="@style/Theme.DriftNotes" />
+
         <service
             android:name=".timer.TimerService"
             android:enabled="true"
