@@ -1,10 +1,8 @@
 package com.example.driftnotes.profile
 
 import android.content.Intent
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -13,7 +11,6 @@ import com.example.driftnotes.databinding.ActivityImageCropperBinding
 import com.example.driftnotes.utils.AnimationHelper
 import com.yalantis.ucrop.UCrop
 import java.io.File
-import java.io.IOException
 import java.util.UUID
 
 /**
@@ -67,7 +64,6 @@ class ImageCropperActivity : AppCompatActivity() {
             setCompressionQuality(80) // Качество сжатия JPEG
             setHideBottomControls(false)
             setFreeStyleCropEnabled(false) // Ограничиваем обрезку квадратом
-            setAspectRatioOptions(0, UCrop.DRAW_UTTYPE_OVAL, 1f, 1f) // Соотношение сторон 1:1
             setCircleDimmedLayer(true) // Затемнение вокруг круга
             setCropFrameColor(resources.getColor(R.color.primary, theme))
             setCropGridColor(resources.getColor(R.color.primary, theme))
@@ -78,7 +74,9 @@ class ImageCropperActivity : AppCompatActivity() {
             setActiveControlsWidgetColor(resources.getColor(R.color.primary, theme))
         }
 
+        // Используем стандартный метод для задания квадратного соотношения сторон
         UCrop.of(sourceUri, destinationUri)
+            .withAspectRatio(1f, 1f) // Устанавливаем соотношение сторон 1:1
             .withOptions(options)
             .start(this)
     }

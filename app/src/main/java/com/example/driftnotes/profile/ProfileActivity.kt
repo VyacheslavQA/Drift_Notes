@@ -124,8 +124,9 @@ class ProfileActivity : AppCompatActivity() {
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            result.data?.getParcelableExtra<Uri>(ImageCropperActivity.EXTRA_RESULT_URI)?.let { uri ->
-                selectedAvatarUri = uri
+            val uriString = result.data?.getStringExtra(ImageCropperActivity.RESULT_CROPPED_URI)
+            if (uriString != null) {
+                selectedAvatarUri = Uri.parse(uriString)
                 // Отображаем обрезанное изображение
                 Glide.with(this)
                     .load(selectedAvatarUri)
