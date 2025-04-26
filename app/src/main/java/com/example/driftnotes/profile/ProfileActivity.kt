@@ -38,6 +38,9 @@ class ProfileActivity : AppCompatActivity() {
     private var selectedAvatarUri: Uri? = null
     private var currentPhotoUri: Uri? = null
 
+    // Константа для активности обрезки
+    private val CROP_IMAGE_REQUEST_CODE = 1002
+
     // Список стран для выпадающего списка (отсортированы по алфавиту)
     private val countries = listOf(
         "Азербайджан",
@@ -99,12 +102,8 @@ class ProfileActivity : AppCompatActivity() {
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             result.data?.data?.let { uri ->
-                selectedAvatarUri = uri
-                // Отображаем выбранное изображение
-                Glide.with(this)
-                    .load(selectedAvatarUri)
-                    .circleCrop()
-                    .into(binding.imageViewAvatar)
+                // Вместо прямой установки URI, отправляем его в активность обрезки
+                startImageCropper(uri)
             }
         }
     }
@@ -114,8 +113,20 @@ class ProfileActivity : AppCompatActivity() {
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             currentPhotoUri?.let { uri ->
+                // Вместо прямой установки URI, отправляем его в активность обрезки
+                startImageCropper(uri)
+            }
+        }
+    }
+
+    // Лаунчер для активности обрезки
+    private val cropLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            result.data?.getParcelableExtra<Uri>(ImageCropperActivity.EXTRA_RESULT_URI)?.let { uri ->
                 selectedAvatarUri = uri
-                // Отображаем сделанное фото
+                // Отображаем обрезанное изображение
                 Glide.with(this)
                     .load(selectedAvatarUri)
                     .circleCrop()
@@ -268,7 +279,10 @@ class ProfileActivity : AppCompatActivity() {
     }
 
     private fun showImageSourceDialog() {
-        val options = arrayOf("Сделать фото", "Выбрать из галереи")
+        val options = arrayOf(
+            getString(R.string.take_photo),
+            getString(R.string.choose_photo)
+        )
 
         AlertDialog.Builder(this)
             .setTitle("Выберите источник изображения")
@@ -299,6 +313,13 @@ class ProfileActivity : AppCompatActivity() {
     private fun chooseFromGallery() {
         val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
         galleryLauncher.launch(intent)
+    }
+
+    private fun startImageCropper(sourceUri: Uri) {
+        val intent = Intent(this, ImageCropperActivity::class.java).apply {
+            putExtra(ImageCropperActivity.EXTRA_SOURCE_URI, sourceUri)
+        }
+        cropLauncher.launch(intent)
     }
 
     private fun createImageFile(): File? {

@@ -152,6 +152,11 @@
             android:label="@string/statistics_title"
             android:theme="@style/Theme.DriftNotes" />
 
+        <activity
+            android:name="com.yalantis.ucrop.UCropActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.DriftNotes.UCrop" />
+
 
     </application>
 </manifest>
