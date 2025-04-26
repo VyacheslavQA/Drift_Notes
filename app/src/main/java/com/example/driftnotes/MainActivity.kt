@@ -7,11 +7,13 @@ import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.GravityCompat
 import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
 import com.example.driftnotes.databinding.ActivityMainBinding
 import com.example.driftnotes.models.FishingStats
 import com.example.driftnotes.repository.StatsRepository
@@ -127,11 +129,40 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val headerView = binding.navigationView.getHeaderView(0)
         val userEmail = headerView.findViewById<TextView>(R.id.textViewUserEmail)
         val userName = headerView.findViewById<TextView>(R.id.textViewUsername)
+        val avatarImageView = headerView.findViewById<ImageView>(R.id.imageViewAvatar)
 
         // Заполняем информацию о пользователе, если он авторизован
         FirebaseManager.auth.currentUser?.let { user ->
             userName.text = user.displayName ?: getString(R.string.app_name)
             userEmail.text = user.email ?: "Журнал рыбалки"
+
+            // Загружаем аватар пользователя из Firebase
+            user.photoUrl?.let { photoUrl ->
+                Glide.with(this)
+                    .load(photoUrl)
+                    .circleCrop() // Делаем аватарку круглой средствами Glide
+                    .placeholder(R.drawable.ic_fishing_hook)
+                    .error(R.drawable.ic_fishing_hook)
+                    .into(avatarImageView)
+            } ?: run {
+                // Если у пользователя нет аватара, проверяем в Firestore
+                FirebaseManager.firestore.collection("users")
+                    .document(user.uid)
+                    .get()
+                    .addOnSuccessListener { document ->
+                        if (document.exists()) {
+                            val photoUrl = document.getString("photoUrl")
+                            if (!photoUrl.isNullOrEmpty()) {
+                                Glide.with(this)
+                                    .load(photoUrl)
+                                    .circleCrop() // Делаем аватарку круглой средствами Glide
+                                    .placeholder(R.drawable.ic_fishing_hook)
+                                    .error(R.drawable.ic_fishing_hook)
+                                    .into(avatarImageView)
+                            }
+                        }
+                    }
+            }
         }
     }
 
@@ -427,6 +458,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     // Метод для обновления данных при возвращении к активности
     override fun onResume() {
         super.onResume()
+        // Обновляем шапку бокового меню при возвращении к главному экрану
+        // (например, если пользователь изменил свой профиль)
+        setupDrawerMenu()
         // Перезагружаем данные при возвращении на экран
         loadStatistics()
     }
