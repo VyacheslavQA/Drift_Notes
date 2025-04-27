@@ -370,7 +370,7 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Блок "Самая долгая рыбалка" -->
+        <!-- Блок "Самая долгая рыбалка" - ИСПРАВЛЕНО -->
         <androidx.cardview.widget.CardView
             android:id="@+id/cardLongestTrip"
             android:layout_width="0dp"
@@ -395,7 +395,7 @@
                     android:layout_height="wrap_content"
                     android:text="САМАЯ ДОЛГАЯ РЫБАЛКА"
                     android:textColor="@color/primary"
-                    android:textSize="14sp"
+                    android:textSize="12sp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
@@ -406,7 +406,7 @@
                     android:layout_marginTop="8dp"
                     android:text="0"
                     android:textColor="@color/white"
-                    android:textSize="42sp"
+                    android:textSize="36sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/textViewLongestTripTitle" />
@@ -415,32 +415,38 @@
                     android:id="@+id/textViewLongestTripDays"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
+                    android:layout_marginStart="4dp"
                     android:text="дней"
                     android:textColor="@color/white"
-                    android:textSize="18sp"
+                    android:textSize="14sp"
                     app:layout_constraintBottom_toBottomOf="@+id/textViewLongestTripValue"
                     app:layout_constraintStart_toEndOf="@+id/textViewLongestTripValue" />
 
                 <TextView
                     android:id="@+id/textViewLongestTripDate"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Нет данных"
+                    android:layout_marginTop="6dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="10-15 августа"
                     android:textColor="@color/white"
-                    android:textSize="14sp"
+                    android:textSize="12sp"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/textViewLongestTripValue" />
 
                 <TextView
                     android:id="@+id/textViewLongestTripLocation"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="2dp"
+                    android:ellipsize="end"
+                    android:maxLines="2"
                     android:text=""
                     android:textColor="@color/white"
-                    android:textSize="14sp"
+                    android:textSize="11sp"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/textViewLongestTripDate" />
             </androidx.constraintlayout.widget.ConstraintLayout>
@@ -532,13 +538,16 @@
 
                 <TextView
                     android:id="@+id/textViewLastTripLocation"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
+                    android:ellipsize="end"
+                    android:maxLines="2"
                     android:text="Река тест"
                     android:textColor="@color/white"
-                    android:textSize="28sp"
+                    android:textSize="22sp"
                     android:textStyle="bold"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/textViewLastTripTitle" />
 
