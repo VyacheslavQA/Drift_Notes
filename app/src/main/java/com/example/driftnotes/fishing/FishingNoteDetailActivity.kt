@@ -437,7 +437,12 @@ class FishingNoteDetailActivity : AppCompatActivity() {
                     if (document != null && document.exists()) {
                         try {
                             currentNote = document.toObject(FishingNote::class.java)?.copy(id = id)
+
+                            // Добавляем отладочную информацию о датах
                             Log.d(TAG, "Заметка загружена успешно: ${currentNote?.location}")
+                            Log.d(TAG, "Дата начала: ${currentNote?.date}")
+                            Log.d(TAG, "Дата окончания: ${currentNote?.endDate}")
+                            Log.d(TAG, "Многодневная рыбалка: ${currentNote?.isMultiDay}")
                             Log.d(TAG, "Фотографии в заметке: ${currentNote?.photoUrls?.size}")
 
                             displayNoteData()
@@ -473,26 +478,17 @@ class FishingNoteDetailActivity : AppCompatActivity() {
 
             binding.textViewLocation.text = note.location
 
-            // Отображаем дату или диапазон дат
+            // Отображаем дату или диапазон дат в новом формате
             if (note.isMultiDay && note.endDate != null) {
-                // Используем правильный формат для диапазона дат
-                val formattedDateRange = DateFormatter.formatDateRange(note.date, note.endDate)
-                Log.d(TAG, "Многодневная рыбалка: $formattedDateRange")
-                binding.textViewDate.text = formattedDateRange
-
-                // Вычисляем количество дней
-                val diffInMillis = note.endDate.time - note.date.time
-                dayCount = (TimeUnit.MILLISECONDS.toDays(diffInMillis) + 1).toInt()
-
-                // Настраиваем спиннер для выбора дня
-                setupDaySpinner(dayCount)
-                binding.spinnerDayContainer.visibility = View.VISIBLE
+                // Для многодневной рыбалки отображаем диапазон в формате "дд.мм.гггг — дд.мм.гггг"
+                val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+                val startDateStr = dateFormat.format(note.date)
+                val endDateStr = dateFormat.format(note.endDate)
+                binding.textViewDate.text = "$startDateStr — $endDateStr"
             } else {
-                // Используем правильный формат для одной даты
-                Log.d(TAG, "Однодневная рыбалка: ${DateFormatter.formatDate(note.date)}")
-                binding.textViewDate.text = DateFormatter.formatDate(note.date)
-                dayCount = 1
-                binding.spinnerDayContainer.visibility = View.GONE
+                // Для однодневной рыбалки отображаем просто дату в формате "дд.мм.гггг"
+                val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+                binding.textViewDate.text = dateFormat.format(note.date)
             }
 
             // Отображаем снасти и заметки (если они есть)

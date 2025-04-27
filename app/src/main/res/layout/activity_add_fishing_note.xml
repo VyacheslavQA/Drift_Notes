@@ -116,61 +116,25 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/buttonOpenMap" />
 
-                <!-- Чекбокс для многодневной рыбалки -->
-                <CheckBox
-                    android:id="@+id/checkBoxMultiDay"
+                <!-- Поле для выбора дат рыбалки (заменяет отдельные поля) -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/layoutFishingDates"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:text="@string/multi_day_fishing"
-                    android:textColor="@color/on_surface"
-                    android:buttonTint="@color/primary"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/textViewSelectedCoordinates" />
-
-                <!-- Поле для начальной даты -->
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/layoutStartDate"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
                     android:textColorHint="@color/primary"
                     app:boxStrokeColor="@color/primary"
                     app:hintTextColor="@color/primary"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/checkBoxMultiDay">
+                    app:layout_constraintTop_toBottomOf="@+id/textViewSelectedCoordinates">
 
                     <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/editTextStartDate"
+                        android:id="@+id/editTextFishingDates"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:focusable="false"
-                        android:hint="@string/start_date"
-                        android:inputType="none"
-                        android:textColor="@color/on_surface" />
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <!-- Поле для конечной даты (скрыто при однодневной рыбалке) -->
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/layoutEndDate"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:textColorHint="@color/primary"
-                    app:boxStrokeColor="@color/primary"
-                    app:hintTextColor="@color/primary"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/layoutStartDate">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/editTextEndDate"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:focusable="false"
-                        android:hint="@string/end_date"
+                        android:hint="Даты рыбалки"
                         android:inputType="none"
                         android:textColor="@color/on_surface" />
                 </com.google.android.material.textfield.TextInputLayout>
@@ -186,7 +150,7 @@
                     app:hintTextColor="@color/primary"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/layoutEndDate">
+                    app:layout_constraintTop_toBottomOf="@+id/layoutFishingDates">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editTextTackle"

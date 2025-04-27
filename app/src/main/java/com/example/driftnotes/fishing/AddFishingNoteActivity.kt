@@ -12,7 +12,6 @@ import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
-import android.widget.CheckBox
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
@@ -20,6 +19,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
 import com.example.driftnotes.R
@@ -32,6 +32,8 @@ import com.example.driftnotes.repository.WeatherRepository
 import com.example.driftnotes.utils.AnimationHelper
 import com.example.driftnotes.utils.FirebaseManager
 import com.example.driftnotes.utils.NetworkUtils
+import com.google.android.material.datepicker.CalendarConstraints
+import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -42,11 +44,11 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import android.content.DialogInterface
 import android.view.ContextThemeWrapper
-import androidx.core.content.ContextCompat
 
 class AddFishingNoteActivity : AppCompatActivity() {
 
@@ -62,9 +64,7 @@ class AddFishingNoteActivity : AppCompatActivity() {
     private lateinit var dropdownFishingType: AutoCompleteTextView
     private lateinit var formContentTitle: TextView
     private lateinit var textViewSelectedCoordinates: TextView
-    private lateinit var editTextStartDate: TextInputEditText
-    private lateinit var editTextEndDate: TextInputEditText
-    private lateinit var checkBoxMultiDay: CheckBox
+    private lateinit var editTextFishingDates: TextInputEditText
     private lateinit var buttonAddPhoto: Button
     private lateinit var buttonSave: Button
     private lateinit var buttonCancel: Button
@@ -79,8 +79,6 @@ class AddFishingNoteActivity : AppCompatActivity() {
     private lateinit var textViewPhotoCount: TextView
     private lateinit var mainProgressBar: ProgressBar
 
-    private val startCalendar = Calendar.getInstance()
-    private val endCalendar = Calendar.getInstance()
     private val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
     private val selectedPhotos = mutableListOf<Uri>()
     private var currentPhotoUri: Uri? = null
@@ -93,6 +91,10 @@ class AddFishingNoteActivity : AppCompatActivity() {
     private var selectedLatitude: Double = 0.0
     private var selectedLongitude: Double = 0.0
     private var selectedFishingType: String = ""
+
+    // Добавляем переменные для работы с диапазоном дат
+    private var startDate: Long? = null
+    private var endDate: Long? = null
     private var isMultiDayFishing: Boolean = false
 
     // Флаг для отслеживания состояния сети
@@ -147,9 +149,6 @@ class AddFishingNoteActivity : AppCompatActivity() {
         formContent.visibility = View.GONE
         buttonInitialCancel.visibility = View.VISIBLE
 
-        // Устанавливаем начальную дату (сегодня)
-        updateDateDisplay()
-
         // Инициализация выпадающего списка типов рыбалки
         setupFishingTypeDropdown()
 
@@ -183,9 +182,7 @@ class AddFishingNoteActivity : AppCompatActivity() {
         dropdownFishingType = findViewById(R.id.dropdownFishingType)
         formContentTitle = findViewById(R.id.formContentTitle)
         textViewSelectedCoordinates = findViewById(R.id.textViewSelectedCoordinates)
-        editTextStartDate = findViewById(R.id.editTextStartDate)
-        editTextEndDate = findViewById(R.id.editTextEndDate)
-        checkBoxMultiDay = findViewById(R.id.checkBoxMultiDay)
+        editTextFishingDates = findViewById(R.id.editTextFishingDates)
         buttonAddPhoto = findViewById(R.id.buttonAddPhoto)
         buttonSave = findViewById(R.id.buttonSave)
         buttonCancel = findViewById(R.id.buttonCancel)
@@ -199,9 +196,6 @@ class AddFishingNoteActivity : AppCompatActivity() {
         editTextNotes = findViewById(R.id.editTextNotes)
         textViewPhotoCount = findViewById(R.id.textViewPhotoCount)
         mainProgressBar = findViewById(R.id.progressBar)
-
-        // Начально скрываем поле конечной даты
-        findViewById<View>(R.id.layoutEndDate).visibility = View.GONE
     }
 
     override fun onResume() {
@@ -212,28 +206,8 @@ class AddFishingNoteActivity : AppCompatActivity() {
 
     private fun setupEventListeners() {
         // Обработчик выбора дат
-        editTextStartDate.setOnClickListener {
-            showStartDatePicker()
-        }
-
-        editTextEndDate.setOnClickListener {
-            showEndDatePicker()
-        }
-
-        // Обработчик чекбокса многодневной рыбалки
-        checkBoxMultiDay.setOnCheckedChangeListener { _, isChecked ->
-            isMultiDayFishing = isChecked
-            if (isChecked) {
-                findViewById<View>(R.id.layoutEndDate).visibility = View.VISIBLE
-                // Устанавливаем конечную дату на день позже начальной, если еще не установлена
-                if (editTextEndDate.text.isNullOrEmpty()) {
-                    endCalendar.time = startCalendar.time
-                    endCalendar.add(Calendar.DAY_OF_MONTH, 1)
-                    editTextEndDate.setText(dateFormat.format(endCalendar.time))
-                }
-            } else {
-                findViewById<View>(R.id.layoutEndDate).visibility = View.GONE
-            }
+        editTextFishingDates.setOnClickListener {
+            showDateRangePicker()
         }
 
         // Обработчик добавления фото - отключаем в офлайн-режиме
@@ -278,6 +252,77 @@ class AddFishingNoteActivity : AppCompatActivity() {
             } else {
                 loadWeatherData()
             }
+        }
+    }
+
+    /**
+     * Показывает диалог выбора диапазона дат
+     */
+    private fun showDateRangePicker() {
+        // Создаем билдер для выбора диапазона дат
+        val builder = MaterialDatePicker.Builder.dateRangePicker()
+        builder.setTitleText("Выберите даты рыбалки")
+
+        // Если даты уже были выбраны, устанавливаем их как начальные значения
+        if (startDate != null && endDate != null) {
+            builder.setSelection(androidx.core.util.Pair(startDate, endDate))
+        }
+
+        // Ограничения на выбор дат (опционально, в зависимости от потребностей)
+        val constraintsBuilder = CalendarConstraints.Builder()
+        // Раскомментируйте следующую строку, если хотите ограничить выбор только будущими датами
+        //constraintsBuilder.setStart(MaterialDatePicker.todayInUtcMilliseconds())
+
+        builder.setCalendarConstraints(constraintsBuilder.build())
+
+        // Создаем пикер и настраиваем обработчики
+        val picker = builder.build()
+
+        picker.addOnPositiveButtonClickListener { selection ->
+            // Получаем выбранный диапазон
+            startDate = selection.first
+            endDate = selection.second
+
+            // Проверяем, является ли это однодневной или многодневной рыбалкой
+            isMultiDayFishing = startDate != endDate
+
+            // Форматируем и отображаем выбранные даты
+            updateDateDisplay()
+        }
+
+        picker.addOnCancelListener {
+            // Ничего не делаем при отмене, оставляем поле как есть
+        }
+
+        picker.addOnNegativeButtonClickListener {
+            // Ничего не делаем при отмене, оставляем поле как есть
+        }
+
+        picker.show(supportFragmentManager, "DATE_RANGE_PICKER")
+    }
+
+    /**
+     * Обновляет отображение выбранных дат в поле
+     */
+    private fun updateDateDisplay() {
+        if (startDate == null || endDate == null) {
+            editTextFishingDates.setText("")
+            return
+        }
+
+        val startCalendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+        startCalendar.timeInMillis = startDate!!
+
+        val endCalendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+        endCalendar.timeInMillis = endDate!!
+
+        val formattedStartDate = dateFormat.format(startCalendar.time)
+
+        if (isMultiDayFishing) {
+            val formattedEndDate = dateFormat.format(endCalendar.time)
+            editTextFishingDates.setText("$formattedStartDate — $formattedEndDate")
+        } else {
+            editTextFishingDates.setText(formattedStartDate)
         }
     }
 
@@ -405,76 +450,6 @@ class AddFishingNoteActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateDateDisplay() {
-        editTextStartDate.setText(dateFormat.format(startCalendar.time))
-        if (isMultiDayFishing) {
-            editTextEndDate.setText(dateFormat.format(endCalendar.time))
-        }
-    }
-
-    private fun showStartDatePicker() {
-        // Создаем DatePickerDialog с нашей кастомной темой
-        val datePickerDialog = DatePickerDialog(
-            ContextThemeWrapper(this, R.style.DriftNotes_DatePickerDialog),
-            { _, year, month, day ->
-                startCalendar.set(Calendar.YEAR, year)
-                startCalendar.set(Calendar.MONTH, month)
-                startCalendar.set(Calendar.DAY_OF_MONTH, day)
-
-                // Если конечная дата раньше начальной, обновляем и ее
-                if (isMultiDayFishing && endCalendar.before(startCalendar)) {
-                    endCalendar.time = startCalendar.time
-                    endCalendar.add(Calendar.DAY_OF_MONTH, 1)
-                }
-
-                updateDateDisplay()
-            },
-            startCalendar.get(Calendar.YEAR),
-            startCalendar.get(Calendar.MONTH),
-            startCalendar.get(Calendar.DAY_OF_MONTH)
-        )
-
-        // Дополнительные настройки для диалога
-        datePickerDialog.datePicker.minDate = System.currentTimeMillis() - 31536000000L // год назад
-        datePickerDialog.show()
-
-        // Найти и изменить цвет текста в кнопках
-        try {
-            val buttons = datePickerDialog.getButton(DialogInterface.BUTTON_POSITIVE)
-            buttons?.setTextColor(ContextCompat.getColor(this, R.color.primary))
-            datePickerDialog.getButton(DialogInterface.BUTTON_NEGATIVE)?.setTextColor(ContextCompat.getColor(this, R.color.primary))
-        } catch (e: Exception) {
-            Log.e("AddFishingNoteActivity", "Ошибка при изменении цвета кнопок: ${e.message}")
-        }
-    }
-
-    private fun showEndDatePicker() {
-        DatePickerDialog(
-            this,
-            { _, year, month, day ->
-                val tempCalendar = Calendar.getInstance()
-                tempCalendar.set(Calendar.YEAR, year)
-                tempCalendar.set(Calendar.MONTH, month)
-                tempCalendar.set(Calendar.DAY_OF_MONTH, day)
-
-                // Проверяем, что конечная дата не раньше начальной
-                if (tempCalendar.before(startCalendar)) {
-                    Toast.makeText(
-                        this,
-                        "Конечная дата не может быть раньше начальной",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                } else {
-                    endCalendar.time = tempCalendar.time
-                    editTextEndDate.setText(dateFormat.format(endCalendar.time))
-                }
-            },
-            endCalendar.get(Calendar.YEAR),
-            endCalendar.get(Calendar.MONTH),
-            endCalendar.get(Calendar.DAY_OF_MONTH)
-        ).show()
-    }
-
     private fun showPhotoSourceDialog() {
         val options = arrayOf(
             getString(R.string.take_photo),
@@ -583,15 +558,21 @@ class AddFishingNoteActivity : AppCompatActivity() {
 
         val location = editTextLocation.text.toString().trim()
 
-        // Проверяем только обязательные поля
+        // Проверяем обязательные поля
         if (location.isEmpty()) {
             Toast.makeText(this, "Необходимо указать место рыбалки", Toast.LENGTH_SHORT).show()
             return
         }
 
-        // Получаем даты
-        val startDate = startCalendar.time
-        val endDate = if (isMultiDayFishing) endCalendar.time else null
+        // Проверяем, что дата выбрана
+        if (startDate == null || endDate == null) {
+            Toast.makeText(this, "Пожалуйста, выберите дату или период рыбалки.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Преобразуем выбранные даты из миллисекунд в Date
+        val startDateObj = Date(startDate!!)
+        val endDateObj = if (isMultiDayFishing) Date(endDate!!) else null
 
         // Отключаем кнопку сохранения, чтобы избежать двойного нажатия
         buttonSave.isEnabled = false
@@ -599,13 +580,13 @@ class AddFishingNoteActivity : AppCompatActivity() {
         // Проверяем режим работы
         if (isOfflineMode && selectedPhotos.isNotEmpty()) {
             // В офлайн-режиме фотографии не доступны
-            showOfflinePhotosDialog(startDate, endDate)
+            showOfflinePhotosDialog(startDateObj, endDateObj)
         } else if (selectedPhotos.isEmpty()) {
             // Если нет фотографий, просто сохраняем заметку
-            saveNoteToFirestore(emptyList(), startDate, endDate)
+            saveNoteToFirestore(emptyList(), startDateObj, endDateObj)
         } else {
             // Если есть фотографии и мы в онлайн-режиме, загружаем их и сохраняем заметку
-            uploadPhotosAndSaveNote(startDate, endDate)
+            uploadPhotosAndSaveNote(startDateObj, endDateObj)
         }
     }
 
@@ -840,6 +821,9 @@ class AddFishingNoteActivity : AppCompatActivity() {
         val tackle = editTextTackle.text.toString().trim()
         val notes = editTextNotes.text.toString().trim()
 
+        // Определяем, является ли рыбалка многодневной
+        val isMultiDay = endDate != null && !isSameDay(startDate, endDate)
+
         // Создаем объект записи о рыбалке с координатами, погодой, типом рыбалки и ID маркерной карты
         val fishingNote = FishingNote(
             userId = userId,
@@ -848,7 +832,7 @@ class AddFishingNoteActivity : AppCompatActivity() {
             longitude = selectedLongitude,
             date = startDate,
             endDate = endDate,
-            isMultiDay = isMultiDayFishing,
+            isMultiDay = isMultiDay,
             tackle = tackle,
             notes = notes,
             photoUrls = photoUrls,
@@ -910,6 +894,22 @@ class AddFishingNoteActivity : AppCompatActivity() {
                     overridePendingTransition(R.anim.slide_in_top, R.anim.slide_out_bottom)
                 }
             }
+    }
+
+    /**
+     * Проверяет, относятся ли две даты к одному и тому же дню
+     */
+    private fun isSameDay(date1: Date, date2: Date?): Boolean {
+        if (date2 == null) return false
+
+        val cal1 = Calendar.getInstance()
+        val cal2 = Calendar.getInstance()
+        cal1.time = date1
+        cal2.time = date2
+
+        return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
+                cal1.get(Calendar.MONTH) == cal2.get(Calendar.MONTH) &&
+                cal1.get(Calendar.DAY_OF_MONTH) == cal2.get(Calendar.DAY_OF_MONTH)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
