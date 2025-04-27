@@ -1,3 +1,4 @@
+// Полный код для app/src/main/java/com/example/driftnotes/repository/StatsRepository.kt
 package com.example.driftnotes.repository
 
 import android.util.Log
@@ -167,32 +168,76 @@ class StatsRepository {
 
     /**
      * Находит информацию о самой долгой рыбалке в указанном диапазоне дат
+     * Теперь корректно вычисляет продолжительность на основе разницы между начальной и конечной датами
      */
     private fun findLongestTrip(notes: List<FishingNote>, startDate: Date, endDate: Date): LongestTripInfo? {
+        // Фильтруем заметки, которые находятся в запрашиваемом диапазоне дат
+        val filteredNotes = notes.filter { note ->
+            if (!note.isMultiDay || note.endDate == null) {
+                isDateInRange(note.date, startDate, endDate)
+            } else {
+                isDateRangeOverlapping(note.date, note.endDate, startDate, endDate)
+            }
+        }
+
         // Находим заметку с максимальной длительностью
-        val longestTripNote = notes
-            .filter { it.isMultiDay && it.endDate != null && isDateRangeOverlapping(it.date, it.endDate, startDate, endDate) }
-            .maxByOrNull { note ->
+        val longestTripNote = filteredNotes.maxByOrNull { note ->
+            if (!note.isMultiDay || note.endDate == null) {
+                // Если однодневная рыбалка - длительность 1 день
+                1
+            } else {
+                // Вычисляем разницу в днях между начальной и конечной датами
                 val startCalendar = Calendar.getInstance().apply { time = note.date }
-                val endCalendar = Calendar.getInstance().apply { time = note.endDate!! }
+                val endCalendar = Calendar.getInstance().apply { time = note.endDate }
+
+                // Сбрасываем часы, минуты, секунды для корректного расчета
+                startCalendar.set(Calendar.HOUR_OF_DAY, 0)
+                startCalendar.set(Calendar.MINUTE, 0)
+                startCalendar.set(Calendar.SECOND, 0)
+                startCalendar.set(Calendar.MILLISECOND, 0)
+
+                endCalendar.set(Calendar.HOUR_OF_DAY, 0)
+                endCalendar.set(Calendar.MINUTE, 0)
+                endCalendar.set(Calendar.SECOND, 0)
+                endCalendar.set(Calendar.MILLISECOND, 0)
+
+                // Вычисляем разницу в днях
+                val diffMillis = endCalendar.timeInMillis - startCalendar.timeInMillis
+                val diffDays = (diffMillis / (1000 * 60 * 60 * 24)).toInt() + 1 // +1 чтобы учесть первый день
+
+                diffDays
+            }
+        }
+
+        return longestTripNote?.let { note ->
+            // Вычисляем длительность рыбалки в днях
+            val durationDays = if (!note.isMultiDay || note.endDate == null) {
+                1 // Однодневная рыбалка
+            } else {
+                // Расчет для многодневной рыбалки
+                val startCalendar = Calendar.getInstance().apply { time = note.date }
+                val endCalendar = Calendar.getInstance().apply { time = note.endDate }
+
+                // Сбрасываем часы, минуты, секунды для корректного расчета
+                startCalendar.set(Calendar.HOUR_OF_DAY, 0)
+                startCalendar.set(Calendar.MINUTE, 0)
+                startCalendar.set(Calendar.SECOND, 0)
+                startCalendar.set(Calendar.MILLISECOND, 0)
+
+                endCalendar.set(Calendar.HOUR_OF_DAY, 0)
+                endCalendar.set(Calendar.MINUTE, 0)
+                endCalendar.set(Calendar.SECOND, 0)
+                endCalendar.set(Calendar.MILLISECOND, 0)
 
                 // Вычисляем разницу в днях
                 val diffMillis = endCalendar.timeInMillis - startCalendar.timeInMillis
                 (diffMillis / (1000 * 60 * 60 * 24)).toInt() + 1 // +1 чтобы учесть первый день
             }
 
-        return longestTripNote?.let { note ->
-            val startCalendar = Calendar.getInstance().apply { time = note.date }
-            val endCalendar = Calendar.getInstance().apply { time = note.endDate!! }
-
-            // Вычисляем разницу в днях
-            val diffMillis = endCalendar.timeInMillis - startCalendar.timeInMillis
-            val durationDays = (diffMillis / (1000 * 60 * 60 * 24)).toInt() + 1 // +1 чтобы учесть первый день
-
             LongestTripInfo(
                 durationDays = durationDays,
                 startDate = note.date,
-                endDate = note.endDate!!,
+                endDate = note.endDate ?: note.date, // Если endDate null, используем date
                 location = note.location
             )
         }
