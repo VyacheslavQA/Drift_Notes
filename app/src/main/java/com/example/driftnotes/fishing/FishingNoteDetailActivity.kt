@@ -466,6 +466,12 @@ class FishingNoteDetailActivity : AppCompatActivity() {
     }
     private fun displayNoteData() {
         currentNote?.let { note ->
+            // Добавляем отладочную информацию
+            Log.d(TAG, "displayNoteData: isMultiDay=${note.isMultiDay}, endDate=${note.endDate}")
+
+            // Проверяем, есть ли endDate даже если isMultiDay == false
+            val isMultiDayFishing = note.isMultiDay || note.endDate != null
+
             // Отображаем тип рыбалки
             if (note.fishingType.isNotEmpty()) {
                 binding.textViewFishingTypeLabel.visibility = View.VISIBLE
@@ -478,18 +484,25 @@ class FishingNoteDetailActivity : AppCompatActivity() {
 
             binding.textViewLocation.text = note.location
 
-            // Отображаем дату или диапазон дат в новом формате
-            if (note.isMultiDay && note.endDate != null) {
+            // ИЗМЕНЕНО: Отображаем дату или диапазон дат для многодневной рыбалки
+            if (isMultiDayFishing && note.endDate != null) {
                 // Для многодневной рыбалки отображаем диапазон в формате "дд.мм.гггг — дд.мм.гггг"
-                val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+                binding.textViewDateLabel.text = "Даты:"
                 val startDateStr = dateFormat.format(note.date)
                 val endDateStr = dateFormat.format(note.endDate)
                 binding.textViewDate.text = "$startDateStr — $endDateStr"
+
+                // Настройка спиннера для выбора дня (только для многодневной рыбалки)
+                val daysCount = calculateDaysCount(note.date, note.endDate)
+                setupDaySpinner(daysCount)
+                binding.spinnerDayContainer.visibility = View.VISIBLE
             } else {
-                // Для однодневной рыбалки отображаем просто дату в формате "дд.мм.гггг"
-                val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+                // Для однодневной рыбалки отображаем просто дату
+                binding.textViewDateLabel.text = "Дата:"
                 binding.textViewDate.text = dateFormat.format(note.date)
+                binding.spinnerDayContainer.visibility = View.GONE
             }
+
 
             // Отображаем снасти и заметки (если они есть)
             if (note.notes.isNotEmpty()) {
@@ -612,10 +625,24 @@ class FishingNoteDetailActivity : AppCompatActivity() {
             }
         }
     }
+
+    /**
+     * Вычисляет количество дней между начальной и конечной датой
+     */
+    private fun calculateDaysCount(startDate: Date, endDate: Date?): Int {
+        if (endDate == null) return 1
+
+        val diffInMillis = endDate.time - startDate.time
+        return (diffInMillis / (1000 * 60 * 60 * 24)).toInt() + 1 // +1 чтобы учесть первый день
+    }
+
     /**
      * Настраивает спиннер для выбора дня
      */
     private fun setupDaySpinner(dayCount: Int) {
+        // Сохраняем количество дней
+        this.dayCount = dayCount
+
         // Создаем список дней
         val days = ArrayList<String>()
         for (i in 0 until dayCount) {
