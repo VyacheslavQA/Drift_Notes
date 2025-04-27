@@ -68,4 +68,51 @@
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
     </style>
+
+    <!-- Ваш существующий код... -->
+
+    <!-- Стиль для диалога выбора даты -->
+    <style name="DriftNotes.DatePickerDialog" parent="ThemeOverlay.MaterialComponents.Dialog">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/primary_variant</item>
+        <item name="colorOnPrimary">@color/on_primary</item>
+        <item name="colorSecondary">@color/primary</item>
+        <item name="colorAccent">@color/primary</item>
+        <item name="android:textColorPrimary">@color/on_surface</item>
+        <item name="android:textColor">@color/on_surface</item>
+        <item name="android:textColorSecondary">@color/on_surface</item>
+        <item name="android:windowBackground">@color/surface</item>
+        <item name="android:colorBackground">@color/surface</item>
+        <item name="materialCalendarStyle">@style/DriftNotes.CalendarStyle</item>
+        <item name="materialCalendarFullscreenTheme">@style/DriftNotes.CalendarFullscreenStyle</item>
+        <item name="materialCalendarTheme">@style/DriftNotes.CalendarStyle</item>
+    </style>
+
+    <style name="DriftNotes.CalendarStyle" parent="@style/Widget.MaterialComponents.MaterialCalendar">
+        <item name="android:textColorPrimary">@color/on_surface</item>
+        <item name="android:textColor">@color/on_surface</item>
+        <item name="android:textColorSecondary">@color/on_surface</item>
+        <item name="materialCalendarHeaderTitle">@style/DriftNotes.CalendarHeaderStyle</item>
+        <item name="materialCalendarHeaderToggleButton">@style/DriftNotes.CalendarHeaderToggleStyle</item>
+        <item name="materialCalendarDay">@style/DriftNotes.CalendarDayStyle</item>
+    </style>
+
+    <style name="DriftNotes.CalendarFullscreenStyle" parent="@style/ThemeOverlay.MaterialComponents.MaterialCalendar.Fullscreen">
+        <item name="android:textColorPrimary">@color/on_surface</item>
+        <item name="android:textColor">@color/on_surface</item>
+        <item name="android:textColorSecondary">@color/on_surface</item>
+        <item name="android:colorBackground">@color/surface</item>
+    </style>
+
+    <style name="DriftNotes.CalendarHeaderStyle" parent="Widget.MaterialComponents.MaterialCalendar.HeaderTitle">
+        <item name="android:textColor">@color/primary</item>
+    </style>
+
+    <style name="DriftNotes.CalendarHeaderToggleStyle" parent="Widget.MaterialComponents.MaterialCalendar.HeaderToggleButton">
+        <item name="android:tint">@color/primary</item>
+    </style>
+
+    <style name="DriftNotes.CalendarDayStyle" parent="Widget.MaterialComponents.MaterialCalendar.Day">
+        <item name="android:textColor">@color/on_surface</item>
+    </style>
 </resources>

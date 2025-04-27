@@ -44,6 +44,9 @@ import java.util.Date
 import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.TimeUnit
+import android.content.DialogInterface
+import android.view.ContextThemeWrapper
+import androidx.core.content.ContextCompat
 
 class AddFishingNoteActivity : AppCompatActivity() {
 
@@ -410,8 +413,9 @@ class AddFishingNoteActivity : AppCompatActivity() {
     }
 
     private fun showStartDatePicker() {
-        DatePickerDialog(
-            this,
+        // Создаем DatePickerDialog с нашей кастомной темой
+        val datePickerDialog = DatePickerDialog(
+            ContextThemeWrapper(this, R.style.DriftNotes_DatePickerDialog),
             { _, year, month, day ->
                 startCalendar.set(Calendar.YEAR, year)
                 startCalendar.set(Calendar.MONTH, month)
@@ -428,7 +432,20 @@ class AddFishingNoteActivity : AppCompatActivity() {
             startCalendar.get(Calendar.YEAR),
             startCalendar.get(Calendar.MONTH),
             startCalendar.get(Calendar.DAY_OF_MONTH)
-        ).show()
+        )
+
+        // Дополнительные настройки для диалога
+        datePickerDialog.datePicker.minDate = System.currentTimeMillis() - 31536000000L // год назад
+        datePickerDialog.show()
+
+        // Найти и изменить цвет текста в кнопках
+        try {
+            val buttons = datePickerDialog.getButton(DialogInterface.BUTTON_POSITIVE)
+            buttons?.setTextColor(ContextCompat.getColor(this, R.color.primary))
+            datePickerDialog.getButton(DialogInterface.BUTTON_NEGATIVE)?.setTextColor(ContextCompat.getColor(this, R.color.primary))
+        } catch (e: Exception) {
+            Log.e("AddFishingNoteActivity", "Ошибка при изменении цвета кнопок: ${e.message}")
+        }
     }
 
     private fun showEndDatePicker() {

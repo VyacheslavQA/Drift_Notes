@@ -26,19 +26,24 @@
                 android:layout_marginBottom="16dp"
                 android:text="@string/select_fishing_type"
                 android:textSize="18sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:textColor="@color/primary" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:textColorHint="@color/primary"
+                app:boxStrokeColor="@color/primary"
+                app:hintTextColor="@color/primary">
 
                 <AutoCompleteTextView
                     android:id="@+id/dropdownFishingType"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/fishing_type"
-                    android:inputType="none" />
+                    android:inputType="none"
+                    android:textColor="@color/on_surface" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <Button
@@ -61,6 +66,7 @@
                     android:layout_height="wrap_content"
                     android:textSize="18sp"
                     android:textStyle="bold"
+                    android:textColor="@color/primary"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -71,6 +77,9 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
+                    android:textColorHint="@color/primary"
+                    app:boxStrokeColor="@color/primary"
+                    app:hintTextColor="@color/primary"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/formContentTitle">
@@ -80,7 +89,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="@string/location"
-                        android:inputType="textCapSentences" />
+                        android:inputType="textCapSentences"
+                        android:textColor="@color/on_surface" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <!-- Кнопка открытия карты -->
@@ -101,6 +111,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:visibility="gone"
+                    android:textColor="@color/on_surface"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/buttonOpenMap" />
@@ -112,6 +123,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:text="@string/multi_day_fishing"
+                    android:textColor="@color/on_surface"
+                    android:buttonTint="@color/primary"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/textViewSelectedCoordinates" />
@@ -122,6 +135,9 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
+                    android:textColorHint="@color/primary"
+                    app:boxStrokeColor="@color/primary"
+                    app:hintTextColor="@color/primary"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/checkBoxMultiDay">
@@ -132,7 +148,8 @@
                         android:layout_height="wrap_content"
                         android:focusable="false"
                         android:hint="@string/start_date"
-                        android:inputType="none" />
+                        android:inputType="none"
+                        android:textColor="@color/on_surface" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <!-- Поле для конечной даты (скрыто при однодневной рыбалке) -->
@@ -141,6 +158,9 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
+                    android:textColorHint="@color/primary"
+                    app:boxStrokeColor="@color/primary"
+                    app:hintTextColor="@color/primary"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/layoutStartDate">
@@ -151,7 +171,8 @@
                         android:layout_height="wrap_content"
                         android:focusable="false"
                         android:hint="@string/end_date"
-                        android:inputType="none" />
+                        android:inputType="none"
+                        android:textColor="@color/on_surface" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <!-- Поле для снастей (необязательное) -->
@@ -160,6 +181,9 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
+                    android:textColorHint="@color/primary"
+                    app:boxStrokeColor="@color/primary"
+                    app:hintTextColor="@color/primary"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/layoutEndDate">
@@ -170,7 +194,8 @@
                         android:layout_height="wrap_content"
                         android:hint="@string/tackle_optional"
                         android:inputType="textCapSentences|textMultiLine"
-                        android:minLines="2" />
+                        android:minLines="2"
+                        android:textColor="@color/on_surface" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <!-- Поле для заметок (необязательное) -->
@@ -179,6 +204,9 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
+                    android:textColorHint="@color/primary"
+                    app:boxStrokeColor="@color/primary"
+                    app:hintTextColor="@color/primary"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/tackleInputLayout">
@@ -189,7 +217,8 @@
                         android:layout_height="wrap_content"
                         android:hint="@string/notes_optional"
                         android:inputType="textCapSentences|textMultiLine"
-                        android:minLines="3" />
+                        android:minLines="3"
+                        android:textColor="@color/on_surface" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <!-- Блок для погоды -->
@@ -200,6 +229,7 @@
                     android:layout_marginTop="16dp"
                     android:text="@string/weather"
                     android:textStyle="bold"
+                    android:textColor="@color/primary"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/notesInputLayout" />
@@ -220,6 +250,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:visibility="gone"
+                    android:indeterminateTint="@color/primary"
                     app:layout_constraintBottom_toBottomOf="@+id/buttonLoadWeather"
                     app:layout_constraintEnd_toEndOf="@+id/buttonLoadWeather"
                     app:layout_constraintStart_toStartOf="@+id/buttonLoadWeather"
@@ -231,6 +262,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="@string/weather_not_loaded"
+                    android:textColor="@color/on_surface"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/buttonLoadWeather" />
@@ -243,6 +275,7 @@
                     android:layout_marginTop="16dp"
                     android:text="@string/photos"
                     android:textStyle="bold"
+                    android:textColor="@color/primary"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/textViewWeatherStatus" />
@@ -262,6 +295,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
+                    android:textColor="@color/on_surface"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/buttonAddPhoto" />
@@ -311,6 +345,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:visibility="gone" />
+        android:visibility="gone"
+        android:indeterminateTint="@color/primary" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
