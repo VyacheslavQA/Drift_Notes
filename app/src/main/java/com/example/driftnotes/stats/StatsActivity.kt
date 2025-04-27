@@ -326,7 +326,6 @@ class StatsActivity : AppCompatActivity() {
             binding.textViewAverageFishValue.text = decimalFormat.format(stats.averageFishPerTrip)
 
             // Прогресс бар
-            // Устанавливаем прогресс на 70% от максимального значения для визуального эффекта
             val maxProgress = 100
             val progress = if (stats.totalFishCaught > 0) {
                 minOf((stats.totalFishCaught / 2.0).toInt(), maxProgress)
@@ -340,23 +339,36 @@ class StatsActivity : AppCompatActivity() {
             stats.biggestFish?.let { biggestFish ->
                 binding.textViewBiggestFishValue.text = decimalFormat.format(biggestFish.weight)
                 binding.textViewBiggestFishDate.text = formatDate(biggestFish.date)
-
             } ?: run {
                 // Если нет данных о самой большой рыбе
                 binding.textViewBiggestFishValue.text = "0,0"
                 binding.textViewBiggestFishDate.text = "Нет данных"
-
             }
 
             // Блок "Самая долгая рыбалка"
             stats.longestTrip?.let { longestTrip ->
+                // Показываем количество дней
                 binding.textViewLongestTripValue.text = longestTrip.durationDays.toString()
 
-                // Формат: "12-15 августа"
-                val dateRangeText = DateFormatter.formatDateRange(longestTrip.startDate, longestTrip.endDate)
-                binding.textViewLongestTripDate.text = dateRangeText
+                // Если это однодневная рыбалка или даты совпадают, показываем одну дату
+                if (isSameDay(longestTrip.startDate, longestTrip.endDate)) {
+                    binding.textViewLongestTripDate.text = formatDate(longestTrip.startDate)
+                } else {
+                    // Укорачиваем текст, если он слишком длинный
+                    val dateRangeText = DateFormatter.formatDateRange(longestTrip.startDate, longestTrip.endDate)
+                    binding.textViewLongestTripDate.text =
+                        if (dateRangeText.length > 15) {
+                            // Если текст слишком длинный, сокращаем его
+                            "${formatDate(longestTrip.startDate)}..."
+                        } else {
+                            dateRangeText
+                        }
+                }
 
-                binding.textViewLongestTripLocation.text = longestTrip.location
+                // Ограничиваем длину текста местоположения
+                val locationText = longestTrip.location
+                binding.textViewLongestTripLocation.text =
+                    if (locationText.length > 20) locationText.substring(0, 17) + "..." else locationText
 
                 // Склонение слова "день"
                 binding.textViewLongestTripDays.text = getDaysText(longestTrip.durationDays)
@@ -366,29 +378,6 @@ class StatsActivity : AppCompatActivity() {
                 binding.textViewLongestTripDate.text = "Нет данных"
                 binding.textViewLongestTripLocation.text = ""
                 binding.textViewLongestTripDays.text = "дней"
-            }
-
-            // Блок "Лучший месяц"
-            stats.bestMonth?.let { bestMonth ->
-                // Получаем название месяца в именительном падеже
-                val monthName = getMonthInNominative(bestMonth.month - 1)
-
-                binding.textViewBestMonthValue.text = monthName
-                binding.textViewBestMonthCount.text = "${bestMonth.fishCount} ${getFishText(bestMonth.fishCount)}"
-            } ?: run {
-                // Если нет данных о лучшем месяце
-                binding.textViewBestMonthValue.text = "Нет данных"
-                binding.textViewBestMonthCount.text = "0 рыб"
-            }
-
-            // Блок "Последний выезд"
-            stats.lastTrip?.let { lastTrip ->
-                binding.textViewLastTripLocation.text = lastTrip.location
-                binding.textViewLastTripDate.text = formatDate(lastTrip.date)
-            } ?: run {
-                // Если нет данных о последней рыбалке
-                binding.textViewLastTripLocation.text = "Нет данных"
-                binding.textViewLastTripDate.text = ""
             }
 
             // Блок "Последние трофеи (фото)"
@@ -401,6 +390,19 @@ class StatsActivity : AppCompatActivity() {
                 Toast.LENGTH_SHORT
             ).show()
         }
+    }
+
+    /**
+     * Проверяет, относятся ли две даты к одному и тому же дню
+     */
+    private fun isSameDay(date1: Date, date2: Date): Boolean {
+        val cal1 = Calendar.getInstance()
+        val cal2 = Calendar.getInstance()
+        cal1.time = date1
+        cal2.time = date2
+        return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
+                cal1.get(Calendar.MONTH) == cal2.get(Calendar.MONTH) &&
+                cal1.get(Calendar.DAY_OF_MONTH) == cal2.get(Calendar.DAY_OF_MONTH)
     }
 
     /**

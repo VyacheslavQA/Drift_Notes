@@ -12,14 +12,18 @@ import com.example.driftnotes.models.TrophyInfo
 import com.example.driftnotes.utils.FirebaseManager
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.tasks.await
+import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
+import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 /**
  * Репозиторий для получения статистики рыбалок
  */
 class StatsRepository {
     private val TAG = "StatsRepository"
+    private val dateFormatter = SimpleDateFormat("dd.MM.yyyy HH:mm:ss", Locale.getDefault())
 
     /**
      * Получает статистику рыбалок для текущего пользователя
@@ -32,25 +36,45 @@ class StatsRepository {
         return try {
             val userId = FirebaseManager.getCurrentUserId() ?: throw Exception("Пользователь не авторизован")
 
-            // Получаем все заметки пользователя в указанном диапазоне дат
-            val notesSnapshot = FirebaseManager.firestore.collection("fishing_notes")
+            // Получаем ВСЕ заметки пользователя без ограничений даты
+            val allNotesSnapshot = FirebaseManager.firestore.collection("fishing_notes")
                 .whereEqualTo("userId", userId)
-                .orderBy("date", Query.Direction.DESCENDING)
                 .get()
                 .await()
 
-            // Преобразуем документы в объекты FishingNote
-            val allNotes = notesSnapshot.documents.mapNotNull { doc ->
+            val allNotes = allNotesSnapshot.documents.mapNotNull { doc ->
                 try {
-                    doc.toObject(FishingNote::class.java)?.copy(id = doc.id)
+                    val note = doc.toObject(FishingNote::class.java)?.copy(id = doc.id)
+                    note?.let {
+                        // Выводим подробную информацию о каждой заметке
+                        Log.d(TAG, "Заметка ID: ${it.id}")
+                        Log.d(TAG, "- Локация: ${it.location}")
+                        Log.d(TAG, "- Дата: ${dateFormatter.format(it.date)}")
+                        Log.d(TAG, "- Конечная дата: ${it.endDate?.let { date -> dateFormatter.format(date) } ?: "NULL"}")
+                        Log.d(TAG, "- Многодневная: ${it.isMultiDay}")
+                        Log.d(TAG, "- JSON: ${doc.data}")
+                    }
+                    note
                 } catch (e: Exception) {
-                    Log.e(TAG, "Ошибка при преобразовании заметки: ${e.message}")
+                    Log.e(TAG, "Ошибка при преобразовании заметки: ${e.message}", e)
                     null
                 }
             }
 
-            // Фильтруем заметки по диапазону дат
-            val notes = allNotes.filter { note ->
+            Log.d(TAG, "Всего заметок пользователя: ${allNotes.size}")
+
+            // Для поиска самой долгой рыбалки используем ВСЕ заметки
+            // Исправленная версия с принудительным расчетом продолжительности
+            val longestTrip = findLongestTripForced(allNotes)
+
+            // Логируем информацию о самой долгой рыбалке
+            longestTrip?.let {
+                Log.d(TAG, "Найдена самая долгая рыбалка: ${it.durationDays} дней, ${it.location}, " +
+                        "даты: ${dateFormatter.format(it.startDate)} - ${it.endDate?.let { date -> dateFormatter.format(date) } ?: "NULL"}")
+            } ?: Log.d(TAG, "Не найдена информация о самой долгой рыбалке")
+
+            // Фильтруем заметки по указанному диапазону дат для остальной статистики
+            val filteredNotes = allNotes.filter { note ->
                 // Для однодневных заметок проверяем, что дата в диапазоне
                 if (!note.isMultiDay || note.endDate == null) {
                     isDateInRange(note.date, startDate, endDate)
@@ -60,16 +84,18 @@ class StatsRepository {
                 }
             }
 
-            if (notes.isEmpty()) {
+            Log.d(TAG, "Заметок после фильтрации по датам: ${filteredNotes.size}")
+
+            if (filteredNotes.isEmpty() && allNotes.isEmpty()) {
                 // Если у пользователя нет заметок, возвращаем пустую статистику
                 return Result.success(FishingStats())
             }
 
             // Общее количество рыбалок
-            val totalTrips = notes.size
+            val totalTrips = filteredNotes.size
 
             // Фильтруем поклевки по диапазону дат
-            val totalFish = notes.sumOf { note ->
+            val totalFish = filteredNotes.sumOf { note ->
                 note.biteRecords.count { bite ->
                     isDateInRange(bite.time, startDate, endDate)
                 }
@@ -83,26 +109,16 @@ class StatsRepository {
             }
 
             // Самая большая рыба (находим запись с максимальным весом)
-            val biggestFish = findBiggestFish(notes, startDate, endDate)
-
-            // Самая долгая рыбалка
-            val longestTrip = findLongestTrip(notes, startDate, endDate)
+            val biggestFish = findBiggestFish(filteredNotes, startDate, endDate)
 
             // Лучший месяц
-            val bestMonth = findBestMonth(notes, startDate, endDate)
+            val bestMonth = findBestMonth(filteredNotes, startDate, endDate)
 
-            // Последняя рыбалка (первая запись, так как сортировка по убыванию)
-            val lastTrip = if (notes.isNotEmpty()) {
-                LastTripInfo(
-                    date = notes.first().date,
-                    location = notes.first().location
-                )
-            } else {
-                null
-            }
+            // Последняя рыбалка (заметка с самой поздней датой)
+            val lastTrip = findLastTrip(filteredNotes)
 
             // Последние трофеи (фото)
-            val lastTrophies = findLastTrophies(notes, startDate, endDate)
+            val lastTrophies = findLastTrophies(filteredNotes, startDate, endDate)
 
             // Создаем объект статистики
             val stats = FishingStats(
@@ -118,7 +134,7 @@ class StatsRepository {
 
             Result.success(stats)
         } catch (e: Exception) {
-            Log.e(TAG, "Ошибка при получении статистики: ${e.message}")
+            Log.e(TAG, "Ошибка при получении статистики: ${e.message}", e)
             Result.failure(e)
         }
     }
@@ -135,6 +151,25 @@ class StatsRepository {
      */
     private fun isDateRangeOverlapping(start1: Date, end1: Date, start2: Date, end2: Date): Boolean {
         return !start1.after(end2) && !start2.after(end1)
+    }
+
+    /**
+     * Находит последнюю рыбалку (по дате)
+     */
+    private fun findLastTrip(notes: List<FishingNote>): LastTripInfo? {
+        if (notes.isEmpty()) return null
+
+        // Находим заметку с самой поздней датой
+        val latestNote = notes.maxByOrNull { note ->
+            if (note.isMultiDay && note.endDate != null) note.endDate.time else note.date.time
+        }
+
+        return latestNote?.let {
+            LastTripInfo(
+                date = if (it.isMultiDay && it.endDate != null) it.endDate else it.date,
+                location = it.location
+            )
+        }
     }
 
     /**
@@ -167,79 +202,92 @@ class StatsRepository {
     }
 
     /**
-     * Находит информацию о самой долгой рыбалке в указанном диапазоне дат
-     * Теперь корректно вычисляет продолжительность на основе разницы между начальной и конечной датами
+     * Новая версия метода, которая принудительно вычисляет продолжительность по датам
+     * независимо от флага isMultiDay
      */
-    private fun findLongestTrip(notes: List<FishingNote>, startDate: Date, endDate: Date): LongestTripInfo? {
-        // Фильтруем заметки, которые находятся в запрашиваемом диапазоне дат
-        val filteredNotes = notes.filter { note ->
-            if (!note.isMultiDay || note.endDate == null) {
-                isDateInRange(note.date, startDate, endDate)
-            } else {
-                isDateRangeOverlapping(note.date, note.endDate, startDate, endDate)
-            }
+    private fun findLongestTripForced(notes: List<FishingNote>): LongestTripInfo? {
+        if (notes.isEmpty()) {
+            Log.d(TAG, "Нет заметок для анализа самой долгой рыбалки")
+            return null
         }
 
-        // Находим заметку с максимальной длительностью
-        val longestTripNote = filteredNotes.maxByOrNull { note ->
-            if (!note.isMultiDay || note.endDate == null) {
-                // Если однодневная рыбалка - длительность 1 день
-                1
-            } else {
-                // Вычисляем разницу в днях между начальной и конечной датами
-                val startCalendar = Calendar.getInstance().apply { time = note.date }
-                val endCalendar = Calendar.getInstance().apply { time = note.endDate }
+        // Вычисляем продолжительность для каждой заметки и создаем пары (заметка, продолжительность)
+        val notesWithDuration = notes.map { note ->
+            // Принудительно проверяем, есть ли конечная дата, независимо от флага isMultiDay
+            val duration = calculateTripDurationForced(note)
 
-                // Сбрасываем часы, минуты, секунды для корректного расчета
-                startCalendar.set(Calendar.HOUR_OF_DAY, 0)
-                startCalendar.set(Calendar.MINUTE, 0)
-                startCalendar.set(Calendar.SECOND, 0)
-                startCalendar.set(Calendar.MILLISECOND, 0)
+            Log.d(TAG, "Заметка: ${note.location}, даты: " +
+                    "${dateFormatter.format(note.date)} - " +
+                    "${note.endDate?.let { dateFormatter.format(it) } ?: "NULL"}, " +
+                    "isMultiDay: ${note.isMultiDay}, продолжительность: $duration дней")
 
-                endCalendar.set(Calendar.HOUR_OF_DAY, 0)
-                endCalendar.set(Calendar.MINUTE, 0)
-                endCalendar.set(Calendar.SECOND, 0)
-                endCalendar.set(Calendar.MILLISECOND, 0)
-
-                // Вычисляем разницу в днях
-                val diffMillis = endCalendar.timeInMillis - startCalendar.timeInMillis
-                val diffDays = (diffMillis / (1000 * 60 * 60 * 24)).toInt() + 1 // +1 чтобы учесть первый день
-
-                diffDays
-            }
+            Pair(note, duration)
         }
 
-        return longestTripNote?.let { note ->
-            // Вычисляем длительность рыбалки в днях
-            val durationDays = if (!note.isMultiDay || note.endDate == null) {
-                1 // Однодневная рыбалка
-            } else {
-                // Расчет для многодневной рыбалки
-                val startCalendar = Calendar.getInstance().apply { time = note.date }
-                val endCalendar = Calendar.getInstance().apply { time = note.endDate }
+        // Находим максимальную продолжительность
+        val maxDuration = notesWithDuration.maxOfOrNull { (_, duration) -> duration } ?: 0
+        Log.d(TAG, "Максимальная продолжительность: $maxDuration дней")
 
-                // Сбрасываем часы, минуты, секунды для корректного расчета
-                startCalendar.set(Calendar.HOUR_OF_DAY, 0)
-                startCalendar.set(Calendar.MINUTE, 0)
-                startCalendar.set(Calendar.SECOND, 0)
-                startCalendar.set(Calendar.MILLISECOND, 0)
+        // Фильтруем заметки с максимальной продолжительностью
+        val longestTrips = notesWithDuration
+            .filter { (_, duration) -> duration == maxDuration }
+            .map { (note, _) -> note }
 
-                endCalendar.set(Calendar.HOUR_OF_DAY, 0)
-                endCalendar.set(Calendar.MINUTE, 0)
-                endCalendar.set(Calendar.SECOND, 0)
-                endCalendar.set(Calendar.MILLISECOND, 0)
+        Log.d(TAG, "Найдено рыбалок с максимальной продолжительностью: ${longestTrips.size}")
 
-                // Вычисляем разницу в днях
-                val diffMillis = endCalendar.timeInMillis - startCalendar.timeInMillis
-                (diffMillis / (1000 * 60 * 60 * 24)).toInt() + 1 // +1 чтобы учесть первый день
-            }
+        // Если несколько рыбалок с одинаковой продолжительностью, берем самую последнюю по дате
+        val latestLongestTrip = longestTrips.maxByOrNull { note ->
+            if (note.endDate != null) note.endDate.time else note.date.time
+        }
+
+        return latestLongestTrip?.let { note ->
+            val duration = calculateTripDurationForced(note)
+            Log.d(TAG, "Выбрана самая долгая рыбалка: ${note.location}, " +
+                    "даты: ${dateFormatter.format(note.date)} - " +
+                    "${note.endDate?.let { dateFormatter.format(it) } ?: "NULL"}, " +
+                    "продолжительность: $duration дней")
 
             LongestTripInfo(
-                durationDays = durationDays,
+                durationDays = duration,
                 startDate = note.date,
-                endDate = note.endDate ?: note.date, // Если endDate null, используем date
+                endDate = note.endDate ?: note.date,
                 location = note.location
             )
+        }
+    }
+
+    /**
+     * Принудительно вычисляет продолжительность рыбалки в днях,
+     * используя разницу между начальной и конечной датами, независимо от флага isMultiDay
+     */
+    private fun calculateTripDurationForced(note: FishingNote): Int {
+        // Если нет конечной даты, это однодневная рыбалка
+        if (note.endDate == null) {
+            Log.d(TAG, "Отсутствует конечная дата для заметки: ${note.location}, считаем как 1 день")
+            return 1
+        }
+
+        try {
+            // Разница между начальной и конечной датой
+            val diffMillis = note.endDate.time - note.date.time
+
+            // Если разница отрицательная или равна нулю (конечная дата раньше или равна начальной),
+            // считаем как однодневную рыбалку
+            if (diffMillis <= 0) {
+                Log.d(TAG, "Конечная дата не позже начальной для заметки: ${note.location}, считаем как 1 день")
+                return 1
+            }
+
+            // Конвертируем миллисекунды в дни и добавляем 1 (чтобы включить первый день)
+            val days = (diffMillis / (1000 * 60 * 60 * 24)) + 1
+
+            Log.d(TAG, "Рассчитанная продолжительность для заметки ${note.location}: $days дней " +
+                    "(разница в мс: $diffMillis)")
+
+            return days.toInt()
+        } catch (e: Exception) {
+            Log.e(TAG, "Ошибка при расчете продолжительности: ${e.message}", e)
+            return 1
         }
     }
 

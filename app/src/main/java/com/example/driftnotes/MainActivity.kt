@@ -41,6 +41,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     // URL для перехода по клику на баннер - замените на свой URL
     private val externalResourceUrl = "https://www.youtube.com/@Carpediem_hunting_fishing"
+
     // Текст для баннера
     private val bannerTitle = "Посетите наш YouTube канал"
 
@@ -213,6 +214,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    // Фрагмент MainActivity.kt, обновить функцию updateUI
+
     /**
      * Обновляет UI с данными статистики
      */
@@ -246,15 +249,25 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 binding.textViewBiggestFishDate?.text = "Нет данных"
             }
 
-            // Блок "Самая долгая рыбалка"
+            /// Блок "Самая долгая рыбалка"
             stats.longestTrip?.let { longestTrip ->
+                // Показываем количество дней
                 binding.textViewLongestTripValue?.text = longestTrip.durationDays.toString()
 
-                // Формат: "12-15 августа"
-                val dateRangeText = DateFormatter.formatDateRange(longestTrip.startDate, longestTrip.endDate)
-                binding.textViewLongestTripDate?.text = dateRangeText
+                // Формат даты или диапазона дат
+                val dateText = if (longestTrip.endDate == null || isSameDay(longestTrip.startDate, longestTrip.endDate)) {
+                    // Для однодневной рыбалки
+                    formatDate(longestTrip.startDate)
+                } else {
+                    // Для многодневной рыбалки - короткий формат
+                    "${formatDate(longestTrip.startDate)}..."
+                }
+                binding.textViewLongestTripDate?.text = dateText
 
-                binding.textViewLongestTripLocation?.text = longestTrip.location
+                // Ограничиваем длину текста местоположения
+                val locationText = longestTrip.location
+                binding.textViewLongestTripLocation?.text =
+                    if (locationText.length > 12) locationText.substring(0, 9) + "..." else locationText
 
                 // Склонение слова "день"
                 binding.textViewLongestTripDays?.text = getDaysText(longestTrip.durationDays)
@@ -266,28 +279,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 binding.textViewLongestTripDays?.text = "дней"
             }
 
-            // Блок "Лучший месяц"
-            stats.bestMonth?.let { bestMonth ->
-                // Получаем название месяца в именительном падеже
-                val monthName = getMonthInNominative(bestMonth.month - 1)
 
-                binding.textViewBestMonthValue?.text = monthName
-                binding.textViewBestMonthCount?.text = "${bestMonth.fishCount} ${getFishText(bestMonth.fishCount)}"
-            } ?: run {
-                // Если нет данных о лучшем месяце
-                binding.textViewBestMonthValue?.text = "Нет данных"
-                binding.textViewBestMonthCount?.text = "0 рыб"
-            }
-
-            // Блок "Последний выезд"
-            stats.lastTrip?.let { lastTrip ->
-                binding.textViewLastTripLocation?.text = lastTrip.location
-                binding.textViewLastTripDate?.text = formatDate(lastTrip.date)
-            } ?: run {
-                // Если нет данных о последней рыбалке
-                binding.textViewLastTripLocation?.text = "Нет данных"
-                binding.textViewLastTripDate?.text = ""
-            }
         } catch (e: Exception) {
             Log.e("MainActivity", "Ошибка при обновлении UI: ${e.message}", e)
             Toast.makeText(
@@ -296,6 +288,23 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 Toast.LENGTH_SHORT
             ).show()
         }
+    }
+
+
+    /**
+     * Проверяет, относятся ли две даты к одному и тому же дню
+     */
+    private fun isSameDay(date1: Date, date2: Date?): Boolean {
+        if (date2 == null) return false
+
+        val cal1 = Calendar.getInstance()
+        val cal2 = Calendar.getInstance()
+        cal1.time = date1
+        cal2.time = date2
+
+        return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
+                cal1.get(Calendar.MONTH) == cal2.get(Calendar.MONTH) &&
+                cal1.get(Calendar.DAY_OF_MONTH) == cal2.get(Calendar.DAY_OF_MONTH)
     }
 
     /**
@@ -371,11 +380,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     AnimationHelper.startActivityWithAnimation(this, intent)
                     true
                 }
+
                 R.id.navigation_weather -> {
                     // Обработка нажатия на "Погода"
-                    Toast.makeText(this, "Раздел Погода находится в разработке", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Раздел Погода находится в разработке", Toast.LENGTH_SHORT)
+                        .show()
                     true
                 }
+
                 R.id.navigation_add -> {
                     // Кнопка с крючком по центру - открываем экран добавления заметки
                     val intent = Intent(this, AddFishingNoteActivity::class.java)
@@ -383,17 +395,24 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     overridePendingTransition(R.anim.slide_in_bottom, R.anim.slide_out_top)
                     true
                 }
+
                 R.id.navigation_calendar -> {
                     // Кнопка "Календарь" - открываем CalendarActivity
                     val intent = Intent(this, CalendarActivity::class.java)
                     AnimationHelper.startActivityWithAnimation(this, intent)
                     true
                 }
+
                 R.id.navigation_notifications -> {
                     // Обработка нажатия на "Уведомления"
-                    Toast.makeText(this, "Раздел Уведомления находится в разработке", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this,
+                        "Раздел Уведомления находится в разработке",
+                        Toast.LENGTH_SHORT
+                    ).show()
                     true
                 }
+
                 else -> false
             }
         }
@@ -405,23 +424,33 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 val intent = Intent(this, NotesActivity::class.java)
                 AnimationHelper.startActivityWithAnimation(this, intent)
             }
+
             R.id.nav_profile -> {
                 val intent = Intent(this, ProfileActivity::class.java)
                 AnimationHelper.startActivityWithAnimation(this, intent)
             }
+
             R.id.nav_stats -> {
                 // Открываем экран статистики
                 val intent = Intent(this, StatsActivity::class.java)
                 AnimationHelper.startActivityWithAnimation(this, intent)
             }
+
             R.id.nav_settings -> {
                 // Обработка нажатия на пункт "Настройки"
-                Toast.makeText(this, "Раздел Настройки находится в разработке", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Раздел Настройки находится в разработке", Toast.LENGTH_SHORT)
+                    .show()
             }
+
             R.id.nav_help -> {
                 // Обработка нажатия на пункт "Помощь/Связь"
-                Toast.makeText(this, "Раздел Помощь/Связь находится в разработке", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    "Раздел Помощь/Связь находится в разработке",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
+
             R.id.nav_logout -> {
                 FirebaseManager.auth.signOut()
                 val intent = Intent(this, WelcomeActivity::class.java)
